@@ -9,7 +9,6 @@
 
 // Our stuff
 #include "utils.h"
-#include "mul.h"
 #include "ndarray.h"
 
 int main() {

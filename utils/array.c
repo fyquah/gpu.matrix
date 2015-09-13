@@ -1,11 +1,11 @@
 #include <CL/cl.h>
 
-size_t * copy (size_t * arr, size_t len) {
-    size_t * copy = (size_t*) malloc(sizeof(size_t) * len);
+#define COPY_FACTORY(T) T * array_##T##_copy(T * arr, unsigned long long len) { \
+    T * copy = (T*) malloc(sizeof(T) * len);\
+    for (unsigned long i = 0; i < len ; ++i) { \
+        copy[i] = arr[i]; \
+    }\
+    return copy;\
+}\
 
-    for (size_t i = 0 ; i < len ; i++) {
-        copy[i] = arr[i];
-    }
-
-    return copy;
-}
+COPY_FACTORY(size_t);

@@ -5,6 +5,7 @@ typedef struct {
     size_t ndims;
 } ndarray;
 
+
 unsigned ndarray_datasize(const ndarray *);
 
 // addition
@@ -13,4 +14,5 @@ void ndarray_add_bang(const ndarray *, ndarray *);
 
 // multiplication
 ndarray * ndarray_mul(ndarray*, ndarray*);
+
 

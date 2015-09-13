@@ -56,7 +56,6 @@ ndarray * ndarray_add(const ndarray * arr_x, ndarray * arr_y){
     status = clEnqueueWriteBuffer(cmd_queue, buffer_y, CL_FALSE,
             0, ndarray_datasize(arr_y), arr_y->data, 0, NULL, NULL);
 
-    puts("here");fflush(stdout);
     // 5. Load and compile program
     program_file_contents = slurp("opencl/vecadd.cl");
     program = clCreateProgramWithSource(
@@ -81,8 +80,8 @@ ndarray * ndarray_add(const ndarray * arr_x, ndarray * arr_y){
 
     // 9. Read the otuput back to the host
     output->data     = (double*) malloc(ndarray_datasize(arr_x));
-    output->strides  = copy(arr_x->strides, arr_x->ndims);
-    output->shape    = copy(arr_x->shape, arr_x->ndims);
+    output->strides  = array_size_t_copy(arr_x->strides, (unsigned long long) arr_x->ndims);
+    output->shape    = array_size_t_copy(arr_x->shape, arr_x->ndims);
     output->ndims    = arr_x->ndims;
 
     // 10. Write the output back
