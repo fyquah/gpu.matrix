@@ -1,3 +1,6 @@
 # Ignore binaries
 *.out
 out/
+
+# Ignore swapfiles
+**.swp
