@@ -25,6 +25,19 @@ unsigned ndarray_datasize(const ndarray * arr) {
     return ndarray_elements_count(arr) * sizeof(double);
 }
 
+ndarray * ndarray_clone_structure(ndarray * arr_x) {
+    const unsigned datasize = ndarray_datasize(arr_x);
+    output * ndarray = malloc(sizeof(ndarray));
+    
+    output->data     = (double*) malloc(datasize);
+    output->strides  = array_size_t_copy(arr_x->strides, (unsigned long long) arr_x->ndims);
+    output->shape    = array_size_t_copy(arr_x->shape, arr_x->ndims);
+    output->ndims    = arr_x->ndims;
+
+    return output;
+}
+
+// basic ops
 ndarray * ndarray_add_scalar(ndarray * arr_x, double y) {
     const size_t * shape = arr_x->shape;
     const unsigned datasize = ndarray_datasize(arr_x);
@@ -32,13 +45,13 @@ ndarray * ndarray_add_scalar(ndarray * arr_x, double y) {
     cl_int status;
     cl_mem buffer_x, buffer_output;
     cl_command_queue cmd_queue;
-    ndarray * output;
+    ndarray * output = ndarray_clone_structure(arr_x);
     size_t global_work_size[1];
     global_work_size[0] = ndarray_elements_count(arr_x);
 
     cmd_queue = command_queue_create(0, &status);
     output = (ndarray*) malloc(sizeof(ndarray));
-    kernel = kernels_get("add_scalar");
+    kernel = kernels_get(context_get(), device_get(), "add_scalar");
     buffer_x = buffers_create(CL_MEM_READ_ONLY, datasize, NULL, &status);
     buffer_output = buffers_create(CL_MEM_WRITE_ONLY, datasize, NULL, &status);
     status = clEnqueueWriteBuffer(cmd_queue, buffer_x, CL_FALSE, 0,
@@ -47,14 +60,8 @@ ndarray * ndarray_add_scalar(ndarray * arr_x, double y) {
     status |= clSetKernelArg(kernel, 1, sizeof(double), (void*) &y);
     status |= clSetKernelArg(kernel, 2, sizeof(cl_mem), (void*) &buffer_output);
     status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, global_work_size, NULL, 0, NULL, NULL);
-
-    output->data     = (double*) malloc(datasize);
-    output->strides  = array_size_t_copy(arr_x->strides, (unsigned long long) arr_x->ndims);
-    output->shape    = array_size_t_copy(arr_x->shape, arr_x->ndims);
-    output->ndims    = arr_x->ndims;
     
-    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE, 0, ndarray_datasize(output), 
-            output->data, 0, NULL, NULL);
+    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE, 0, ndarray_datasize(output), output->data, 0, NULL, NULL);
 
     return output;
 }

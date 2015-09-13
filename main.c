@@ -20,7 +20,7 @@ int main() {
     arr.ndims = 1;
     arr.strides = strides;
     arr.shape = shape;
-   
+    init();  
     ndarray * output = ndarray_add_scalar(&arr, 1.0);
     printf("dimensions: %d\n", output->ndims);
     for (int i = 0 ; i < 3 ; i++) {
