@@ -10,7 +10,22 @@
 // Our stuff
 #include "utils.h"
 #include "mul.h"
+#include "ndarray.h"
 
 int main() {
-    mul();
+    ndarray arr;
+    double data[3] = { 1.0, 2.0, 3.0 };
+    size_t strides[1] = { 1 };
+    size_t shape[1] = { 3 };
+    arr.data = data;
+    arr.ndims = 1;
+    arr.strides = strides;
+    arr.shape = shape;
+   
+    ndarray * output = ndarray_add(&arr, &arr);
+    printf("dimensions: %d\n", output->ndims);
+    for (int i = 0 ; i < 3 ; i++) {
+        printf("%f ", output->data[i]);
+    }
+    puts("");
 }
