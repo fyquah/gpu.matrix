@@ -2,13 +2,15 @@
 
 const char * get_program_file_name(const char * module_name) {
     static const char * file_names[] = {
-        "opencl/add.cl", "opencl/add_scalar.cl" };
+        "opencl/add.cl", "opencl/add_scalar.cl", "opencl/add_bang.cl" };
     int index = -1;
 
     if(strcmp(module_name, "add") == 0) {
         index = 0;
     } else if (strcmp(module_name, "add_scalar") == 0) {
         index = 1;
+    } else if (strcmp(module_name, "add_bang") == 0) {
+        index = 2;
     }
 
     return file_names[index];
@@ -28,7 +30,6 @@ cl_kernel kernels_get(cl_context context, cl_device_id device, const char * modu
     status = clBuildProgram(
         program, 1, &device, NULL, NULL, NULL
     );
-
     kernel = clCreateKernel(program, module_name, &status);
 
     free((void*) file_contents);

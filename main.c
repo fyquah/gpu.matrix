@@ -12,18 +12,20 @@
 #include "ndarray.h"
 
 int main() {
-    ndarray arr;
-    double data[3] = { 1.0, 2.0, 3.0 };
+    ndarray * arr = malloc(sizeof(ndarray));
+    double data[3] = { 2.0, 2.72, 3.0 };
     size_t strides[1] = { 1 };
     size_t shape[1] = { 3 };
-    arr.data = data;
-    arr.ndims = 1;
-    arr.strides = strides;
-    arr.shape = shape;
+    arr->data = data;
+    arr->ndims = 1;
+    arr->strides = strides;
+    arr->shape = shape;
+    
     init();  
-    ndarray * output = ndarray_add_scalar(&arr, 1.0);
-    printf("dimensions: %d\n", output->ndims);
+    arr = ndarray_add(arr, arr);
+    printf("dimensions: %d\n", arr->ndims);
     for (int i = 0 ; i < 3 ; i++) {
-        printf("%f ", output->data[i]);
+        printf("%f ", arr->data[i]);
     }
+    puts("");
 }
