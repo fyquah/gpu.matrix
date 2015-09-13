@@ -21,10 +21,9 @@ int main() {
     arr.strides = strides;
     arr.shape = shape;
    
-    ndarray * output = ndarray_add(&arr, &arr);
+    ndarray * output = ndarray_add_scalar(&arr, 1.0);
     printf("dimensions: %d\n", output->ndims);
     for (int i = 0 ; i < 3 ; i++) {
         printf("%f ", output->data[i]);
     }
-    puts("");
 }

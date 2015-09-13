@@ -12,13 +12,51 @@ void ndarray_release(ndarray * arr) {
     free(arr);
 }
 
-unsigned ndarray_datasize(const ndarray * arr) {
+unsigned ndarray_elements_count(const ndarray * arr) {
     int n_elements = 1;
     for (int i = 0 ; i < arr->ndims ; i++) {
         n_elements *= arr->shape[i];
     }
 
-    return n_elements * sizeof(double);
+    return n_elements;
+}
+
+unsigned ndarray_datasize(const ndarray * arr) {
+    return ndarray_elements_count(arr) * sizeof(double);
+}
+
+ndarray * ndarray_add_scalar(ndarray * arr_x, double y) {
+    const size_t * shape = arr_x->shape;
+    const unsigned datasize = ndarray_datasize(arr_x);
+    cl_kernel kernel;
+    cl_int status;
+    cl_mem buffer_x, buffer_output;
+    cl_command_queue cmd_queue;
+    ndarray * output;
+    size_t global_work_size[1];
+    global_work_size[0] = ndarray_elements_count(arr_x);
+
+    cmd_queue = command_queue_create(0, &status);
+    output = (ndarray*) malloc(sizeof(ndarray));
+    kernel = kernels_get("add_scalar");
+    buffer_x = buffers_create(CL_MEM_READ_ONLY, datasize, NULL, &status);
+    buffer_output = buffers_create(CL_MEM_WRITE_ONLY, datasize, NULL, &status);
+    status = clEnqueueWriteBuffer(cmd_queue, buffer_x, CL_FALSE, 0,
+            ndarray_datasize(arr_x), arr_x->data, 0, NULL, NULL);
+    status = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void*) &buffer_x);
+    status |= clSetKernelArg(kernel, 1, sizeof(double), (void*) &y);
+    status |= clSetKernelArg(kernel, 2, sizeof(cl_mem), (void*) &buffer_output);
+    status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, global_work_size, NULL, 0, NULL, NULL);
+
+    output->data     = (double*) malloc(datasize);
+    output->strides  = array_size_t_copy(arr_x->strides, (unsigned long long) arr_x->ndims);
+    output->shape    = array_size_t_copy(arr_x->shape, arr_x->ndims);
+    output->ndims    = arr_x->ndims;
+    
+    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE, 0, ndarray_datasize(output), 
+            output->data, 0, NULL, NULL);
+
+    return output;
 }
 
 ndarray * ndarray_add(const ndarray * arr_x, ndarray * arr_y){
@@ -57,7 +95,7 @@ ndarray * ndarray_add(const ndarray * arr_x, ndarray * arr_y){
             0, ndarray_datasize(arr_y), arr_y->data, 0, NULL, NULL);
 
     // 5. Load and compile program
-    program_file_contents = slurp("opencl/vecadd.cl");
+    program_file_contents = slurp("opencl/add.cl");
     program = clCreateProgramWithSource(
         context, 1, (const char **) &program_file_contents, 
         NULL, &status
@@ -67,10 +105,10 @@ ndarray * ndarray_add(const ndarray * arr_x, ndarray * arr_y){
     );
 
     // 6. Create the kernel
-    kernel = clCreateKernel(program, "vecadd", &status);
+    kernel = clCreateKernel(program, "add", &status);
 
     // 7. Set the kernel arguments
-    status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &buffer_x);
+    status  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &buffer_x);
     status |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &buffer_y);
     status |= clSetKernelArg(kernel, 2, sizeof(cl_mem), &buffer_output);
 

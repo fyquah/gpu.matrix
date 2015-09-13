@@ -2,6 +2,7 @@
 
 // returns a commong configuration
 // Assuming taking the 0th platform's device
+
 opencl_config_t get_common_config () {
     cl_platform_id platform;
     cl_device_id device;

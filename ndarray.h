@@ -10,6 +10,7 @@ unsigned ndarray_datasize(const ndarray *);
 
 // addition
 ndarray * ndarray_add(const ndarray *, ndarray *);
+ndarray * ndarray_add_scalar(ndarray *, double);
 void ndarray_add_bang(const ndarray *, ndarray *);
 
 // multiplication
