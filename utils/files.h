@@ -1,0 +1,1 @@
+char * slurp(const char *);

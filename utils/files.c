@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "utils.h"
+#include "files.h"
 
 char * slurp(const char * filename) {
     FILE * program_handle;
@@ -18,14 +18,4 @@ char * slurp(const char * filename) {
     fclose(program_handle);
 
     return program_buffer;
-}
-
-size_t * copy (size_t * arr, size_t len) {
-    size_t * copy = (size_t*) malloc(sizeof(size_t) * len);
-
-    for (size_t i = 0 ; i < len ; i++) {
-        copy[i] = arr[i];
-    }
-
-    return copy;
 }

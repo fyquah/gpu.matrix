@@ -1,2 +1,4 @@
-char * slurp(const char * filename);
-size_t * copy(size_t *, size_t);
+#include "utils/array.h"
+#include "utils/cl_helper.h"
+#include "utils/files.h"
+#include "utils/kernels.h"

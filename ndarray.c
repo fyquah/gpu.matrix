@@ -2,7 +2,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "cl_helper.h"
 #include "ndarray.h"
 #include "utils.h"
 
