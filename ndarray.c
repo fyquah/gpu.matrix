@@ -5,7 +5,7 @@
 #include "ndarray.h"
 #include "utils.h"
 
-#define MAP_FACTORY(TR, FNC_NAME, T1, T2, CL_NAME)          \
+#define MAP_FACTORY(TR, FNC_NAME, T1, T2, CL_TYPE)          \
 TR FNC_NAME(T1 arr_x, T2 arr_y) {                           \
     const unsigned datasize = ndarray_datasize(arr_x);      \
     const size_t * shape = arr_x->shape;                    \
@@ -20,7 +20,7 @@ TR FNC_NAME(T1 arr_x, T2 arr_y) {                           \
     global_work_size[0] = ndarray_elements_count(arr_x);    \
     cmd_queue = command_queue_create(0, &status);           \
     kernel = kernels_get(context_get(), device_get(),       \
-            CL_NAME);                                       \
+            CL_TYPE);                                       \
     buffer_x = buffers_create(CL_MEM_READ_ONLY, datasize,   \
             NULL, &status);                                 \
     buffer_y = buffers_create(CL_MEM_READ_ONLY, datasize,   \
@@ -48,7 +48,7 @@ TR FNC_NAME(T1 arr_x, T2 arr_y) {                           \
     return output;                                          \
 }
 
-MAP_FACTORY(ndarray *, ndarray_add, const ndarray *, const ndarray *, "add");
+MAP_FACTORY(ndarray *, ndarray_add, const ndarray *, const ndarray *, KERNEL_ADD);
 
 void ndarray_release(ndarray * arr) {
     free(arr->data);
@@ -105,7 +105,7 @@ ndarray * ndarray_add_scalar(const ndarray * arr_x, double y) {
     
     global_work_size[0] = ndarray_elements_count(arr_x);
     cmd_queue = command_queue_create(0, &status);
-    kernel = kernels_get(context_get(), device_get(), "add_scalar");
+    kernel = kernels_get(context_get(), device_get(), KERNEL_ADD_SCALAR);
     buffer_x = buffers_create(CL_MEM_READ_ONLY, datasize, NULL, &status);
     buffer_output = buffers_create(CL_MEM_WRITE_ONLY, datasize, NULL, &status);
     status = clEnqueueWriteBuffer(cmd_queue, buffer_x, CL_FALSE, 0,
@@ -158,7 +158,7 @@ void ndarray_add_bang(ndarray * arr_x, const ndarray * arr_y) {
     size_t global_work_size[1] = { ndarray_elements_count(arr_x) };
 
     cmd_queue = command_queue_create(0, &status);
-    kernel = kernels_get(context_get(), device_get(), "add_bang");
+    kernel = kernels_get(context_get(), device_get(), KERNEL_ADD_BANG);
     buffer_x = buffers_create(CL_MEM_READ_WRITE, datasize, NULL, &status);
     buffer_y = buffers_create(CL_MEM_READ_ONLY, datasize, NULL, &status);
     status = clEnqueueWriteBuffer(cmd_queue, buffer_x, CL_FALSE, 0,

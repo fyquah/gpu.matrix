@@ -1,7 +1,20 @@
+#ifndef KERNELS_H
+#define KERNELS_H
+
 #include <string.h>
 
 #include "CL/cl.h"
 #include "files.h"
 
-cl_kernel kernels_get(cl_context, cl_device_id, const char *);
-const char * get_program_file_name(const char *);
+typedef const unsigned kernel_type_t;
+
+#define KERNEL_ADD 0
+#define KERNEL_ADD_SCALAR 1
+#define KERNEL_ADD_BANG 2
+#define KERNEL_SUB 3
+
+const char * get_program_file_name(kernel_type_t);
+const char * get_cl_function_name(kernel_type_t);
+cl_kernel kernels_get(cl_context, cl_device_id, kernel_type_t);
+
+#endif
