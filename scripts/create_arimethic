@@ -1,0 +1,36 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+sub create_op {
+    my $op_name = shift;
+    my $kernel = "KERNEL_" . uc($op_name);
+    my $kernel_scalar = "KERNEL_" . uc($op_name) . "_SCALAR";
+    my $kernel_bang = "KERNEL_" . uc($op_name) . "_BANG";
+    my $kernel_scalar_bang = "KERNEL_" . uc($op_name) . "_SCALAR_BANG";
+
+    my $str = " 
+ndarray * ndarray_$op_name(const ndarray * arr_x, const ndarray * arr_y) {
+    return map_factory(arr_x, arr_y, $kernel);
+}
+
+ndarray * ndarray_" . $op_name . "_scalar(const ndarray * arr_x, const double y) {
+    return map_scalar_factory(arr_x, y, $kernel_scalar);
+}
+
+void ndarray_" . $op_name . "bang(ndarray * arr_x, const ndarray * arr_y) {
+    map_bang_factory(arr_x, arr_y, $kernel_bang);
+}
+
+void ndarray_" . $op_name . "_scalar_bang(ndarray * arr_x, const double y) {
+    map_scalar_bang_factory(arr_x, y, $kernel_scalar_bang);
+}
+";
+   print $str; 
+}
+
+my @ops = ("add", "sub", "mul", "div");
+
+foreach my $op (@ops) {
+    create_op($op);
+}

@@ -225,6 +225,7 @@ ndarray * ndarray_clone(const ndarray * arr_x) {
     return output;
 }
 
+// Arimethic ops
 ndarray * ndarray_add(const ndarray * arr_x, const ndarray * arr_y) {
     return map_factory(arr_x, arr_y, KERNEL_ADD);
 }
@@ -233,10 +234,58 @@ ndarray * ndarray_add_scalar(const ndarray * arr_x, const double y) {
     return map_scalar_factory(arr_x, y, KERNEL_ADD_SCALAR);
 }
 
-void ndarray_add_bang(ndarray * arr_x, const ndarray * arr_y) {
+void ndarray_addbang(ndarray * arr_x, const ndarray * arr_y) {
     map_bang_factory(arr_x, arr_y, KERNEL_ADD_BANG);
 }
 
 void ndarray_add_scalar_bang(ndarray * arr_x, const double y) {
     map_scalar_bang_factory(arr_x, y, KERNEL_ADD_SCALAR_BANG);
+}
+ 
+ndarray * ndarray_sub(const ndarray * arr_x, const ndarray * arr_y) {
+    return map_factory(arr_x, arr_y, KERNEL_SUB);
+}
+
+ndarray * ndarray_sub_scalar(const ndarray * arr_x, const double y) {
+    return map_scalar_factory(arr_x, y, KERNEL_SUB_SCALAR);
+}
+
+void ndarray_subbang(ndarray * arr_x, const ndarray * arr_y) {
+    map_bang_factory(arr_x, arr_y, KERNEL_SUB_BANG);
+}
+
+void ndarray_sub_scalar_bang(ndarray * arr_x, const double y) {
+    map_scalar_bang_factory(arr_x, y, KERNEL_SUB_SCALAR_BANG);
+}
+ 
+ndarray * ndarray_mul(const ndarray * arr_x, const ndarray * arr_y) {
+    return map_factory(arr_x, arr_y, KERNEL_MUL);
+}
+
+ndarray * ndarray_mul_scalar(const ndarray * arr_x, const double y) {
+    return map_scalar_factory(arr_x, y, KERNEL_MUL_SCALAR);
+}
+
+void ndarray_mulbang(ndarray * arr_x, const ndarray * arr_y) {
+    map_bang_factory(arr_x, arr_y, KERNEL_MUL_BANG);
+}
+
+void ndarray_mul_scalar_bang(ndarray * arr_x, const double y) {
+    map_scalar_bang_factory(arr_x, y, KERNEL_MUL_SCALAR_BANG);
+}
+ 
+ndarray * ndarray_div(const ndarray * arr_x, const ndarray * arr_y) {
+    return map_factory(arr_x, arr_y, KERNEL_DIV);
+}
+
+ndarray * ndarray_div_scalar(const ndarray * arr_x, const double y) {
+    return map_scalar_factory(arr_x, y, KERNEL_DIV_SCALAR);
+}
+
+void ndarray_divbang(ndarray * arr_x, const ndarray * arr_y) {
+    map_bang_factory(arr_x, arr_y, KERNEL_DIV_BANG);
+}
+
+void ndarray_div_scalar_bang(ndarray * arr_x, const double y) {
+    map_scalar_bang_factory(arr_x, y, KERNEL_DIV_SCALAR_BANG);
 }
