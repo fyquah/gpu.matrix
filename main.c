@@ -13,7 +13,7 @@
 
 int main() {
     ndarray * arr = malloc(sizeof(ndarray));
-    double data[3] = { 2.0, 2.72, 3.0 };
+    double data[3] = { 4.0, 2.22, 3.0 };
     size_t strides[1] = { 1 };
     size_t shape[1] = { 3 };
     arr->data = data;
@@ -22,7 +22,7 @@ int main() {
     arr->shape = shape;
     
     init();  
-    ndarray_add_bang(arr, arr);
+    arr = ndarray_add(arr, arr);
     printf("dimensions: %d\n", arr->ndims);
     for (int i = 0 ; i < 3 ; i++) {
         printf("%f ", arr->data[i]);
