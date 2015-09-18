@@ -14,7 +14,7 @@ unsigned ndarray_elements_count(const ndarray *);
 
 // addition
 ndarray * ndarray_add(const ndarray *, const ndarray *);
-ndarray * ndarray_add_scalar(const ndarray *, double);
+ndarray * ndarray_add_scalar(const ndarray *, const double);
 void ndarray_add_bang(ndarray *, const ndarray *);
 
 // multiplication
