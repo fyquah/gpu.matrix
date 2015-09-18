@@ -11,7 +11,7 @@ typedef const unsigned kernel_type_t;
 #define KERNEL_ADD 0
 #define KERNEL_ADD_SCALAR 1
 #define KERNEL_ADD_BANG 2
-#define KERNEL_SUB 3
+#define KERNEL_ADD_SCALAR_BANG 3
 
 const char * get_program_file_name(kernel_type_t);
 const char * get_cl_function_name(kernel_type_t);

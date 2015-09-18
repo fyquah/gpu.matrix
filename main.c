@@ -22,7 +22,7 @@ int main() {
     arr->shape = shape;
     
     init();  
-    ndarray_add_bang(arr, arr);
+    ndarray_add_scalar_bang(arr, 1.0);
     printf("dimensions: %d\n", arr->ndims);
     for (int i = 0 ; i < 3 ; i++) {
         printf("%f ", arr->data[i]);

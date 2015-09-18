@@ -5,7 +5,7 @@ const char * get_program_file_name(kernel_type_t k) {
         "opencl/add.cl",
         "opencl/add_scalar.cl",
         "opencl/add_bang.cl",
-        "opencl/sub.cl"
+        "opencl/add_scalar_bang.cl"
     };
 
     return file_names[k];
@@ -16,7 +16,7 @@ const char * get_cl_function_name(kernel_type_t k) {
         "add",
         "add_scalar",
         "add_bang",
-        "sub"
+        "add_scalar_bang"
     };
 
     return module_names[k];
