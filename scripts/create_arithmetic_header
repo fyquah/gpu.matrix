@@ -1,0 +1,26 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+sub create_op {
+    my $op_name = shift;
+    my $kernel = "KERNEL_" . uc($op_name);
+    my $kernel_scalar = "KERNEL_" . uc($op_name) . "_SCALAR";
+    my $kernel_bang = "KERNEL_" . uc($op_name) . "_BANG";
+    my $kernel_scalar_bang = "KERNEL_" . uc($op_name) . "_SCALAR_BANG";
+
+    my $str = "
+// $op_name
+ndarray * ndarray_$op_name(const ndarray *, const ndarray *);
+ndarray * ndarray_" . $op_name . "_scalar(const ndarray *, const double);
+void ndarray_" . $op_name . "_bang(ndarray *, const ndarray *);
+void ndarray_" . $op_name . "_scalar_bang(ndarray *, const double);
+";
+   print $str; 
+}
+
+my @ops = ("add", "sub", "mul", "div");
+
+foreach my $op (@ops) {
+    create_op($op);
+}

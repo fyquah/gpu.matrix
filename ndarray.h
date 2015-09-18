@@ -12,13 +12,27 @@ unsigned ndarray_datasize(const ndarray *);
 ndarray * ndarray_clone_structure(const ndarray *);
 unsigned ndarray_elements_count(const ndarray *);
 
-// addition
+// add
 ndarray * ndarray_add(const ndarray *, const ndarray *);
 ndarray * ndarray_add_scalar(const ndarray *, const double);
-void ndarray_add_bang(ndarray *, const ndarray *);
+void ndarray_addbang(ndarray *, const ndarray *);
 void ndarray_add_scalar_bang(ndarray *, const double);
 
-// multiplication
-ndarray * ndarray_mul(ndarray*, ndarray*);
+// sub
+ndarray * ndarray_sub(const ndarray *, const ndarray *);
+ndarray * ndarray_sub_scalar(const ndarray *, const double);
+void ndarray_subbang(ndarray *, const ndarray *);
+void ndarray_sub_scalar_bang(ndarray *, const double);
 
+// mul
+ndarray * ndarray_mul(const ndarray *, const ndarray *);
+ndarray * ndarray_mul_scalar(const ndarray *, const double);
+void ndarray_mulbang(ndarray *, const ndarray *);
+void ndarray_mul_scalar_bang(ndarray *, const double);
+
+// div
+ndarray * ndarray_div(const ndarray *, const ndarray *);
+ndarray * ndarray_div_scalar(const ndarray *, const double);
+void ndarray_divbang(ndarray *, const ndarray *);
+void ndarray_div_scalar_bang(ndarray *, const double);
 

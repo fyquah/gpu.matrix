@@ -1,0 +1,19 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+my $i = 0;
+
+my @ops = ('add', 'sub', 'mul', 'div');
+foreach my $op (@ops) {
+    $op = uc($op);
+    print '#define KERNEL_' . $op . " $i\n";
+    ++$i;
+    print '#define KERNEL_' . $op . "_SCALAR $i\n";
+    ++$i;
+    print '#define KERNEL_' . $op . "_BANG $i\n";
+    ++$i;
+    print '#define KERNEL_' . $op . "_SCALAR_BANG $i\n";
+    ++$i
+}

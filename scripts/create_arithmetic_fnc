@@ -18,7 +18,7 @@ ndarray * ndarray_" . $op_name . "_scalar(const ndarray * arr_x, const double y)
     return map_scalar_factory(arr_x, y, $kernel_scalar);
 }
 
-void ndarray_" . $op_name . "bang(ndarray * arr_x, const ndarray * arr_y) {
+void ndarray_" . $op_name . "_bang(ndarray * arr_x, const ndarray * arr_y) {
     map_bang_factory(arr_x, arr_y, $kernel_bang);
 }
 

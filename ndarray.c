@@ -226,6 +226,7 @@ ndarray * ndarray_clone(const ndarray * arr_x) {
 }
 
 // Arimethic ops
+
 ndarray * ndarray_add(const ndarray * arr_x, const ndarray * arr_y) {
     return map_factory(arr_x, arr_y, KERNEL_ADD);
 }
