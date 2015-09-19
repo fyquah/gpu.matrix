@@ -10,7 +10,11 @@ unsigned ndarray_datasize(const ndarray *);
 
 // helper functions
 ndarray * ndarray_clone_structure(const ndarray *);
+ndarray * ndarray_clone(const ndarray *);
 unsigned ndarray_elements_count(const ndarray *);
+
+// constructors
+ndarray * ndarray_constructor(double *, size_t, size_t*, size_t*);
 
 // add
 ndarray * ndarray_add(const ndarray *, const ndarray *);

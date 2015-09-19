@@ -204,6 +204,15 @@ unsigned ndarray_datasize(const ndarray * arr) {
     return ndarray_elements_count(arr) * sizeof(double);
 }
 
+ndarray * ndarray_constructor(double * data, size_t ndims, size_t * shape, size_t * strides) {
+    ndarray tmp;
+    tmp.data = data;
+    tmp.shape = shape;
+    tmp.ndims = ndims;
+    tmp.strides = strides;
+    return ndarray_clone(&tmp);
+}
+
 ndarray * ndarray_clone_structure(const ndarray * arr_x) {
     const unsigned datasize = ndarray_datasize(arr_x);
     ndarray * output = malloc(sizeof(ndarray));

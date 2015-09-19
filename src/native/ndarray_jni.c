@@ -5,7 +5,8 @@
 #include "ndarray_jni.h"
 #include "ndarray.h"
 #include "utils.h"
-    
+   
+// Utils
 ndarray * retrieve_ndarray(JNIEnv * env, jobject this) {
 
     jclass cls = (*env)->GetObjectClass(env, this);
@@ -30,16 +31,26 @@ jobject package_ndarray(JNIEnv * env, const ndarray * data) {
     return obj;
 }
 
-JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_add
-  (JNIEnv * env, jobject this, jobject other) {
-    ndarray * arr_x = retrieve_ndarray(env, this);
-    ndarray * arr_y = retrieve_ndarray(env, other);
-    return package_ndarray(env, ndarray_add(arr_x, arr_y));
-}
+// static methods
 
 JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_init
   (JNIEnv * env, jclass klass) {
     gpu_matrix_init();
+}
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_newInstance
+  (JNIEnv * env, jclass klass, jdoubleArray data,
+   jlong ndims, jlongArray shape, jlongArray strides) {
+
+    return package_ndarray(
+        env,
+        ndarray_constructor(
+            (*env)->GetDoubleArrayElements(env, data, 0),
+            (long) ndims,
+            (*env)->GetLongArrayElements(env, shape, 0),
+            (*env)->GetLongArrayElements(env, strides, 0)
+        )
+    );
 }
 
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_sample
@@ -61,6 +72,15 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_sample
     arr->ndims = 1;
 
     return package_ndarray(env, arr);
+}
+
+// object methods
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_add
+  (JNIEnv * env, jobject this, jobject other) {
+    ndarray * arr_x = retrieve_ndarray(env, this);
+    ndarray * arr_y = retrieve_ndarray(env, other);
+    return package_ndarray(env, ndarray_add(arr_x, arr_y));
 }
 
 JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print
