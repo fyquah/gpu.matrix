@@ -5,4 +5,6 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :source-paths ["src/clojure"]
   :java-source-paths ["src/java"]
+  :jvm-opts [~(str "-Djava.library.path=src/native/:"
+                   (System/getenv "$LD_LIBRARY_PATH"))]
   :dependencies [[org.clojure/clojure "1.7.0"]])
