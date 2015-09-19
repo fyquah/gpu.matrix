@@ -1,13 +1,6 @@
 // Current model assumes that there is only 1 GPU
 // So there is only 1 Global context throughout the program
 
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-#include "files.h"
-#include "CL/cl.h"
 #include "cl_helper.h"
 
 bool is_init = false;

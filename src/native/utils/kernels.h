@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-#include "CL/cl.h"
+#include "../libs/cl.h" 
 #include "files.h"
 
 typedef const unsigned kernel_type_t;

@@ -1,4 +1,3 @@
-#include <CL/cl.h>
 #include <stdbool.h>
 #include <stdio.h>
 
