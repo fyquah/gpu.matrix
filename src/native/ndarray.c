@@ -5,6 +5,7 @@
 #include "ndarray.h"
 #include "utils.h"
 
+// Force the context and device to intialize
 cl_mem map_helper(void * ptr_buffer_x,
                   cl_int size_buffer_x,
                   void * ptr_buffer_y,

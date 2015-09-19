@@ -32,11 +32,11 @@ cl_device_id device_get() {
 }
 
 // Frees all the objects' memory
-void destroy() {
+void gpu_matrix_destroy() {
     
 }
 
-void init() {
+void gpu_matrix_init() {
     if (is_init) { 
         return;
     }

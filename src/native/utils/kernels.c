@@ -2,10 +2,10 @@
 
 const char * get_program_file_name(kernel_type_t k) {
     static const char * file_names[] = {
-        "opencl/add.cl",
-        "opencl/add_scalar.cl",
-        "opencl/add_bang.cl",
-        "opencl/add_scalar_bang.cl"
+        "src/native/opencl/add.cl",
+        "src/native/opencl/add_scalar.cl",
+        "src/native/opencl/add_bang.cl",
+        "src/native/opencl/add_scalar_bang.cl"
     };
 
     return file_names[k];
