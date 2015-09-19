@@ -4,6 +4,7 @@ src/native/out/
 **.so
 **.a
 **.o
+**.class
 target/
 
 # Ignore swapfiles
