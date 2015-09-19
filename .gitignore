@@ -1,6 +1,17 @@
 # Ignore binaries
-*.out
-out/
+src/native/out/
+**.out
+**.so
+**.a
+**.o
+target/
 
 # Ignore swapfiles
 **.swp
+
+# Ignore log files
+**.log
+
+# Ignore REPL stuff
+.lein-repl-history
+.nrepl-port
