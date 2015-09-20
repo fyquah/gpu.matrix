@@ -87,13 +87,6 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_sample
 
 // object methods
 
-JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_add
-  (JNIEnv * env, jobject this, jobject other) {
-    ndarray * arr_x = retrieve_ndarray(env, this);
-    ndarray * arr_y = retrieve_ndarray(env, other);
-    return package_ndarray(env, ndarray_add(arr_x, arr_y));
-}
-
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_clone
   (JNIEnv * env, jobject this) {
     return package_ndarray(
@@ -103,6 +96,43 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_clone
         )
     );
 }
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_add
+  (JNIEnv * env, jobject this, jobject other) {
+    ndarray * arr_x = retrieve_ndarray(env, this);
+    ndarray * arr_y = retrieve_ndarray(env, other);
+    return package_ndarray(env, ndarray_add(arr_x, arr_y));
+}
+
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_NDArray_get__J
+  (JNIEnv * env, jobject this, jlong i) {
+    ndarray * arr = retrieve_ndarray(env, this);
+    // obviously, the strides is 1 for a vector
+    return arr->data[i];
+}
+
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_NDArray_get__JJ
+  (JNIEnv * env, jobject this, jlong i, jlong j) {
+    ndarray * arr = retrieve_ndarray(env, this);
+    size_t * strides = arr->strides;
+    return arr->data[i * strides[0] + j * strides[1]];
+}
+
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_NDArray_get___3J
+  (JNIEnv * env, jobject this, jlongArray indexes_arg) {
+    ndarray * arr = retrieve_ndarray(env, this);
+    const size_t ndims = arr->ndims;
+    const size_t * strides = arr->strides;
+    const size_t * indexes = (*env)->GetLongArrayElements(env, indexes_arg, 0);
+    size_t pos = 0;
+
+    for(int i = 0 ; i < ndims ; i++) {
+        pos += indexes[i] * strides[i];
+    }
+
+    return arr->data[pos];
+}
+
 
 JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print
   (JNIEnv * env, jobject this) {
@@ -115,7 +145,7 @@ JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print
     // dump data
     puts("Data:");
     for(int i = 0 ; i < ndarray_elements_count(arr) ; i++) {
-        printf("%.f ", data[i]);
+        printf("%.5f ", data[i]);
     }
     puts("");
 
@@ -149,3 +179,22 @@ JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_finalize
     (*env)->CallNonvirtualVoidMethod(env, this, super_klass, method);
 }
 
+JNIEXPORT jlong JNICALL Java_gpu_matrix_NDArray_dimensionality
+  (JNIEnv * env, jobject this){
+    return (jlong) (retrieve_ndarray(env, this))->ndims;       
+}
+
+JNIEXPORT jlongArray JNICALL Java_gpu_matrix_NDArray_shape
+  (JNIEnv * env, jobject this) {
+    ndarray * arr = retrieve_ndarray(env, this);
+    size_t ndims = arr->ndims;
+    jlongArray results = (*env)->NewLongArray(env, arr->ndims);
+    jlong * fill = malloc(sizeof(jlong) * ndims);
+    for(int i = 0 ; i < ndims; i++) {
+        fill[i] = arr->shape[i];
+    }
+    (*env)->SetLongArrayRegion(env, results, 0, ndims, fill);
+    free(fill);
+
+    return results;
+}
