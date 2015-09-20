@@ -30,6 +30,7 @@ cl_mem map_helper(void * ptr_buffer_x,
             (void*) &buffer_output);                        
     status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1,   
             NULL, global_work_size, NULL, 0, NULL, NULL);   
+    clReleaseCommandQueue(cmd_queue);
 
     return buffer_output;
 }
@@ -54,6 +55,7 @@ void map_bang_helper(void * ptr_buffer_x,
     
     status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1,   
             NULL, global_work_size, NULL, 0, NULL, NULL);   
+    clReleaseCommandQueue(cmd_queue);
 }
 
 void map_bang_factory(ndarray * arr_x, const ndarray * arr_y, kernel_type_t kernel_id) {
@@ -83,9 +85,12 @@ void map_bang_factory(ndarray * arr_x, const ndarray * arr_y, kernel_type_t kern
         datasize,
         kernel
     );
-
     clEnqueueReadBuffer(cmd_queue, buffer_x, CL_TRUE, 0,
             datasize, arr_x->data, 0, NULL, NULL);
+
+    clReleaseMemObject(buffer_x);
+    clReleaseMemObject(buffer_y);
+    clReleaseCommandQueue(cmd_queue);
 }
 
 void map_scalar_bang_factory(ndarray * arr_x, double y, kernel_type_t kernel_id) {
@@ -110,9 +115,11 @@ void map_scalar_bang_factory(ndarray * arr_x, double y, kernel_type_t kernel_id)
         datasize,
         kernel
     );
-
     clEnqueueReadBuffer(cmd_queue, buffer_x, CL_TRUE, 0,
             datasize, arr_x->data, 0, NULL, NULL);
+
+    clReleaseMemObject(buffer_x);
+    clReleaseCommandQueue(cmd_queue);
 }
 
 ndarray * map_scalar_factory(const ndarray * arr_x, double y, kernel_type_t kernel_id) {
@@ -140,9 +147,13 @@ ndarray * map_scalar_factory(const ndarray * arr_x, double y, kernel_type_t kern
         datasize,
         kernel    
     );
-
     clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE,
             0, datasize, output->data, 0, NULL, NULL);
+
+    clReleaseMemObject(buffer_x);
+    clReleaseMemObject(buffer_y);
+    clReleaseMemObject(buffer_output);
+    clReleaseCommandQueue(cmd_queue);
 
     return output;
 }
@@ -177,9 +188,13 @@ ndarray * map_factory(const ndarray * arr_x, const ndarray * arr_y, kernel_type_
         datasize,
         kernel    
     );
-
     clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE,
             0, datasize, output->data, 0, NULL, NULL);
+
+    clReleaseMemObject(buffer_x);
+    clReleaseMemObject(buffer_y);
+    clReleaseMemObject(buffer_output);
+    clReleaseCommandQueue(cmd_queue);
 
     return output;
 }

@@ -12,6 +12,7 @@
 #include "ndarray.h"
 
 int main() {
+    gpu_matrix_init();
     ndarray * arr = malloc(sizeof(ndarray));
     double data[3] = { 4.0, 2.22, 3.0 };
     size_t strides[1] = { 1 };

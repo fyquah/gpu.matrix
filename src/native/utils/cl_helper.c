@@ -33,7 +33,7 @@ cl_device_id device_get() {
 
 // Frees all the objects' memory
 void gpu_matrix_destroy() {
-    
+    clReleaseContext(CONTEXT);    
 }
 
 void gpu_matrix_init() {
@@ -69,6 +69,9 @@ void gpu_matrix_init() {
     );
     
     is_init = 1;
+
+    free(platforms);
+    free(devices);
 }
 
 opencl_config_t get_common_config () {
