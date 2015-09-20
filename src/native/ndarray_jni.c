@@ -137,3 +137,15 @@ JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print
     fflush(stdout);
 }
 
+JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_finalize
+  (JNIEnv * env, jobject this) {
+    ndarray_release(retrieve_ndarray(env, this));
+
+    jclass klass = (*env)->GetObjectClass(env, this);
+    jclass super_klass = (*env)->GetSuperclass(env, klass);
+    jmethodID method = (*env)->GetMethodID(env, super_klass, "finalize", "()V");
+
+    // Call super class method...
+    (*env)->CallNonvirtualVoidMethod(env, this, super_klass, method);
+}
+

@@ -42,10 +42,11 @@ public class NDArray {
     public native NDArray add(NDArray y);
     public native NDArray clone();
     public native void print();
+    @Override
+    protected native void finalize();
 
     // for testing purposes
     public static void main(String[] args) {
-        newInstance(new double[][]{ {1.0, 2.0, 3.0}, { 4.0, 5.0, 6.0}}).print();
-        createFromShape(new long[]{ 1, 5, 8, 2 }).print();
+
     }
 }
