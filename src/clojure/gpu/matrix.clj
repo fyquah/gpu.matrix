@@ -62,7 +62,7 @@
   (get-1d [^NDArray m row]
     (let [ndims (.dimensionality m)
           row (long row)]
-      (if (= ndims row)
+      (if (= ndims 1)
         (.get m row) 
         (error "Invalid shape!"))))
   (get-2d [^NDArray m row col]
@@ -79,3 +79,27 @@
         (.get m indexes)
         (error "Invalid shape!")))))
 
+(extend-protocol mp/PIndexedSetting
+  NDArray
+  (set-1d [^NDArray m ^long row ^double v]
+    (let [ndims (.dimensionality m)
+          ^NDArray m (.clone m)]
+      (if (= ndims 1)
+        (.set m row v)
+        (error "Invalid shape!"))
+      m))
+  (set-2d [^NDArray m ^long row ^long col ^double v]
+    (let [ndims (.dimensionality m)
+          ^NDArray m (.clone m)]
+      (if (= ndims 2)
+        (.set m row col v)
+        (error "Invalid shape!"))
+      m))
+  (set-nd [^NDArray m ^"[J" indexes ^double v]
+    (let [ndims (.dimensionality m)
+          m (.clone m)
+          ^"[J" indexes (long-array indexes)]
+      (if (= ndims (count indexes))
+        (.set m indexes v)
+        (error "Invalid shape"))
+      m)))

@@ -282,6 +282,24 @@ ndarray * ndarray_clone(const ndarray * arr_x) {
     return output;
 }
 
+// getter and setters
+
+void ndarray_set_1d(ndarray * arr, long i, double v) {
+    arr->data[i] = v;
+}
+
+void ndarray_set_2d(ndarray * arr, long i, long j, double v) {
+    arr->data[i * arr->strides[0] + j * arr->strides[1]] = v;
+}
+
+void ndarray_set_nd(ndarray * arr, const long * indexes, double v) {
+    long idx = 0;
+    for (long i = 0 ; i < arr->ndims ; i++) {
+        idx += arr->strides[i] * indexes[i];
+    }
+    arr->data[idx] = v;
+}
+
 // Arimethic ops
 
 ndarray * ndarray_add(const ndarray * arr_x, const ndarray * arr_y) {

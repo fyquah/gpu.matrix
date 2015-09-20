@@ -20,6 +20,11 @@ ndarray * ndarray_constructor_from_shape(size_t, size_t*);
 // destructor
 void ndarray_release(ndarray *);
 
+// getters and setters
+void ndarray_set_1d(ndarray*, long i, double v);
+void ndarray_set_2d(ndarray*, long i, long j, double v);
+void ndarray_set_nd(ndarray*, const long * indexes, double v);
+
 // add
 ndarray * ndarray_add(const ndarray *, const ndarray *);
 ndarray * ndarray_add_scalar(const ndarray *, const double);

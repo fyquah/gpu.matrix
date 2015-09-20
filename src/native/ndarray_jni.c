@@ -133,6 +133,30 @@ JNIEXPORT jdouble JNICALL Java_gpu_matrix_NDArray_get___3J
     return arr->data[pos];
 }
 
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_set__JD
+  (JNIEnv * env, jobject this, jlong i, jdouble v) {
+    ndarray * arr = retrieve_ndarray(env, this);
+    ndarray_set_1d(arr, i, v);
+    return this;
+}
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_set__JJD
+  (JNIEnv * env, jobject this, jlong i, jlong j, jdouble v) {
+    ndarray * arr = retrieve_ndarray(env, this);
+    ndarray_set_2d(arr, i, j, v);
+    return this;
+}
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_set___3JD
+  (JNIEnv * env, jobject this, jlongArray indexes, jdouble v) {
+    ndarray * arr = retrieve_ndarray(env, this);
+    ndarray_set_nd(
+        arr,
+        (*env)->GetLongArrayElements(env, indexes, 0),
+        v
+    );
+    return this;
+}
 
 JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print
   (JNIEnv * env, jobject this) {

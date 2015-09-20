@@ -47,6 +47,9 @@ public class NDArray {
     public native double get(long i);
     public native double get(long i, long j);
     public native double get(long [] indexes);
+    public native NDArray set(long i, double v);
+    public native NDArray set(long i, long j, double v);
+    public native NDArray set(long[] shape, double v);
 
     // For debuggin purposes
     public native void print();
@@ -57,6 +60,8 @@ public class NDArray {
     public static void main(String[] args) {
         NDArray m = NDArray.newInstance(new double[][]{{ 0.7, 5, 6}, { 1, 2, 3}});
         m.print();
-        System.out.println(m.get(new long[]{ 0 , 2}));
+        m.set(0, 2, 855.0);
+        m.set(new long[]{0, 1}, 490.23);
+        m.print();
     }
 }
