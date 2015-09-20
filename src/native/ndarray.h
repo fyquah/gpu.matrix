@@ -15,6 +15,7 @@ unsigned ndarray_elements_count(const ndarray *);
 
 // constructors
 ndarray * ndarray_constructor(double *, size_t, size_t*, size_t*);
+ndarray * ndarray_constructor_from_shape(size_t, size_t*);
 
 // add
 ndarray * ndarray_add(const ndarray *, const ndarray *);

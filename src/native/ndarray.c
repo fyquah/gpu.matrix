@@ -204,6 +204,16 @@ unsigned ndarray_datasize(const ndarray * arr) {
     return ndarray_elements_count(arr) * sizeof(double);
 }
 
+size_t * ndarray_make_basic_strides(size_t ndims, size_t * shape) {
+    size_t * strides = malloc(sizeof(size_t) * ndims);
+    strides[ndims - 1] = 1;
+    for (int i = ndims - 2 ; i >= 0 ; i--) {
+        strides[i] = strides[i+1] * shape[i+1];
+    }
+
+    return strides;
+}
+
 ndarray * ndarray_constructor(double * data, size_t ndims, size_t * shape, size_t * strides) {
     ndarray tmp;
     tmp.data = data;
@@ -211,6 +221,28 @@ ndarray * ndarray_constructor(double * data, size_t ndims, size_t * shape, size_
     tmp.ndims = ndims;
     tmp.strides = strides;
     return ndarray_clone(&tmp);
+}
+
+ndarray * ndarray_constructor_from_shape(size_t ndims, size_t * shape) {
+    size_t datasize;
+    size_t number_of_elements = 1;
+    for (int i = 0 ; i < ndims ; i++) {
+        number_of_elements *= shape[i];
+    }
+    datasize = number_of_elements * sizeof(size_t);
+    // datasize immutable from this point!
+
+    ndarray * output = malloc(sizeof(ndarray));
+    output->data     = (double*) malloc(datasize);
+    output->ndims    = ndims;
+    output->shape    = array_size_t_copy(shape, ndims);
+    output->strides  = ndarray_make_basic_strides(ndims, shape);
+
+    for(unsigned long long i = 0 ; i < number_of_elements ; i++) {
+        output->data[i] = 0.0;
+    }
+
+    return output;
 }
 
 ndarray * ndarray_clone_structure(const ndarray * arr_x) {

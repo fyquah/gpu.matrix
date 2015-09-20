@@ -38,6 +38,17 @@ JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_init
     gpu_matrix_init();
 }
 
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_createFromShape
+  (JNIEnv * env, jclass klass, jlongArray shape) {
+    return package_ndarray(
+        env,
+        ndarray_constructor_from_shape(
+            (*env)->GetArrayLength(env, shape),
+            (*env)->GetLongArrayElements(env, shape, 0)
+        )
+    );
+}
+
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_newInstance
   (JNIEnv * env, jclass klass, jdoubleArray data,
    jlong ndims, jlongArray shape, jlongArray strides) {
@@ -81,6 +92,16 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_add
     ndarray * arr_x = retrieve_ndarray(env, this);
     ndarray * arr_y = retrieve_ndarray(env, other);
     return package_ndarray(env, ndarray_add(arr_x, arr_y));
+}
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_clone
+  (JNIEnv * env, jobject this) {
+    return package_ndarray(
+        env,
+        ndarray_clone(
+            retrieve_ndarray(env, this)
+        )
+    );
 }
 
 JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print

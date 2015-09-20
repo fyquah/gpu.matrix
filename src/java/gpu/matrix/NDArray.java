@@ -21,7 +21,14 @@ public class NDArray {
             strides
         );
     }
-    private native static NDArray newInstance(double[] data, long ndims, long[] shape, long[] strides);
+    public static NDArray newInstance(double[] data, long ndims, long[] shape) {
+        return newInstance(
+            data, ndims, shape, ArrayHelper.makeBasicStrides(shape)
+        );
+    }
+
+    public native static NDArray createFromShape(long[] shape);
+    public native static NDArray newInstance(double[] data, long ndims, long[] shape, long[] strides);
     private native static void init();
 
     // constructors
@@ -33,10 +40,12 @@ public class NDArray {
     private ByteBuffer bb;
 
     public native NDArray add(NDArray y);
+    public native NDArray clone();
     public native void print();
 
     // for testing purposes
     public static void main(String[] args) {
         newInstance(new double[][]{ {1.0, 2.0, 3.0}, { 4.0, 5.0, 6.0}}).print();
+        createFromShape(new long[]{ 1, 5, 8, 2 }).print();
     }
 }
