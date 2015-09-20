@@ -39,14 +39,24 @@ public class NDArray {
     // bb is the ByteBuffer used to store the pointer to the ndarray object in native code
     private ByteBuffer bb;
 
-    public native NDArray add(NDArray y);
+    public native long dimensionality();
+    public native long[] shape();
     public native NDArray clone();
+
+    public native NDArray add(NDArray y);
+    public native double get(long i);
+    public native double get(long i, long j);
+    public native double get(long [] indexes);
+
+    // For debuggin purposes
     public native void print();
     @Override
     protected native void finalize();
 
     // for testing purposes
     public static void main(String[] args) {
-
+        NDArray m = NDArray.newInstance(new double[][]{{ 0.7, 5, 6}, { 1, 2, 3}});
+        m.print();
+        System.out.println(m.get(new long[]{ 0 , 2}));
     }
 }
