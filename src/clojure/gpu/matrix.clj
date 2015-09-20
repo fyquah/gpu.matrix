@@ -95,11 +95,23 @@
         (.set m row col v)
         (error "Invalid shape!"))
       m))
-  (set-nd [^NDArray m ^"[J" indexes ^double v]
+  (set-nd [^NDArray m indexes ^double v]
     (let [ndims (.dimensionality m)
           m (.clone m)
           ^"[J" indexes (long-array indexes)]
       (if (= ndims (count indexes))
         (.set m indexes v)
         (error "Invalid shape"))
-      m)))
+      m))
+  (is-mutable? [m] true))
+
+(extend-protocol mp/PIndexedSettingMutable
+  NDArray
+  (set-1d! [^NDArray m ^long i ^double v]
+    (.set m i v))
+  (set-2d! [^NDArray m ^long i ^long j ^double v]
+    (.set m i j v))
+  (set-nd! [^NDArray m indexes ^double v]
+    (let [^"[J" indexes (long-array indexes)]
+      (.set m indexes v))))
+
