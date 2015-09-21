@@ -3,7 +3,8 @@
 (ns gpu.matrix
   (:require [clojure.core.matrix.protocols :as mp]
             [clojure.core.matrix :as m]
-            [clojure.core.matrix.utils :refer [error]])
+            [clojure.core.matrix.utils :refer [error]]
+            [clojure.string :as str])
   (:import gpu.matrix.NDArray))
 
 (set! *warn-on-reflection* true)
@@ -57,61 +58,132 @@
                     (dec ndims) ", but got " dimension-number "instead!"))
         (aget shape dimension-number)))))
 
+(defn all? 
+  ([coll]
+   (every? true? coll))
+  ([f coll]
+   (every? true? (mapv f coll))))
+
+(defn in-bound? [^long idx ^long len]
+  (and (>= idx 0) (< idx len)))
+
+(defmacro with-check-indices [ndims m & args]
+   (let [row (gensym "row_")
+         col (gensym "col_")
+         indexes (gensym "indexes_")
+         check-clause
+         (cond (= ndims 1)
+               `(and (>= ~row 0)
+                     (< ~row (first (mp/get-shape ~m))))
+               (= ndims 2)
+               `(let [shape# (mp/get-shape ~m)]
+                 (and (>= ~row 0)
+                      (< ~row (first shape#))
+                      (>= ~col 0)
+                      (< ~col (second shape#))))
+               :else
+               `(let [shape# (mp/get-shape ~m)] 
+                  (all? (map-indexed
+                          (fn [dim# idx#]
+                            (and (>= idx# 0)
+                                 (< idx# (nth shape# dim#))))
+                          ~indexes))))
+         body
+         (cond (= ndims 2)
+               (next (next args)) 
+               :else
+               (next args))
+         all-indexes
+         (cond (= ndims 1)
+               `[~(first args)] 
+               (= ndims 2)
+               `[~(first args) ~(second args)]
+               :else
+               (first args))]
+    `(let ~(cond
+             (= ndims 1)
+             `[~row ~(first args)]
+             (= ndims 2)
+             `[~row ~(first args)
+               ~col ~(second args)]
+             :else 
+             `[~indexes ~(first args)])
+       (if ~check-clause
+         (do ~@body)
+         (error
+           (str
+             "Index Error occured while trying to access the following:\n" 
+             (->> (reduce (fn [memo# [dim# dim-count# idx#]]
+                            (if (in-bound? idx# dim-count#)
+                              memo#
+                              (conj memo# [dim# dim-count# idx#])))
+                           []
+                           (map vector
+                                (range (mp/dimensionality ~m))
+                                (mp/get-shape ~m)
+                                ~all-indexes))
+                  (map (fn [[dim# dim-count# idx#]]
+                         (str "-- index " idx# " of dimension " dim#
+                              " , where the dimension-count of the dimensions is only " dim-count#)))
+                  (str/join "\n"))
+             "\n"))))))
+
+(defmacro with-check-ndims [ndims m & body]
+  `(if (= ~ndims (.dimensionality ~m))
+     (do ~@body)
+     (error
+       (str "Invalid dimension! Expecting dimension " (.dimensionality ~m) " "
+            "but got " ~ndims " instead"))))
+
+(defmacro with-check-shape [ndims [m-sym m] & body]
+  `(let [~(with-meta m-sym {:tag NDArray}) ~m]
+     (with-check-ndims ~ndims ~m-sym
+       (with-check-indices ~ndims ~m-sym
+         ~@body))))
+
 (extend-protocol mp/PIndexedAccess
   NDArray
-  (get-1d [^NDArray m row]
-    (let [ndims (.dimensionality m)
-          row (long row)]
-      (if (= ndims 1)
-        (.get m row) 
-        (error "Invalid shape!"))))
-  (get-2d [^NDArray m row col]
-    (let [ndims (.dimensionality m)
-          row (long row)
-          col (long col)]
-      (if (= ndims 2)
-        (.get m row col) 
-        (error "Invalid shape!"))))
-  (get-nd [^NDArray m indexes]
-    (let [ndims (.dimensionality m)
-          ^"[J" indexes (long-array indexes)]
-      (if (= ndims (count indexes))
-        (.get m indexes)
-        (error "Invalid shape!")))))
+  (get-1d [m ^long row]
+    (with-check-shape
+      1 [m m] row
+      (.get m row)))
+  (get-2d [m ^long row ^long col]
+    (with-check-shape
+      2 [m m] row col
+      (.get m row col)))
+  (get-nd [m indexes]
+    (with-check-shape
+      (count indexes) [m m] indexes
+      (.get m (long-array indexes)))))
 
 (extend-protocol mp/PIndexedSetting
   NDArray
-  (set-1d [^NDArray m ^long row ^double v]
-    (let [ndims (.dimensionality m)
-          ^NDArray m (.clone m)]
-      (if (= ndims 1)
-        (.set m row v)
-        (error "Invalid shape!"))
-      m))
-  (set-2d [^NDArray m ^long row ^long col ^double v]
-    (let [ndims (.dimensionality m)
-          ^NDArray m (.clone m)]
-      (if (= ndims 2)
-        (.set m row col v)
-        (error "Invalid shape!"))
-      m))
-  (set-nd [^NDArray m indexes ^double v]
-    (let [ndims (.dimensionality m)
-          m (.clone m)
-          ^"[J" indexes (long-array indexes)]
-      (if (= ndims (count indexes))
-        (.set m indexes v)
-        (error "Invalid shape"))
-      m))
+  (set-1d [m ^long row ^double v]
+    (with-check-shape
+      1 [m m] row
+      (.set (.clone m) row v)))
+  (set-2d [m ^long row ^long col ^double v]
+    (with-check-shape
+      2 [m m] row col
+      (.set (.clone m) row col v)))
+  (set-nd [m indexes ^double v]
+    (with-check-shape
+      (count indexes) [m m] indexes
+      (.set (.clone m) (long-array indexes) v)))
   (is-mutable? [m] true))
 
 (extend-protocol mp/PIndexedSettingMutable
   NDArray
-  (set-1d! [^NDArray m ^long i ^double v]
-    (.set m i v))
-  (set-2d! [^NDArray m ^long i ^long j ^double v]
-    (.set m i j v))
-  (set-nd! [^NDArray m indexes ^double v]
-    (let [^"[J" indexes (long-array indexes)]
-      (.set m indexes v))))
+  (set-1d [m ^long row ^double v]
+    (with-check-shape
+      1 [m m] row
+      (.set m row v)))
+  (set-2d [m ^long row ^long col ^double v]
+    (with-check-shape
+      2 [m m] row col
+      (.set m row col v)))
+  (set-nd [m indexes ^double v]
+    (with-check-shape
+      (count indexes) [m m] indexes
+      (.set m (long-array indexes) v))))
 
