@@ -5,179 +5,52 @@
 #include "ndarray.h"
 #include "utils.h"
 
-// Force the context and device to intialize
-cl_mem map_helper(void * ptr_buffer_x,
-                  cl_int size_buffer_x,
-                  void * ptr_buffer_y,
-                  cl_int size_buffer_y,
-                  unsigned number_of_elements,
-                  size_t datasize,
-                  cl_kernel kernel) {
+size_t * get_global_work_size(const ndarray * arr_x, const ndarray * arr_y, size_t * len) {
+    const ndarray * big = (arr_x->ndims >= arr_y-> ndims) ? arr_x : arr_y;
+    size_t ndims = (size_t) big->ndims;
+    size_t * ret;
 
-    cl_int status;
-    cl_mem buffer_output;
-    cl_command_queue cmd_queue;
-    size_t global_work_size[1] = { number_of_elements };
-
-    cmd_queue = command_queue_create(0, &status);           
-    buffer_output = buffers_create(CL_MEM_WRITE_ONLY,       
-            datasize, NULL, &status);                       
-    status = clSetKernelArg(kernel, 0, size_buffer_x,      
-            ptr_buffer_x);                             
-    status |= clSetKernelArg(kernel, 1, size_buffer_y, 
-            ptr_buffer_y);                             
-    status |= clSetKernelArg(kernel, 2, sizeof(cl_mem),     
-            (void*) &buffer_output);                        
-    status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1,   
-            NULL, global_work_size, NULL, 0, NULL, NULL);   
-    clReleaseCommandQueue(cmd_queue);
-
-    return buffer_output;
+    if (ndims == 0) {
+        *len = 0;
+        ret = malloc(sizeof(size_t) * 1);
+        ret[0] = 1;
+        return ret;
+    } else if (ndims > 0 && ndims <= 3)  {
+        *len = ndims;
+        ret = malloc(sizeof(size_t) * ndims);
+        for (int i = 0 ; i < ndims ; i++) {
+            ret[i] = (size_t) arr_x->shape[i]; 
+        }
+        return ret;
+    } else {
+        *len = 1;
+        ret = malloc(sizeof(size_t));
+        ret[0] = ndarray_elements_count(big); 
+        return ret;
+    }
 }
 
-void map_bang_helper(void * ptr_buffer_x,
-                     cl_int size_buffer_x,
-                     void * ptr_buffer_y,
-                     cl_int size_buffer_y,
-                     int number_of_elements,
-                     size_t datasize,
-                     cl_kernel kernel) {
+cl_mem map_helper(
+        cl_command_queue cmd_queue,
+        cl_kernel kernel,
+        const ndarray * arr_x,
+        const ndarray * arr_y
+    ) {
 
     cl_int status;
-    cl_command_queue cmd_queue;
-    size_t global_work_size[1] = { number_of_elements };
-
-    cmd_queue = command_queue_create(0, &status);           
-    status = clSetKernelArg(kernel, 0, size_buffer_x,      
-            ptr_buffer_x);                             
-    status |= clSetKernelArg(kernel, 1, size_buffer_y, 
-            ptr_buffer_y);                             
-    
-    status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1,   
-            NULL, global_work_size, NULL, 0, NULL, NULL);   
-    clReleaseCommandQueue(cmd_queue);
-}
-
-void map_bang_factory(ndarray * arr_x, const ndarray * arr_y, kernel_type_t kernel_id) {
     const unsigned datasize = ndarray_datasize(arr_x);
-    const unsigned number_of_elements = ndarray_elements_count(arr_x);
-    cl_kernel kernel;
-    cl_mem buffer_x, buffer_y;
-    cl_int status;
-    cl_command_queue cmd_queue;
-
-    cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
-    buffer_x = buffers_create(CL_MEM_READ_WRITE, datasize,   
-            NULL, &status);                                 
-    buffer_y = buffers_create(CL_MEM_READ_ONLY, datasize,   
-            NULL, &status);                     
-    status = clEnqueueWriteBuffer(cmd_queue, buffer_x,      
-            CL_FALSE, 0, datasize,                          
-            arr_x->data, 0, NULL, NULL);                    
-    status = clEnqueueWriteBuffer(cmd_queue, buffer_y,      
-            CL_FALSE, 0, datasize,                          
-            arr_y->data, 0, NULL, NULL);
-    kernel = kernels_get(context_get(), device_get(), kernel_id);
-    map_bang_helper(
-        &buffer_x, sizeof(cl_mem),
-        &buffer_y, sizeof(cl_mem),
-        number_of_elements,
-        datasize,
-        kernel
-    );
-    clEnqueueReadBuffer(cmd_queue, buffer_x, CL_TRUE, 0,
-            datasize, arr_x->data, 0, NULL, NULL);
-
-    clReleaseMemObject(buffer_x);
-    clReleaseMemObject(buffer_y);
-    clReleaseCommandQueue(cmd_queue);
-}
-
-void map_scalar_bang_factory(ndarray * arr_x, double y, kernel_type_t kernel_id) {
-    const unsigned datasize = ndarray_datasize(arr_x);
-    const unsigned number_of_elements = ndarray_elements_count(arr_x);
-    cl_kernel kernel;
-    cl_mem buffer_x;
-    cl_int status;
-    cl_command_queue cmd_queue;
-
-    cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
-    buffer_x = buffers_create(CL_MEM_READ_WRITE, datasize,   
-            NULL, &status);                                 
-    status = clEnqueueWriteBuffer(cmd_queue, buffer_x,      
-            CL_FALSE, 0, datasize,                          
-            arr_x->data, 0, NULL, NULL);                    
-    kernel = kernels_get(context_get(), device_get(), kernel_id);
-    map_bang_helper(
-        &buffer_x, sizeof(cl_mem),
-        &y, sizeof(double),
-        number_of_elements,
-        datasize,
-        kernel
-    );
-    clEnqueueReadBuffer(cmd_queue, buffer_x, CL_TRUE, 0,
-            datasize, arr_x->data, 0, NULL, NULL);
-
-    clReleaseMemObject(buffer_x);
-    clReleaseCommandQueue(cmd_queue);
-}
-
-ndarray * map_scalar_factory(const ndarray * arr_x, double y, kernel_type_t kernel_id) {
-    const unsigned datasize = ndarray_datasize(arr_x);
-    ndarray * output = ndarray_clone_structure(arr_x);
-    cl_kernel kernel;
-    cl_int status;
-    cl_command_queue cmd_queue;
-    cl_mem buffer_output, buffer_x, buffer_y;
-    unsigned number_of_elements;
-
-    // TODO: Stride resizing
-    number_of_elements = ndarray_elements_count(arr_x);
-    cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
-    buffer_x = buffers_create(CL_MEM_READ_ONLY, datasize,   
-            NULL, &status);                                 
-    status = clEnqueueWriteBuffer(cmd_queue, buffer_x,      
-            CL_FALSE, 0, datasize,                          
-            arr_x->data, 0, NULL, NULL);                    
-    kernel = kernels_get(context_get(), device_get(), kernel_id);
-    buffer_output = map_helper(
-        &buffer_x, sizeof(cl_mem),
-        &y, sizeof(double),
-        number_of_elements,
-        datasize,
-        kernel    
-    );
-    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE,
-            0, datasize, output->data, 0, NULL, NULL);
-
-    clReleaseMemObject(buffer_x);
-    clReleaseMemObject(buffer_y);
-    clReleaseMemObject(buffer_output);
-    clReleaseCommandQueue(cmd_queue);
-
-    return output;
-}
-
-ndarray * map_factory(const ndarray * arr_x, const ndarray * arr_y, kernel_type_t kernel_id) {
-    const unsigned datasize = ndarray_datasize(arr_x);
-    ndarray * output = ndarray_clone_structure(arr_x);
-    cl_kernel kernel;
-    cl_int status;
-    cl_command_queue cmd_queue;
     cl_mem buffer_output, buffer_x, buffer_y, buffer_shape_x, buffer_strides_x, buffer_shape_y, buffer_strides_y;
-    unsigned number_of_elements = ndarray_elements_count(arr_x);
-    unsigned ndims = arr_x->ndims;
-    size_t * global_work_size = (size_t*) ((arr_x->ndims >= arr_y->ndims) ? arr_x->shape : arr_y->shape);
+    index_t number_of_elements = ndarray_elements_count(arr_x);
+    size_t global_work_size_dims;
+    size_t * global_work_size = get_global_work_size(arr_x, arr_y, &global_work_size_dims);
+
     number_of_elements = ndarray_elements_count(arr_x);
-    cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
-    buffer_x = buffers_create(CL_MEM_READ_ONLY, datasize,   
-            NULL, &status);                                 
-    buffer_y = buffers_create(CL_MEM_READ_ONLY, datasize,   
-            NULL, &status);                                 
-    buffer_shape_x = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * ndims, NULL, &status);
-    buffer_strides_x = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * ndims, NULL, &status);
-    buffer_shape_y = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * ndims, NULL, &status);
-    buffer_strides_y = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * ndims, NULL, &status);
+    buffer_x = buffers_create(CL_MEM_READ_ONLY, datasize, NULL, &status);                                 
+    buffer_y = buffers_create(CL_MEM_READ_ONLY, datasize, NULL, &status);                                 
+    buffer_shape_x = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * arr_x->ndims, NULL, &status);
+    buffer_strides_x = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * arr_x->ndims, NULL, &status);
+    buffer_shape_y = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * arr_y->ndims, NULL, &status);
+    buffer_strides_y = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * arr_y->ndims, NULL, &status);
     buffer_output = buffers_create(CL_MEM_WRITE_ONLY,       
             datasize, NULL, &status);                       
     status = clEnqueueWriteBuffer(cmd_queue, buffer_x,      
@@ -198,38 +71,138 @@ ndarray * map_factory(const ndarray * arr_x, const ndarray * arr_y, kernel_type_
     status = clEnqueueWriteBuffer(cmd_queue, buffer_strides_y,      
             CL_FALSE, 0, sizeof(index_t) * 2,
             arr_y->strides, 0, NULL, NULL);
-    kernel = kernels_get(context_get(), device_get(), kernel_id);
-    cmd_queue = command_queue_create(0, &status);           
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem),      
             &buffer_x);                             
     status = clSetKernelArg(kernel, 1, sizeof(cl_mem),
             &buffer_shape_x);
     status = clSetKernelArg(kernel, 2, sizeof(cl_mem),
             &buffer_strides_x);
-    status = clSetKernelArg(kernel, 3, sizeof(unsigned long long),
-            &ndims);
+    status = clSetKernelArg(kernel, 3, sizeof(index_t),
+            &arr_x->ndims);
     status = clSetKernelArg(kernel, 4, sizeof(cl_mem),      
             &buffer_y);                             
     status = clSetKernelArg(kernel, 5, sizeof(cl_mem),
             &buffer_shape_y);
     status = clSetKernelArg(kernel, 6, sizeof(cl_mem),
             &buffer_strides_y);
-    status = clSetKernelArg(kernel, 7, sizeof(unsigned long long),
-            &ndims);
+    status = clSetKernelArg(kernel, 7, sizeof(index_t),
+            &arr_x->ndims);
     status = clSetKernelArg(kernel, 8, sizeof(cl_mem),
             &buffer_output);
 
     status = clEnqueueNDRangeKernel(cmd_queue, kernel, 2,
             NULL, global_work_size, NULL, 0, NULL, NULL);   
-    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE, 0, datasize, output->data, 0, NULL, NULL);
+
+    free(global_work_size);
+    clReleaseMemObject(buffer_x);
+    clReleaseMemObject(buffer_shape_x);
+    clReleaseMemObject(buffer_strides_x);
+    clReleaseMemObject(buffer_y);
+    clReleaseMemObject(buffer_shape_y);
+    clReleaseMemObject(buffer_strides_y);
+
+    return buffer_output;
+}
+
+cl_mem map_scalar_helper(
+        cl_command_queue cmd_queue,
+        cl_kernel kernel,
+        const ndarray * arr_x,
+        const double y 
+    ) {
+
+    cl_int status;
+    cl_mem buffer_output, buffer_x;
+    size_t datasize = ndarray_datasize(arr_x);
+    unsigned number_of_elements = ndarray_elements_count(arr_x);
+    size_t global_work_size[1] = { number_of_elements };
+
+    cmd_queue = command_queue_create(0, &status);           
+    buffer_x = buffers_create(CL_MEM_READ_ONLY,
+            datasize, NULL, &status);
+    buffer_output = buffers_create(CL_MEM_WRITE_ONLY,       
+            datasize, NULL, &status);
+    status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &buffer_x);
+    status |= clSetKernelArg(kernel, 1, sizeof(double), &y);
+    status |= clSetKernelArg(kernel, 2, sizeof(cl_mem), &buffer_output);                        
+    status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1,   
+            NULL, global_work_size, NULL, 0, NULL, NULL);   
 
     clReleaseMemObject(buffer_x);
-    clReleaseMemObject(buffer_y);
+
+    return buffer_output;
+}
+
+ndarray * map_factory(const ndarray * arr_x, const ndarray * arr_y, kernel_type_t kernel_id) {
+    cl_int status;
+    cl_command_queue cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
+    cl_mem buffer_output = map_helper(
+        cmd_queue,
+        kernels_get(context_get(), device_get(), kernel_id),
+        arr_x, arr_y
+    );
+    ndarray * output = ndarray_clone_structure(arr_x);
+    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE, 0, ndarray_datasize(arr_x), output->data, 0, NULL, NULL);
+
+    // free unused memory
     clReleaseMemObject(buffer_output);
     clReleaseCommandQueue(cmd_queue);
 
     return output;
 }
+
+ndarray * map_scalar_factory(const ndarray * arr_x, double y, kernel_type_t kernel_id) {
+    cl_int status;
+    cl_command_queue cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
+    cl_mem buffer_output = map_scalar_helper(
+        cmd_queue,
+        kernels_get(context_get(), device_get(), kernel_id),
+        arr_x, y
+    );
+    ndarray * output = ndarray_clone_structure(arr_x);
+    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE, 0, ndarray_datasize(arr_x), output->data, 0, NULL, NULL);
+
+    // free unused memory
+    clReleaseMemObject(buffer_output);
+    clReleaseCommandQueue(cmd_queue);
+
+    return output;
+}
+
+void map_bang_factory(ndarray * arr_x, const ndarray * arr_y, kernel_type_t kernel_id) {
+    cl_int status;
+    cl_command_queue cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
+    cl_mem buffer_output = map_helper(
+        cmd_queue,
+        kernels_get(context_get(), device_get(), kernel_id),
+        arr_x, arr_y
+    );
+    clEnqueueReadBuffer(
+        cmd_queue, buffer_output, CL_TRUE, 0, ndarray_datasize(arr_x),
+        arr_x->data, 0, NULL, NULL
+    );
+
+    // free memory
+    clReleaseMemObject(buffer_output);
+    clReleaseCommandQueue(cmd_queue);
+}
+
+void map_scalar_bang_factory(const ndarray * arr_x, double y, kernel_type_t kernel_id) {
+    cl_int status;
+    cl_command_queue cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
+    cl_mem buffer_output = map_scalar_helper(
+        cmd_queue,
+        kernels_get(context_get(), device_get(), kernel_id),
+        arr_x, y
+    );
+    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE, 0, ndarray_datasize(arr_x), arr_x->data, 0, NULL, NULL);
+
+    // free unused memory
+    clReleaseMemObject(buffer_output);
+    clReleaseCommandQueue(cmd_queue);
+}
+
+// API to do NDArray ops
 
 void ndarray_release(ndarray * arr) {
     free(arr->data);
@@ -297,10 +270,9 @@ ndarray * ndarray_clone_structure(const ndarray * arr_x) {
     ndarray * output = malloc(sizeof(ndarray));
     
     output->data     = (double*) malloc(datasize);
-    output->strides  = array_index_t_copy(arr_x->strides, (unsigned long long) arr_x->ndims);
+    output->strides  = array_index_t_copy(arr_x->strides, arr_x->ndims);
     output->shape    = array_index_t_copy(arr_x->shape, arr_x->ndims);
     output->ndims    = arr_x->ndims;
-
 
     return output;
 }

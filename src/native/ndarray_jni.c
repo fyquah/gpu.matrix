@@ -176,14 +176,14 @@ JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print
     // print shape
     puts("Shape:");
     for(int i = 0 ; i < ndims ; i++) {
-        printf("%llu ", shape[i]);
+        printf("%lu ", shape[i]);
     }
     puts("");
 
     // print strides
     puts("Stides:");
     for(int i = 0 ; i < ndims ; i++) {
-        printf("%llu ", strides[i]);
+        printf("%lu ", strides[i]);
     }
     puts("");
     

@@ -14,7 +14,7 @@
 int main() {
     gpu_matrix_init();
     ndarray * arr = malloc(sizeof(ndarray));
-    double data[6] = { 0, 2.22, 3.0, 1.0, 2.0, 3.0 };
+    double data[6] = { 0, 2.22, 3.0, 1.0, 2.0, 8.0 };
     index_t strides[2] = { 3, 1 };
     index_t shape[2] = { 2, 3 };
     arr->data = data;
@@ -23,7 +23,7 @@ int main() {
     arr->shape = shape;
     
     arr = ndarray_add(arr, arr);
-    printf("dimensions: %llu\n", arr->ndims);
+    printf("dimensions: %lu\n", arr->ndims);
     for (int i = 0 ; i < 6 ; i++) { 
         printf("%f ", arr->data[i]);
     }
