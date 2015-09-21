@@ -58,36 +58,42 @@
                     (dec ndims) ", but got " dimension-number "instead!"))
         (aget shape dimension-number)))))
 
-(defn all? 
+(defn- all?
   ([coll]
    (every? true? coll))
   ([f coll]
    (every? true? (mapv f coll))))
 
-(defn in-bound? [^long idx ^long len]
+(defn- make-index-type-hints [syms]
+  (vec
+    (mapcat (fn [sym]
+              `[~sym (long ~sym)])
+            syms)))
+
+(defn- in-bound? [^long idx ^long len]
   (and (>= idx 0) (< idx len)))
 
 (defmacro with-check-indices [ndims m & args]
-   (let [row (gensym "row_")
-         col (gensym "col_")
-         indexes (gensym "indexes_")
+   (let [row-sym (gensym "row_")
+         col-sym (gensym "col_")
+         indexes-sym (gensym "indexes_")
          check-clause
          (cond (= ndims 1)
-               `(and (>= ~row 0)
-                     (< ~row (first (mp/get-shape ~m))))
+               `(and (>= ~row-sym 0)
+                     (< ~row-sym (first (mp/get-shape ~m))))
                (= ndims 2)
                `(let [shape# (mp/get-shape ~m)]
-                 (and (>= ~row 0)
-                      (< ~row (first shape#))
-                      (>= ~col 0)
-                      (< ~col (second shape#))))
+                 (and (>= ~row-sym 0)
+                      (< ~row-sym (first shape#))
+                      (>= ~col-sym 0)
+                      (< ~col-sym (second shape#))))
                :else
                `(let [shape# (mp/get-shape ~m)] 
                   (all? (map-indexed
                           (fn [dim# idx#]
                             (and (>= idx# 0)
                                  (< idx# (nth shape# dim#))))
-                          ~indexes))))
+                          ~indexes-sym))))
          body
          (cond (= ndims 2)
                (next (next args)) 
@@ -95,19 +101,30 @@
                (next args))
          all-indexes
          (cond (= ndims 1)
-               `[~(first args)] 
+               `[~(first args)]
                (= ndims 2)
                `[~(first args) ~(second args)]
                :else
-               (first args))]
-    `(let ~(cond
-             (= ndims 1)
-             `[~row ~(first args)]
+               (first args))
+         type-hints
+         (make-index-type-hints
+           (cond (= ndims 1)
+                 (take 1 args)
+                 (= ndims 2)
+                 (take 2 args)
+                 :else
+                 []))
+         bindings
+         (-> (cond (= ndims 1)
+             `[~row-sym ~(first args)]
              (= ndims 2)
-             `[~row ~(first args)
-               ~col ~(second args)]
-             :else 
-             `[~indexes ~(first args)])
+             `[~row-sym ~(first args)
+               ~col-sym ~(second args)]
+             :else
+             `[~indexes-sym ~(first args)])
+             (concat type-hints)
+             (vec))]
+    `(let ~bindings
        (if ~check-clause
          (do ~@body)
          (error
@@ -143,11 +160,11 @@
 
 (extend-protocol mp/PIndexedAccess
   NDArray
-  (get-1d [m ^long row]
+  (get-1d [m row]
     (with-check-shape
       1 [m m] row
       (.get m row)))
-  (get-2d [m ^long row ^long col]
+  (get-2d [m row col]
     (with-check-shape
       2 [m m] row col
       (.get m row col)))
@@ -158,11 +175,11 @@
 
 (extend-protocol mp/PIndexedSetting
   NDArray
-  (set-1d [m ^long row ^double v]
+  (set-1d [m row ^double v]
     (with-check-shape
       1 [m m] row
       (.set (.clone m) row v)))
-  (set-2d [m ^long row ^long col ^double v]
+  (set-2d [m row col ^double v]
     (with-check-shape
       2 [m m] row col
       (.set (.clone m) row col v)))
@@ -174,15 +191,15 @@
 
 (extend-protocol mp/PIndexedSettingMutable
   NDArray
-  (set-1d [m ^long row ^double v]
+  (set-1d! [m row ^double v]
     (with-check-shape
       1 [m m] row
       (.set m row v)))
-  (set-2d [m ^long row ^long col ^double v]
+  (set-2d! [m row col ^double v]
     (with-check-shape
       2 [m m] row col
       (.set m row col v)))
-  (set-nd [m indexes ^double v]
+  (set-nd! [m indexes ^double v]
     (with-check-shape
       (count indexes) [m m] indexes
       (.set m (long-array indexes) v))))
