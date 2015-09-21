@@ -41,7 +41,8 @@ __kernel void add(
             break;
         }
         case 1: {
-            add_vectors (data_x, data_y, data_output);
+            index_t i = get_global_id (0);
+            data_output[i] = data_x[i] + data_y[i];
             break;
         }
         case 2:
@@ -56,10 +57,9 @@ __kernel void add(
             break;
         }
         default: {
-            // dump some irrelevant data, another way of saying something is terribly wrong
-            // the number is actually tau
-            index_t i = get_global_id (0);
-            data_output[i] = -6.283185;
+            // assumed that both NDArray object has been coerced to relevant form
+            // a vector addition will be done
+            add_vectors (data_x, data_y, data_output);
             break;
         }
     } 

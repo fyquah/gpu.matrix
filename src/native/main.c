@@ -11,25 +11,35 @@
 #include "utils.h"
 #include "ndarray.h"
 
+void range(double * data, int n) {
+    for (int i = 0; i < n ; i++) {
+        data[i] = (double) i;
+    }
+}
+
+ndarray * sample_a() {
+    double data[24];
+    range(data, 24);
+    index_t strides[4] = { 12, 6 ,2 ,1 };
+    index_t shape[4] = { 2, 2, 3, 2 };
+    return ndarray_constructor(data, 4, shape, strides);
+}
+
+ndarray * sample_b() {
+    double data[24];
+    range(data, 24);
+    index_t strides[4] = { 12, 6, 1, 3 };
+    index_t shape[4] = { 2, 2, 3, 2 };
+    return ndarray_constructor(data, 4, shape, strides);
+}
+
 int main() {
     gpu_matrix_init();
-    ndarray * arr = malloc(sizeof(ndarray));
-    double data[6] = { 0, 2.22, 3.0, 1.0, 2.0, 8.0 };
-    double data_b[6] = { 0, 2.22, 3.0, 1.0, 2.0, 8.0 };
-    index_t strides[2] = { 3, 1 };
-    index_t shape[2] = { 2, 3 };
-    index_t a [3] = { 1 ,2,3};
-    index_t b[3] = { 1,2,3};
-    arr->data = data;
-    arr->ndims = 2;
-    arr->strides = strides;
-    arr->shape = shape;
-
-    printf("-> %d\n", array_index_t_is_equal(a, b, 3));
-
-    ndarray_add_scalar_bang(arr, 123.0);
-    printf("dimensions: %lu\n", arr->ndims);
-    for (int i = 0 ; i < 6 ; i++) { 
+    ndarray * x = sample_a();
+    ndarray * y = sample_b();
+    ndarray * arr = ndarray_add(x, y);
+    printf("dimensions: %u\n", arr->ndims);
+    for (int i = 0 ; i < 12 ; i++) { 
         printf("%f ", arr->data[i]);
     }
     puts("");

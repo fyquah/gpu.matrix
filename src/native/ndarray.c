@@ -16,7 +16,7 @@ size_t * get_global_work_size(const ndarray * arr_x, const ndarray * arr_y, size
     size_t * ret;
 
     if (ndims == 0) {
-        *len = 0;
+        *len = 1;
         ret = malloc(sizeof(size_t) * 1);
         ret[0] = 1;
         return ret;
@@ -65,15 +65,14 @@ void * coerce_stride_recur(
     }
 }
 
+// return a new copy of arr, with its stride coerced to strides
 ndarray * ndarray_coerce_stride(const ndarray * arr, index_t * strides) {
     ndarray * output = malloc(sizeof(ndarray));
     output->ndims = arr->ndims;
     output->shape = array_index_t_copy(arr->shape, arr->ndims);
     output->strides = array_index_t_copy(strides, arr->ndims);
   
-    if (array_index_t_is_equal(strides, output->strides, arr->ndims)) {
-        output->data = array_double_copy(arr->data, ndarray_elements_count(arr));
-    } else if (arr->ndims == 0) {
+    if (arr->ndims == 0) {
         output->data = malloc(ndarray_datasize(arr));
         *output->data = *(arr->data);
     } else {
@@ -86,7 +85,9 @@ ndarray * ndarray_coerce_stride(const ndarray * arr, index_t * strides) {
     return output;
 }
 
-cl_mem map_helper(
+// at this point, arr_x and arr_y are _assumed_ to be in compatible dimensions
+// i.e: the openCL code knows how to handle them. It doesn't mean that arr_x and arr_y are of equal dimensions
+cl_mem map_run_kernel(
         cl_command_queue cmd_queue,
         cl_kernel kernel,
         const ndarray * arr_x,
@@ -126,7 +127,7 @@ cl_mem map_helper(
             CL_FALSE, 0, sizeof(index_t) * arr_y->ndims,                          
             arr_y->shape, 0, NULL, NULL);
     status = clEnqueueWriteBuffer(cmd_queue, buffer_strides_y,      
-            CL_FALSE, 0, sizeof(index_t) * 2,
+            CL_FALSE, 0, sizeof(index_t) * arr_y->ndims,
             arr_y->strides, 0, NULL, NULL);
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem),      
             &buffer_x);                             
@@ -134,7 +135,7 @@ cl_mem map_helper(
             &buffer_shape_x);
     status = clSetKernelArg(kernel, 2, sizeof(cl_mem),
             &buffer_strides_x);
-    status = clSetKernelArg(kernel, 3, sizeof(index_t),
+    status = clSetKernelArg(kernel, 3, sizeof(unsigned),
             &arr_x->ndims);
     status = clSetKernelArg(kernel, 4, sizeof(cl_mem),      
             &buffer_y);                             
@@ -142,14 +143,14 @@ cl_mem map_helper(
             &buffer_shape_y);
     status = clSetKernelArg(kernel, 6, sizeof(cl_mem),
             &buffer_strides_y);
-    status = clSetKernelArg(kernel, 7, sizeof(index_t),
-            &arr_x->ndims);
+    status = clSetKernelArg(kernel, 7, sizeof(unsigned),
+            &arr_y->ndims);
     status = clSetKernelArg(kernel, 8, sizeof(cl_mem),
             &buffer_output);
+    status = clEnqueueNDRangeKernel(cmd_queue, kernel, global_work_size_dims,
+            NULL, global_work_size, NULL, 0, NULL, NULL);
 
-    status = clEnqueueNDRangeKernel(cmd_queue, kernel, 2,
-            NULL, global_work_size, NULL, 0, NULL, NULL);   
-
+    // free memory
     free(global_work_size);
     clReleaseMemObject(buffer_x);
     clReleaseMemObject(buffer_shape_x);
@@ -159,6 +160,33 @@ cl_mem map_helper(
     clReleaseMemObject(buffer_strides_y);
 
     return buffer_output;
+}
+
+cl_mem map_helper(
+        cl_command_queue cmd_queue,
+        cl_kernel kernel,
+        const ndarray * arr_x,
+        const ndarray * arr_y
+    ) {
+    
+    if (arr_x->ndims == arr_y->ndims) {
+        if (arr_x->ndims <= 3) {
+            return map_run_kernel(cmd_queue, kernel, arr_x, arr_y);
+        } else {
+            // coerce the strides!
+            ndarray * coerced = ndarray_coerce_stride(arr_y, arr_x->strides);
+            cl_mem ret = map_run_kernel(cmd_queue, kernel, arr_x, coerced);
+            ndarray_release(coerced);
+            return ret;
+        }
+    } else if (arr_x->ndims > arr_y->ndims) {
+        // broadcasting, TODO
+        puts("Not implemented!");
+        exit(1);
+    } else { 
+        // arr_x->ndims < arr-y->ndims
+        return map_helper(cmd_queue, kernel, arr_y, arr_x);
+    }
 }
 
 cl_mem map_scalar_helper(
