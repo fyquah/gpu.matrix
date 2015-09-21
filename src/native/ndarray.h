@@ -14,6 +14,7 @@ unsigned ndarray_datasize(const ndarray *);
 ndarray * ndarray_clone_structure(const ndarray *);
 ndarray * ndarray_clone(const ndarray *);
 unsigned ndarray_elements_count(const ndarray *);
+ndarray * ndarray_coerce_stride(const ndarray *, index_t *);
 
 // constructors
 ndarray * ndarray_constructor(double *, index_t, index_t*, index_t*);

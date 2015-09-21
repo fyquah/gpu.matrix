@@ -30,6 +30,54 @@ size_t * get_global_work_size(const ndarray * arr_x, const ndarray * arr_y, size
     }
 }
 
+// returns a new ndarray with the strides modified to be equal to those in the arguments
+// assumes that both source and dest have similiar shapes
+void * coerce_stride_recur(
+        const index_t dim,
+        const ndarray * src,
+        const index_t src_index_accum,
+        ndarray * dest,
+        const index_t dest_index_accum
+    ) {
+    // dim is the current dimension
+    // source is the source ndarray object, dest is the counterpat
+    // source_index and dest_index are just index accumulators
+   
+    for (index_t i = 0 ; i < src->shape[dim] ; i++) {
+        const index_t dest_index = dest_index_accum + i * dest->strides[dim],
+                      src_index = src_index_accum + i * src->strides[dim];
+        if (dim == src->ndims - 1) {
+            dest->data[dest_index] = src->data[src_index];
+        } else {
+            coerce_stride_recur(
+                dim + 1,
+                src,
+                src_index,
+                dest,
+                dest_index
+            );
+        }
+    }
+}
+
+ndarray * ndarray_coerce_stride(const ndarray * arr, index_t * strides) {
+    ndarray * output = malloc(sizeof(ndarray));
+    output->ndims = arr->ndims;
+    output->shape = array_index_t_copy(arr->shape, arr->ndims);
+    output->strides = array_index_t_copy(strides, arr->ndims);
+    output->data = malloc(ndarray_datasize(arr));
+   
+    if (arr->ndims == 0) {
+        *output->data = *(arr->data);
+    } else {
+        coerce_stride_recur(
+            0, arr, 0, output, 0
+        );
+    }
+
+    return output;
+}
+
 cl_mem map_helper(
         cl_command_queue cmd_queue,
         cl_kernel kernel,

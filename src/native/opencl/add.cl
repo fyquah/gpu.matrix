@@ -13,6 +13,15 @@ typedef unsigned index_t;
 // multipurpose add kernel
 // no local memory fetching optmiziations will be done
 // currently assumes that both NDArray have same dimensions
+__kernel void add_vectors (
+    __global const double * data_x,
+    __global const double * data_y,
+    __global double * data_output
+) {
+    index_t i = get_global_id (0);
+    data_output[i] = data_x[i] + data_y[i];
+}
+
 __kernel void add(
     __global const double * data_x,
     __global const index_t * shape_x,
@@ -32,8 +41,7 @@ __kernel void add(
             break;
         }
         case 1: {
-            index_t i = get_global_id (0);
-            data_output[i] = data_x[i] + data_y[i];
+            add_vectors (data_x, data_y, data_output);
             break;
         }
         case 2:
@@ -48,6 +56,8 @@ __kernel void add(
             break;
         }
         default: {
+            // dump some irrelevant data, another way of saying something is terribly wrong
+            // the number is actually tau
             index_t i = get_global_id (0);
             data_output[i] = -6.283185;
             break;

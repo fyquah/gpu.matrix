@@ -21,7 +21,7 @@ int main() {
     arr->ndims = 2;
     arr->strides = strides;
     arr->shape = shape;
-    
+
     ndarray_add_scalar_bang(arr, 123.0);
     printf("dimensions: %lu\n", arr->ndims);
     for (int i = 0 ; i < 6 ; i++) { 
