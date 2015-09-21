@@ -2,6 +2,7 @@
 #define KERNELS_H
 
 #include <string.h>
+#include <stdio.h>
 
 #include "CL/cl.h"
 #include "files.h"

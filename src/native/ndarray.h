@@ -1,8 +1,10 @@
+#include "types.h"
+
 typedef struct {
     double * data;
-    size_t * shape;
-    size_t * strides;
-    size_t ndims;
+    index_t * shape;
+    index_t * strides;
+    index_t ndims;
 } ndarray;
 
 
@@ -14,8 +16,8 @@ ndarray * ndarray_clone(const ndarray *);
 unsigned ndarray_elements_count(const ndarray *);
 
 // constructors
-ndarray * ndarray_constructor(double *, size_t, size_t*, size_t*);
-ndarray * ndarray_constructor_from_shape(size_t, size_t*);
+ndarray * ndarray_constructor(double *, index_t, index_t*, index_t*);
+ndarray * ndarray_constructor_from_shape(index_t, index_t*);
 
 // destructor
 void ndarray_release(ndarray *);

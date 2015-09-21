@@ -164,32 +164,64 @@ ndarray * map_factory(const ndarray * arr_x, const ndarray * arr_y, kernel_type_
     cl_kernel kernel;
     cl_int status;
     cl_command_queue cmd_queue;
-    cl_mem buffer_output, buffer_x, buffer_y;
-    unsigned number_of_elements;
-
-    // TODO: Stride resizing
+    cl_mem buffer_output, buffer_x, buffer_y, buffer_shape_x, buffer_strides_x, buffer_shape_y, buffer_strides_y;
+    unsigned number_of_elements = ndarray_elements_count(arr_x);
+    unsigned ndims = arr_x->ndims;
+    size_t * global_work_size = (size_t*) ((arr_x->ndims >= arr_y->ndims) ? arr_x->shape : arr_y->shape);
     number_of_elements = ndarray_elements_count(arr_x);
     cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
     buffer_x = buffers_create(CL_MEM_READ_ONLY, datasize,   
             NULL, &status);                                 
     buffer_y = buffers_create(CL_MEM_READ_ONLY, datasize,   
             NULL, &status);                                 
+    buffer_shape_x = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * ndims, NULL, &status);
+    buffer_strides_x = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * ndims, NULL, &status);
+    buffer_shape_y = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * ndims, NULL, &status);
+    buffer_strides_y = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * ndims, NULL, &status);
+    buffer_output = buffers_create(CL_MEM_WRITE_ONLY,       
+            datasize, NULL, &status);                       
     status = clEnqueueWriteBuffer(cmd_queue, buffer_x,      
             CL_FALSE, 0, datasize,                          
-            arr_x->data, 0, NULL, NULL);                    
+            arr_x->data, 0, NULL, NULL);
+    status = clEnqueueWriteBuffer(cmd_queue, buffer_shape_x,      
+            CL_FALSE, 0, sizeof(index_t) * arr_x->ndims,                          
+            arr_x->shape, 0, NULL, NULL);
+    status = clEnqueueWriteBuffer(cmd_queue, buffer_strides_x,      
+            CL_FALSE, 0, sizeof(index_t) * arr_x->ndims,                          
+            arr_x->strides, 0, NULL, NULL);
     status = clEnqueueWriteBuffer(cmd_queue, buffer_y,      
             CL_FALSE, 0, datasize,                          
             arr_y->data, 0, NULL, NULL);
+    status = clEnqueueWriteBuffer(cmd_queue, buffer_shape_y,
+            CL_FALSE, 0, sizeof(index_t) * arr_y->ndims,                          
+            arr_y->shape, 0, NULL, NULL);
+    status = clEnqueueWriteBuffer(cmd_queue, buffer_strides_y,      
+            CL_FALSE, 0, sizeof(index_t) * 2,
+            arr_y->strides, 0, NULL, NULL);
     kernel = kernels_get(context_get(), device_get(), kernel_id);
-    buffer_output = map_helper(
-        &buffer_x, sizeof(cl_mem),
-        &buffer_y, sizeof(cl_mem),
-        number_of_elements,
-        datasize,
-        kernel    
-    );
-    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE,
-            0, datasize, output->data, 0, NULL, NULL);
+    cmd_queue = command_queue_create(0, &status);           
+    status = clSetKernelArg(kernel, 0, sizeof(cl_mem),      
+            &buffer_x);                             
+    status = clSetKernelArg(kernel, 1, sizeof(cl_mem),
+            &buffer_shape_x);
+    status = clSetKernelArg(kernel, 2, sizeof(cl_mem),
+            &buffer_strides_x);
+    status = clSetKernelArg(kernel, 3, sizeof(unsigned long long),
+            &ndims);
+    status = clSetKernelArg(kernel, 4, sizeof(cl_mem),      
+            &buffer_y);                             
+    status = clSetKernelArg(kernel, 5, sizeof(cl_mem),
+            &buffer_shape_y);
+    status = clSetKernelArg(kernel, 6, sizeof(cl_mem),
+            &buffer_strides_y);
+    status = clSetKernelArg(kernel, 7, sizeof(unsigned long long),
+            &ndims);
+    status = clSetKernelArg(kernel, 8, sizeof(cl_mem),
+            &buffer_output);
+
+    status = clEnqueueNDRangeKernel(cmd_queue, kernel, 2,
+            NULL, global_work_size, NULL, 0, NULL, NULL);   
+    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE, 0, datasize, output->data, 0, NULL, NULL);
 
     clReleaseMemObject(buffer_x);
     clReleaseMemObject(buffer_y);
@@ -219,8 +251,8 @@ unsigned ndarray_datasize(const ndarray * arr) {
     return ndarray_elements_count(arr) * sizeof(double);
 }
 
-size_t * ndarray_make_basic_strides(size_t ndims, size_t * shape) {
-    size_t * strides = malloc(sizeof(size_t) * ndims);
+index_t * ndarray_make_basic_strides(index_t ndims, index_t * shape) {
+    index_t * strides = malloc(sizeof(index_t) * ndims);
     strides[ndims - 1] = 1;
     for (int i = ndims - 2 ; i >= 0 ; i--) {
         strides[i] = strides[i+1] * shape[i+1];
@@ -229,7 +261,7 @@ size_t * ndarray_make_basic_strides(size_t ndims, size_t * shape) {
     return strides;
 }
 
-ndarray * ndarray_constructor(double * data, size_t ndims, size_t * shape, size_t * strides) {
+ndarray * ndarray_constructor(double * data, index_t ndims, index_t * shape, index_t * strides) {
     ndarray tmp;
     tmp.data = data;
     tmp.shape = shape;
@@ -238,9 +270,9 @@ ndarray * ndarray_constructor(double * data, size_t ndims, size_t * shape, size_
     return ndarray_clone(&tmp);
 }
 
-ndarray * ndarray_constructor_from_shape(size_t ndims, size_t * shape) {
+ndarray * ndarray_constructor_from_shape(index_t ndims, index_t * shape) {
     size_t datasize;
-    size_t number_of_elements = 1;
+    index_t number_of_elements = 1;
     for (int i = 0 ; i < ndims ; i++) {
         number_of_elements *= shape[i];
     }
@@ -250,10 +282,10 @@ ndarray * ndarray_constructor_from_shape(size_t ndims, size_t * shape) {
     ndarray * output = malloc(sizeof(ndarray));
     output->data     = (double*) malloc(datasize);
     output->ndims    = ndims;
-    output->shape    = array_size_t_copy(shape, ndims);
+    output->shape    = array_index_t_copy(shape, ndims);
     output->strides  = ndarray_make_basic_strides(ndims, shape);
 
-    for(unsigned long long i = 0 ; i < number_of_elements ; i++) {
+    for(index_t i = 0 ; i < number_of_elements ; i++) {
         output->data[i] = 0.0;
     }
 
@@ -265,8 +297,8 @@ ndarray * ndarray_clone_structure(const ndarray * arr_x) {
     ndarray * output = malloc(sizeof(ndarray));
     
     output->data     = (double*) malloc(datasize);
-    output->strides  = array_size_t_copy(arr_x->strides, (unsigned long long) arr_x->ndims);
-    output->shape    = array_size_t_copy(arr_x->shape, arr_x->ndims);
+    output->strides  = array_index_t_copy(arr_x->strides, (unsigned long long) arr_x->ndims);
+    output->shape    = array_index_t_copy(arr_x->shape, arr_x->ndims);
     output->ndims    = arr_x->ndims;
 
 

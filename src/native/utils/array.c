@@ -1,4 +1,4 @@
-#include <CL/cl.h>
+#include "array.h"
 
 #define COPY_FACTORY(T) T * array_##T##_copy(T * arr, unsigned long long len) { \
     T * copy = (T*) malloc(sizeof(T) * len);\
@@ -9,3 +9,4 @@
 }\
 
 COPY_FACTORY(size_t);
+COPY_FACTORY(index_t);
