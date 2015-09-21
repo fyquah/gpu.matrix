@@ -5,6 +5,11 @@
 #include "ndarray.h"
 #include "utils.h"
 
+#define MAX(a,b) \
+({ __typeof__ (a) _a = (a); \
+   __typeof__ (b) _b = (b); \
+ _a > _b ? _a : _b; })
+
 size_t * get_global_work_size(const ndarray * arr_x, const ndarray * arr_y, size_t * len) {
     const ndarray * big = (arr_x->ndims >= arr_y-> ndims) ? arr_x : arr_y;
     size_t ndims = (size_t) big->ndims;
@@ -65,11 +70,14 @@ ndarray * ndarray_coerce_stride(const ndarray * arr, index_t * strides) {
     output->ndims = arr->ndims;
     output->shape = array_index_t_copy(arr->shape, arr->ndims);
     output->strides = array_index_t_copy(strides, arr->ndims);
-    output->data = malloc(ndarray_datasize(arr));
-   
-    if (arr->ndims == 0) {
+  
+    if (array_index_t_is_equal(strides, output->strides, arr->ndims)) {
+        output->data = array_double_copy(arr->data, ndarray_elements_count(arr));
+    } else if (arr->ndims == 0) {
+        output->data = malloc(ndarray_datasize(arr));
         *output->data = *(arr->data);
     } else {
+        output->data = malloc(ndarray_datasize(arr));
         coerce_stride_recur(
             0, arr, 0, output, 0
         );
@@ -91,6 +99,7 @@ cl_mem map_helper(
     index_t number_of_elements = ndarray_elements_count(arr_x);
     size_t global_work_size_dims;
     size_t * global_work_size = get_global_work_size(arr_x, arr_y, &global_work_size_dims);
+    const index_t max_dims = MAX(arr_x->ndims, arr_y->ndims);
 
     number_of_elements = ndarray_elements_count(arr_x);
     buffer_x = buffers_create(CL_MEM_READ_ONLY, datasize, NULL, &status);                                 
