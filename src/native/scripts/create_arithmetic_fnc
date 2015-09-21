@@ -6,8 +6,6 @@ sub create_op {
     my $op_name = shift;
     my $kernel = "KERNEL_" . uc($op_name);
     my $kernel_scalar = "KERNEL_" . uc($op_name) . "_SCALAR";
-    my $kernel_bang = "KERNEL_" . uc($op_name) . "_BANG";
-    my $kernel_scalar_bang = "KERNEL_" . uc($op_name) . "_SCALAR_BANG";
 
     my $str = " 
 ndarray * ndarray_$op_name(const ndarray * arr_x, const ndarray * arr_y) {
@@ -19,11 +17,11 @@ ndarray * ndarray_" . $op_name . "_scalar(const ndarray * arr_x, const double y)
 }
 
 void ndarray_" . $op_name . "_bang(ndarray * arr_x, const ndarray * arr_y) {
-    map_bang_factory(arr_x, arr_y, $kernel_bang);
+    map_bang_factory(arr_x, arr_y, $kernel);
 }
 
 void ndarray_" . $op_name . "_scalar_bang(ndarray * arr_x, const double y) {
-    map_scalar_bang_factory(arr_x, y, $kernel_scalar_bang);
+    map_scalar_bang_factory(arr_x, y, $kernel_scalar);
 }
 ";
    print $str; 

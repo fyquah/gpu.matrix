@@ -12,8 +12,4 @@ foreach my $op (@ops) {
     ++$i;
     print '#define KERNEL_' . $op . "_SCALAR $i\n";
     ++$i;
-    print '#define KERNEL_' . $op . "_BANG $i\n";
-    ++$i;
-    print '#define KERNEL_' . $op . "_SCALAR_BANG $i\n";
-    ++$i
 }

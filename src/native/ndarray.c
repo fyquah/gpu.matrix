@@ -117,7 +117,6 @@ cl_mem map_scalar_helper(
     unsigned number_of_elements = ndarray_elements_count(arr_x);
     size_t global_work_size[1] = { number_of_elements };
 
-    cmd_queue = command_queue_create(0, &status);           
     buffer_x = buffers_create(CL_MEM_READ_ONLY,
             datasize, NULL, &status);
     buffer_output = buffers_create(CL_MEM_WRITE_ONLY,       
@@ -127,7 +126,6 @@ cl_mem map_scalar_helper(
     status |= clSetKernelArg(kernel, 2, sizeof(cl_mem), &buffer_output);                        
     status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1,   
             NULL, global_work_size, NULL, 0, NULL, NULL);   
-
     clReleaseMemObject(buffer_x);
 
     return buffer_output;
@@ -314,12 +312,12 @@ ndarray * ndarray_add_scalar(const ndarray * arr_x, const double y) {
     return map_scalar_factory(arr_x, y, KERNEL_ADD_SCALAR);
 }
 
-void ndarray_addbang(ndarray * arr_x, const ndarray * arr_y) {
-    map_bang_factory(arr_x, arr_y, KERNEL_ADD_BANG);
+void ndarray_add_bang(ndarray * arr_x, const ndarray * arr_y) {
+    map_bang_factory(arr_x, arr_y, KERNEL_ADD);
 }
 
 void ndarray_add_scalar_bang(ndarray * arr_x, const double y) {
-    map_scalar_bang_factory(arr_x, y, KERNEL_ADD_SCALAR_BANG);
+    map_scalar_bang_factory(arr_x, y, KERNEL_ADD_SCALAR);
 }
  
 ndarray * ndarray_sub(const ndarray * arr_x, const ndarray * arr_y) {
@@ -330,12 +328,12 @@ ndarray * ndarray_sub_scalar(const ndarray * arr_x, const double y) {
     return map_scalar_factory(arr_x, y, KERNEL_SUB_SCALAR);
 }
 
-void ndarray_subbang(ndarray * arr_x, const ndarray * arr_y) {
-    map_bang_factory(arr_x, arr_y, KERNEL_SUB_BANG);
+void ndarray_sub_bang(ndarray * arr_x, const ndarray * arr_y) {
+    map_bang_factory(arr_x, arr_y, KERNEL_SUB);
 }
 
 void ndarray_sub_scalar_bang(ndarray * arr_x, const double y) {
-    map_scalar_bang_factory(arr_x, y, KERNEL_SUB_SCALAR_BANG);
+    map_scalar_bang_factory(arr_x, y, KERNEL_SUB_SCALAR);
 }
  
 ndarray * ndarray_mul(const ndarray * arr_x, const ndarray * arr_y) {
@@ -346,12 +344,12 @@ ndarray * ndarray_mul_scalar(const ndarray * arr_x, const double y) {
     return map_scalar_factory(arr_x, y, KERNEL_MUL_SCALAR);
 }
 
-void ndarray_mulbang(ndarray * arr_x, const ndarray * arr_y) {
-    map_bang_factory(arr_x, arr_y, KERNEL_MUL_BANG);
+void ndarray_mul_bang(ndarray * arr_x, const ndarray * arr_y) {
+    map_bang_factory(arr_x, arr_y, KERNEL_MUL);
 }
 
 void ndarray_mul_scalar_bang(ndarray * arr_x, const double y) {
-    map_scalar_bang_factory(arr_x, y, KERNEL_MUL_SCALAR_BANG);
+    map_scalar_bang_factory(arr_x, y, KERNEL_MUL_SCALAR);
 }
  
 ndarray * ndarray_div(const ndarray * arr_x, const ndarray * arr_y) {
@@ -362,10 +360,10 @@ ndarray * ndarray_div_scalar(const ndarray * arr_x, const double y) {
     return map_scalar_factory(arr_x, y, KERNEL_DIV_SCALAR);
 }
 
-void ndarray_divbang(ndarray * arr_x, const ndarray * arr_y) {
-    map_bang_factory(arr_x, arr_y, KERNEL_DIV_BANG);
+void ndarray_div_bang(ndarray * arr_x, const ndarray * arr_y) {
+    map_bang_factory(arr_x, arr_y, KERNEL_DIV);
 }
 
 void ndarray_div_scalar_bang(ndarray * arr_x, const double y) {
-    map_scalar_bang_factory(arr_x, y, KERNEL_DIV_SCALAR_BANG);
+    map_scalar_bang_factory(arr_x, y, KERNEL_DIV_SCALAR);
 }

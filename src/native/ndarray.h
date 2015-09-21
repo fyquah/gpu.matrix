@@ -30,24 +30,24 @@ void ndarray_set_nd(ndarray*, const long * indexes, double v);
 // add
 ndarray * ndarray_add(const ndarray *, const ndarray *);
 ndarray * ndarray_add_scalar(const ndarray *, const double);
-void ndarray_addbang(ndarray *, const ndarray *);
+void ndarray_add_bang(ndarray *, const ndarray *);
 void ndarray_add_scalar_bang(ndarray *, const double);
 
 // sub
 ndarray * ndarray_sub(const ndarray *, const ndarray *);
 ndarray * ndarray_sub_scalar(const ndarray *, const double);
-void ndarray_subbang(ndarray *, const ndarray *);
+void ndarray_sub_bang(ndarray *, const ndarray *);
 void ndarray_sub_scalar_bang(ndarray *, const double);
 
 // mul
 ndarray * ndarray_mul(const ndarray *, const ndarray *);
 ndarray * ndarray_mul_scalar(const ndarray *, const double);
-void ndarray_mulbang(ndarray *, const ndarray *);
+void ndarray_mul_bang(ndarray *, const ndarray *);
 void ndarray_mul_scalar_bang(ndarray *, const double);
 
 // div
 ndarray * ndarray_div(const ndarray *, const ndarray *);
 ndarray * ndarray_div_scalar(const ndarray *, const double);
-void ndarray_divbang(ndarray *, const ndarray *);
+void ndarray_div_bang(ndarray *, const ndarray *);
 void ndarray_div_scalar_bang(ndarray *, const double);
 

@@ -22,7 +22,7 @@ int main() {
     arr->strides = strides;
     arr->shape = shape;
     
-    arr = ndarray_add(arr, arr);
+    ndarray_add_scalar_bang(arr, 123.0);
     printf("dimensions: %lu\n", arr->ndims);
     for (int i = 0 ; i < 6 ; i++) { 
         printf("%f ", arr->data[i]);
