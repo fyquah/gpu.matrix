@@ -2,10 +2,8 @@
 
 const char * get_program_file_name(kernel_type_t k) {
     static const char * file_names[] = {
-        "src/native/opencl/add.cl",
-        "src/native/opencl/add_scalar.cl",
-        "src/native/opencl/add_bang.cl",
-        "src/native/opencl/add_scalar_bang.cl"
+        "opencl/add.cl",
+        "opencl/add_scalar.cl",
     };
 
     return file_names[k];
@@ -15,8 +13,6 @@ const char * get_cl_function_name(kernel_type_t k) {
     static const char * module_names[] = {
         "add",
         "add_scalar",
-        "add_bang",
-        "add_scalar_bang"
     };
 
     return module_names[k];
@@ -37,6 +33,19 @@ cl_kernel kernels_get(cl_context context, cl_device_id device, kernel_type_t ker
     status = clBuildProgram(
         program, 1, &device, NULL, NULL, NULL
     );
+    if (status == CL_BUILD_PROGRAM_FAILURE) {
+        size_t log_size;
+        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+
+        // Allocate memory for the log
+        char *log = (char *) malloc(log_size);
+
+        // Get the log
+        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+
+        // Print the log
+        printf("%s\n", log);
+    }
     kernel = clCreateKernel(program, cl_function_name, &status);
 
     free((void*) file_contents);

@@ -21,7 +21,14 @@ public class NDArray {
             strides
         );
     }
-    private native static NDArray newInstance(double[] data, long ndims, long[] shape, long[] strides);
+    public static NDArray newInstance(double[] data, long ndims, long[] shape) {
+        return newInstance(
+            data, ndims, shape, ArrayHelper.makeBasicStrides(shape)
+        );
+    }
+
+    public native static NDArray createFromShape(long[] shape);
+    public native static NDArray newInstance(double[] data, long ndims, long[] shape, long[] strides);
     private native static void init();
 
     // constructors
@@ -32,11 +39,29 @@ public class NDArray {
     // bb is the ByteBuffer used to store the pointer to the ndarray object in native code
     private ByteBuffer bb;
 
+    public native long dimensionality();
+    public native long[] shape();
+    public native NDArray clone();
+
     public native NDArray add(NDArray y);
+    public native double get(long i);
+    public native double get(long i, long j);
+    public native double get(long [] indexes);
+    public native NDArray set(long i, double v);
+    public native NDArray set(long i, long j, double v);
+    public native NDArray set(long[] shape, double v);
+
+    // For debuggin purposes
     public native void print();
+    @Override
+    protected native void finalize();
 
     // for testing purposes
     public static void main(String[] args) {
-        newInstance(new double[][]{ {1.0, 2.0, 3.0}, { 4.0, 5.0, 6.0}}).print();
+        NDArray m = NDArray.newInstance(new double[][]{{ 0.7, 5, 6}, { 1, 2, 3}});
+        m.print();
+        m.set(0, 2, 855.0);
+        m.set(new long[]{0, 1}, 490.23);
+        m.print();
     }
 }

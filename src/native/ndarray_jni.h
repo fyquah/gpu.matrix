@@ -17,6 +17,14 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_sample
 
 /*
  * Class:     gpu_matrix_NDArray
+ * Method:    createFromShape
+ * Signature: ([J)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_createFromShape
+  (JNIEnv *, jclass, jlongArray);
+
+/*
+ * Class:     gpu_matrix_NDArray
  * Method:    newInstance
  * Signature: ([DJ[J[J)Lgpu/matrix/NDArray;
  */
@@ -33,6 +41,30 @@ JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_init
 
 /*
  * Class:     gpu_matrix_NDArray
+ * Method:    dimensionality
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_gpu_matrix_NDArray_dimensionality
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    shape
+ * Signature: ()[J
+ */
+JNIEXPORT jlongArray JNICALL Java_gpu_matrix_NDArray_shape
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    clone
+ * Signature: ()Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_clone
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     gpu_matrix_NDArray
  * Method:    add
  * Signature: (Lgpu/matrix/NDArray;)Lgpu/matrix/NDArray;
  */
@@ -41,10 +73,66 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_add
 
 /*
  * Class:     gpu_matrix_NDArray
+ * Method:    get
+ * Signature: (J)D
+ */
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_NDArray_get__J
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    get
+ * Signature: (JJ)D
+ */
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_NDArray_get__JJ
+  (JNIEnv *, jobject, jlong, jlong);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    get
+ * Signature: ([J)D
+ */
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_NDArray_get___3J
+  (JNIEnv *, jobject, jlongArray);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    set
+ * Signature: (JD)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_set__JD
+  (JNIEnv *, jobject, jlong, jdouble);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    set
+ * Signature: (JJD)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_set__JJD
+  (JNIEnv *, jobject, jlong, jlong, jdouble);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    set
+ * Signature: ([JD)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_set___3JD
+  (JNIEnv *, jobject, jlongArray, jdouble);
+
+/*
+ * Class:     gpu_matrix_NDArray
  * Method:    print
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    finalize
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_finalize
   (JNIEnv *, jobject);
 
 #ifdef __cplusplus

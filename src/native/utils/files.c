@@ -6,6 +6,7 @@ char * slurp(const char * filename) {
     FILE * program_handle;
     unsigned long program_size;
     char * program_buffer;
+    int status;
 
     program_handle = fopen(filename, "r");
     fseek(program_handle, 0, SEEK_END);
@@ -14,7 +15,7 @@ char * slurp(const char * filename) {
 
     program_buffer = (char*) malloc(program_size + 1);
     program_buffer[program_size] = '\0';
-    fread(program_buffer, sizeof(char), program_size, program_handle);
+    status = fread(program_buffer, sizeof(char), program_size, program_handle);
     fclose(program_handle);
 
     return program_buffer;
