@@ -37,7 +37,7 @@ size_t * get_global_work_size(const ndarray * arr_x, const ndarray * arr_y, size
 
 // returns a new ndarray with the strides modified to be equal to those in the arguments
 // assumes that both source and dest have similiar shapes
-void * coerce_stride_recur(
+void coerce_stride_recur(
         const index_t dim,
         const ndarray * src,
         const index_t src_index_accum,
@@ -83,6 +83,59 @@ ndarray * ndarray_coerce_stride(const ndarray * arr, index_t * strides) {
     }
 
     return output;
+}
+
+void * broadcast_recur() {
+
+}
+
+// returns a new copy of arr which is broadcasted to the supplied dimension
+// assumes that ndims is <= arr->ndims and shape is compatible
+// compatible means the smallest arr_x->ndims dimensions in shape
+// must be equaivalent to arr_x->shape
+// i.e:
+//    forall i in 0..(arr_x->ndims -1): arr_x->shape[i] == shape[ndims - arr_x->ndims + i]
+ndarray * ndarray_broadcast(const ndarray * arr, index_t ndims, index_t * shape) {
+    // determine how many folds of copy we need to do
+    ndarray * output;
+    unsigned folds = 1;
+    const unsigned dims_difference = ndims - arr->ndims;
+    const index_t original_elements_count = ndarray_elements_count(arr);
+    for (index_t i = 0 ; i < ndims - arr->ndims ; i++) {
+        folds *= shape[i]; 
+    }
+    // folds immutable from this point on!
+    
+    // create new object, copy from old to new
+    output = malloc(sizeof(ndarray));
+    output->ndims = ndims;
+    output->shape = array_index_t_copy(shape, ndims);
+    output->strides = malloc(ndims * sizeof(index_t));
+    output->data = malloc(folds * original_elements_count * sizeof(double));
+
+    // populate data
+    for (index_t f = 0 ; f < folds ; f++)  {
+        for (index_t i = 0 ; i < original_elements_count ; i++) {
+            output->data[f * original_elements_count + i] = arr->data[i];
+        }
+    }
+
+    // populate strides
+    for (index_t i = dims_difference ; i < ndims ; i++) {
+        output->strides[i] = arr->strides[i-dims_difference];
+    }
+    
+    if (dims_difference == 0) {
+        return output;
+    } else {
+        output->strides[dims_difference - 1] = original_elements_count;
+        // i may be negative in this loop, so use long long 
+        for (long long i = ((long long) dims_difference) - 2 ; i >= 0 ; i--) {
+            output->strides[i] = output->strides[i+1] * output->shape[i+1]; 
+        }
+
+        return output;
+    }
 }
 
 // at this point, arr_x and arr_y are _assumed_ to be in compatible dimensions
