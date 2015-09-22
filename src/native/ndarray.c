@@ -434,7 +434,7 @@ void ndarray_set_2d(ndarray * arr, long i, long j, double v) {
     arr->data[i * arr->strides[0] + j * arr->strides[1]] = v;
 }
 
-void ndarray_set_nd(ndarray * arr, const long * indexes, double v) {
+void ndarray_set_nd(ndarray * arr, const index_t * indexes, double v) {
     long idx = 0;
     for (long i = 0 ; i < arr->ndims ; i++) {
         idx += arr->strides[i] * indexes[i];

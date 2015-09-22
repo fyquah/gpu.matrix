@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "ndarray_jni.h"
+#include "types.h"
 #include "ndarray.h"
 #include "utils.h"
    
@@ -31,6 +32,17 @@ jobject package_ndarray(JNIEnv * env, const ndarray * data) {
     return obj;
 }
 
+// coerce jlong* to index_t*
+// creates a new instance in memory
+index_t* jlong_to_index_t(jlong* arr, index_t len) {
+    index_t* ret = malloc(len * sizeof(index_t));
+    for (index_t i = 0 ; i < len ; i++) {
+        ret[i] = (index_t) arr[i];
+    }
+
+    return ret;
+}
+
 // static methods
 
 JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_init
@@ -40,36 +52,48 @@ JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_init
 
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_createFromShape
   (JNIEnv * env, jclass klass, jlongArray shape) {
-    return package_ndarray(
+
+    index_t len = (*env)->GetArrayLength(env, shape);
+    index_t * index_t_shape = jlong_to_index_t((*env)->GetLongArrayElements(env, shape, 0), len);
+    jobject ret = package_ndarray(
         env,
-        ndarray_constructor_from_shape(
-            (index_t) (*env)->GetArrayLength(env, shape),
-            (index_t*) (*env)->GetLongArrayElements(env, shape, 0)
-        )
+        ndarray_constructor_from_shape(len, index_t_shape)
     );
+
+    free(shape);
+
+    return ret;
 }
 
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_newInstance
   (JNIEnv * env, jclass klass, jdoubleArray data,
    jlong ndims, jlongArray shape, jlongArray strides) {
 
-    return package_ndarray(
+    index_t * shape_index_t = jlong_to_index_t((*env)->GetLongArrayElements(env, shape, 0), ndims);
+    index_t * strides_index_t = jlong_to_index_t((*env)->GetLongArrayElements(env, strides, 0), ndims);
+
+    jobject ret = package_ndarray(
         env,
         ndarray_constructor(
             (*env)->GetDoubleArrayElements(env, data, 0),
             (index_t) ndims,
-            (index_t*) (*env)->GetLongArrayElements(env, shape, 0),
-            (index_t*) (*env)->GetLongArrayElements(env, strides, 0)
+            shape_index_t,
+            strides_index_t
         )
     );
+
+    free(shape_index_t);
+    free(strides_index_t);
+
+    return ret;
 }
 
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_sample
   (JNIEnv * env, jclass klass) {
     ndarray * arr = malloc(sizeof(ndarray));
     double * data = (double*) malloc(3 * sizeof(double));
-    index_t * shapes = malloc(sizeof(unsigned));
-    index_t * strides = malloc(sizeof(unsigned));
+    index_t * shapes = malloc(sizeof(index_t));
+    index_t * strides = malloc(sizeof(index_t));
     
     data[0] = 6.0;
     data[1] = 5.0;
@@ -123,11 +147,11 @@ JNIEXPORT jdouble JNICALL Java_gpu_matrix_NDArray_get___3J
     ndarray * arr = retrieve_ndarray(env, this);
     const index_t ndims = arr->ndims;
     const index_t * strides = arr->strides;
-    const index_t * indexes = (index_t*) (*env)->GetLongArrayElements(env, indexes_arg, 0);
+    const jlong * indexes = (*env)->GetLongArrayElements(env, indexes_arg, 0);
     index_t pos = 0;
 
     for(int i = 0 ; i < ndims ; i++) {
-        pos += indexes[i] * strides[i];
+        pos += ((index_t) indexes[i]) * strides[i];
     }
 
     return arr->data[pos];
@@ -148,13 +172,15 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_set__JJD
 }
 
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_set___3JD
-  (JNIEnv * env, jobject this, jlongArray indexes, jdouble v) {
+  (JNIEnv * env, jobject this, jlongArray indexes_arg, jdouble v) {
     ndarray * arr = retrieve_ndarray(env, this);
+    index_t * indexes = jlong_to_index_t(
+        (*env)->GetLongArrayElements(env, indexes_arg, 0),
+        arr->ndims);
     ndarray_set_nd(
-        arr,
-        (*env)->GetLongArrayElements(env, indexes, 0),
-        v
+        arr, indexes, v
     );
+    free(indexes);
     return this;
 }
 
@@ -176,14 +202,14 @@ JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print
     // print shape
     puts("Shape:");
     for(int i = 0 ; i < ndims ; i++) {
-        printf("%lu ", shape[i]);
+        printf("%lu ", (unsigned long) shape[i]);
     }
     puts("");
 
     // print strides
     puts("Stides:");
     for(int i = 0 ; i < ndims ; i++) {
-        printf("%lu ", strides[i]);
+        printf("%lu ", (unsigned long) strides[i]);
     }
     puts("");
     

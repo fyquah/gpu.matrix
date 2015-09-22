@@ -27,7 +27,7 @@ void ndarray_release(ndarray *);
 // getters and setters
 void ndarray_set_1d(ndarray*, long i, double v);
 void ndarray_set_2d(ndarray*, long i, long j, double v);
-void ndarray_set_nd(ndarray*, const long * indexes, double v);
+void ndarray_set_nd(ndarray*, const index_t * indexes, double v);
 
 // add
 ndarray * ndarray_add(const ndarray *, const ndarray *);
