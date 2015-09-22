@@ -233,9 +233,11 @@ cl_mem map_helper(
             return ret;
         }
     } else if (arr_x->ndims > arr_y->ndims) {
-        // broadcasting, TODO
-        puts("Not implemented!");
-        exit(1);
+        // broadcasting
+        ndarray * broadcasted = ndarray_broadcast(arr_y, arr_x->ndims, arr_x->shape);
+        cl_mem ret = map_helper(cmd_queue, kernel, arr_x, broadcasted);
+        ndarray_release(broadcasted);
+        return ret;
     } else { 
         // arr_x->ndims < arr-y->ndims
         return map_helper(cmd_queue, kernel, arr_y, arr_x);
@@ -277,7 +279,7 @@ ndarray * map_factory(const ndarray * arr_x, const ndarray * arr_y, kernel_type_
         kernels_get(context_get(), device_get(), kernel_id),
         arr_x, arr_y
     );
-    ndarray * output = ndarray_clone_structure(arr_x);
+    ndarray * output = ndarray_clone_structure(arr_x->ndims >= arr_y->ndims ? arr_x : arr_y);
     clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE, 0, ndarray_datasize(arr_x), output->data, 0, NULL, NULL);
 
     // free unused memory
