@@ -32,6 +32,8 @@ size_t * get_global_work_size(const ndarray * arr_x, const ndarray * arr_y, size
         ret[0] = ndarray_elements_count(big); 
         return ret;
     }
+
+    return ret;
 }
 
 // returns a new ndarray with the strides modified to be equal to those in the arguments
@@ -82,10 +84,6 @@ ndarray * ndarray_coerce_stride(const ndarray * arr, index_t * strides) {
     }
 
     return output;
-}
-
-void * broadcast_recur() {
-
 }
 
 // returns a new copy of arr which is broadcasted to the supplied dimension
