@@ -1,16 +1,18 @@
 #include "kernels.h"
 
+#define SOURCE_PREFIX "resources/opencl/"
+
 const char * get_program_file_name(kernel_type_t k) {
     // wtf: 
     static const char * file_names[] = {
-        "resources/opencl/arimethic.cl",
-        "resources/opencl/arimethic.cl",
-        "resources/opencl/arimethic.cl",
-        "resources/opencl/arimethic.cl",
-        "resources/opencl/arimethic.cl",
-        "resources/opencl/arimethic.cl",
-        "resources/opencl/arimethic.cl",
-        "resources/opencl/arimethic.cl",
+        SOURCE_PREFIX "arimethic.cl",
+        SOURCE_PREFIX "arimethic.cl",
+        SOURCE_PREFIX "arimethic.cl",
+        SOURCE_PREFIX "arimethic.cl",
+        SOURCE_PREFIX "arimethic.cl",
+        SOURCE_PREFIX "arimethic.cl",
+        SOURCE_PREFIX "arimethic.cl",
+        SOURCE_PREFIX "arimethic.cl",
     };
 
     return file_names[k];
@@ -40,7 +42,9 @@ cl_kernel kernels_get(cl_context context, cl_device_id device, kernel_type_t ker
         NULL, &status
     );
     status = clBuildProgram(
-        program, 1, &device, NULL, NULL, NULL
+        program, 1, &device,
+        "-I " SOURCE_PREFIX,
+        NULL, NULL
     );
     if (status == CL_BUILD_PROGRAM_FAILURE) {
         size_t log_size;
