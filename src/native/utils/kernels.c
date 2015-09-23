@@ -1,9 +1,16 @@
 #include "kernels.h"
 
 const char * get_program_file_name(kernel_type_t k) {
+    // wtf: 
     static const char * file_names[] = {
-        "opencl/add.cl",
-        "opencl/add_scalar.cl",
+        "resources/opencl/arimethic.cl",
+        "resources/opencl/arimethic.cl",
+        "resources/opencl/arimethic.cl",
+        "resources/opencl/arimethic.cl",
+        "resources/opencl/arimethic.cl",
+        "resources/opencl/arimethic.cl",
+        "resources/opencl/arimethic.cl",
+        "resources/opencl/arimethic.cl",
     };
 
     return file_names[k];
@@ -11,8 +18,10 @@ const char * get_program_file_name(kernel_type_t k) {
 
 const char * get_cl_function_name(kernel_type_t k) {
     static const char * module_names[] = {
-        "add",
-        "add_scalar",
+        "add", "add_scalar",
+        "sub", "sub_scalar",
+        "mul", "mul_scalar",
+        "div", "div_scalar"
     };
 
     return module_names[k];

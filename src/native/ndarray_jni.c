@@ -121,12 +121,25 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_clone
     );
 }
 
-JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_add
-  (JNIEnv * env, jobject this, jobject other) {
-    ndarray * arr_x = retrieve_ndarray(env, this);
-    ndarray * arr_y = retrieve_ndarray(env, other);
-    return package_ndarray(env, ndarray_add(arr_x, arr_y));
-}
+#define NDARRAY_JNI_ARIMETHIC_FACTORY(op_name) \
+\
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_##op_name##__Lgpu_matrix_NDArray_2\
+  (JNIEnv * env, jobject this, jobject other) {\
+    ndarray * arr_x = retrieve_ndarray(env, this);\
+    ndarray * arr_y = retrieve_ndarray(env, other);\
+    return package_ndarray(env, ndarray_##op_name(arr_x, arr_y));\
+}\
+\
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_##op_name##__D \
+  (JNIEnv * env, jobject this, jdouble y) {\
+    ndarray * arr = retrieve_ndarray(env, this);\
+    return package_ndarray(env, ndarray_##op_name##_scalar(arr, (double) y));\
+}\
+
+NDARRAY_JNI_ARIMETHIC_FACTORY(add);
+NDARRAY_JNI_ARIMETHIC_FACTORY(sub);
+NDARRAY_JNI_ARIMETHIC_FACTORY(mul);
+NDARRAY_JNI_ARIMETHIC_FACTORY(div);
 
 JNIEXPORT jdouble JNICALL Java_gpu_matrix_NDArray_get__J
   (JNIEnv * env, jobject this, jlong i) {

@@ -43,13 +43,23 @@ public class NDArray {
     public native long[] shape();
     public native NDArray clone();
 
-    public native NDArray add(NDArray y);
+    // getters and setters
     public native double get(long i);
     public native double get(long i, long j);
     public native double get(long [] indexes);
     public native NDArray set(long i, double v);
     public native NDArray set(long i, long j, double v);
     public native NDArray set(long[] shape, double v);
+
+    // arimethic ops
+    public native NDArray add(NDArray y);
+    public native NDArray add(double y);
+    public native NDArray sub(NDArray y);
+    public native NDArray sub(double y);
+    public native NDArray mul(NDArray y);
+    public native NDArray mul(double y);
+    public native NDArray div(NDArray y);
+    public native NDArray div(double y);
 
     // For debuggin purposes
     public native void print();

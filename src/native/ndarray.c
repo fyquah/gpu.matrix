@@ -85,10 +85,6 @@ ndarray * ndarray_coerce_stride(const ndarray * arr, index_t * strides) {
     return output;
 }
 
-void * broadcast_recur() {
-
-}
-
 // returns a new copy of arr which is broadcasted to the supplied dimension
 // assumes that ndims is <= arr->ndims and shape is compatible
 // compatible means the smallest arr_x->ndims dimensions in shape
