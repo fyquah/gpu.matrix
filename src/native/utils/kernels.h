@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <jni.h>
 #include "CL/cl.h"
 #include "files.h"
 
