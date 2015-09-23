@@ -271,3 +271,17 @@
       (count indexes) [m m] indexes
       (.set m (long-array indexes) v))))
 
+(extend-protocol PMatrixAdd
+  (matrix-add [m a]
+    (.add m m))
+  (matrix-sub [m b]
+    (.add m a)))
+
+(extend-protocol PMatrixMultiply
+  (element-multiply [m a]
+    (.mul m a)))
+
+(extend-protocol PMatrixDivide
+  (element-divide [m a]
+    (.div m a)))
+
