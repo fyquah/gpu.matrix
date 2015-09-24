@@ -5,7 +5,7 @@
             [clojure.core.matrix :as m]
             [clojure.core.matrix.utils :refer [error]]
             [clojure.string :as str])
-  (:import gpu.matrix.NDArray))
+  (:import gpu.matrix.NDArray gpu.matrix.JVMLoader))
 
 (set! *warn-on-reflection* true)
 

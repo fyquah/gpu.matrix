@@ -1,12 +1,14 @@
 package gpu.matrix;
 import java.nio.ByteBuffer;
 import gpu.matrix.ArrayHelper;
+import gpu.matrix.JVMLoader;
 
 public class NDArray {
     // Static methods
     static {
         System.loadLibrary("gpu-matrix");
         init();
+        JVMLoader.init();
     }
 
     public native static NDArray sample();
@@ -32,8 +34,7 @@ public class NDArray {
     private native static void init();
 
     // constructors
-    public NDArray(){
-    }
+    public NDArray(){}
 
     // instance
     // bb is the ByteBuffer used to store the pointer to the ndarray object in native code
@@ -61,17 +62,9 @@ public class NDArray {
     public native NDArray div(NDArray y);
     public native NDArray div(double y);
 
-    // For debuggin purposes
-    public native void print();
     @Override
     protected native void finalize();
 
-    // for testing purposes
-    public static void main(String[] args) {
-        NDArray m = NDArray.newInstance(new double[][]{{ 0.7, 5, 6}, { 1, 2, 3}});
-        m.print();
-        m.set(0, 2, 855.0);
-        m.set(new long[]{0, 1}, 490.23);
-        m.print();
-    }
+    // For debuggin purposes
+    public native void print();
 }

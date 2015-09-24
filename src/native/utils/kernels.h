@@ -21,8 +21,10 @@ typedef const unsigned kernel_type_t;
 #define KERNEL_DIV_SCALAR 7
 
 void gpu_matrix_kernel_set_jvm(JNIEnv *);
+char * get_file_contents(const char *);
 const char * get_program_file_name(kernel_type_t);
 const char * get_cl_function_name(kernel_type_t);
+char * get_file_contents(const char * filename);
 cl_kernel kernels_get(cl_context, cl_device_id, kernel_type_t);
 
 #endif
