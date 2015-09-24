@@ -1,6 +1,7 @@
 #ifndef KERNELS_H
 #define KERNELS_H
 
+#include <assert.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -19,6 +20,7 @@ typedef const unsigned kernel_type_t;
 #define KERNEL_DIV 6
 #define KERNEL_DIV_SCALAR 7
 
+void gpu_matrix_kernel_set_jvm(JNIEnv *);
 const char * get_program_file_name(kernel_type_t);
 const char * get_cl_function_name(kernel_type_t);
 cl_kernel kernels_get(cl_context, cl_device_id, kernel_type_t);

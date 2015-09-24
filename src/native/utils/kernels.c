@@ -2,18 +2,31 @@
 
 #define SOURCE_PREFIX "resources/opencl/"
 
-JNIEnv * JNI_ENV = NULL;
+static JavaVM * jvm;
+
+void gpu_matrix_kernel_set_jvm(JNIEnv * env) {
+    jint rs = (*env)->GetJavaVM(env, &jvm);
+    // TODO: Load the kernel namespace
+    assert(rs == JNI_OK);
+}
 
 char * get_file_contents(const char * filename) {
-    if (JNI_ENV == NULL) {
-        char * full_path = malloc((strlen(SOURCE_PREFIX) + strlen(filename)) * sizeof(char));
+    if (jvm == NULL) {
+        // JVM is not initialized, load from resources directory 
+        char * full_path = malloc((1 + strlen(SOURCE_PREFIX) + strlen(filename)) * sizeof(char));
+        strcpy(full_path, SOURCE_PREFIX);
+        strcat(full_path, filename);
         char * contents = slurp(full_path);
         free(full_path);
         return contents;
     } else {
-        puts("Not implemented! get_file_contentx, utils/kernels.c");
-        exit(1);
-        return "";
+        // JVM is initialized, load from JVM
+        char * full_path = malloc((1 + strlen(SOURCE_PREFIX) + strlen(filename)) * sizeof(char));
+        strcpy(full_path, SOURCE_PREFIX);
+        strcat(full_path, filename);
+        char * contents = slurp(full_path);
+        free(full_path);
+        return contents;
     }
 }
 

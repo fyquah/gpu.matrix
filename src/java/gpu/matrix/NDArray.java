@@ -5,7 +5,7 @@ import gpu.matrix.ArrayHelper;
 public class NDArray {
     // Static methods
     static {
-        System.loadLibrary("gpu-matrix-ndarray");
+        System.loadLibrary("gpu-matrix");
         init();
     }
 
