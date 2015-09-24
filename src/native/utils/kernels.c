@@ -14,7 +14,7 @@ char * get_file_contents(const char * filename) {
 
     if (jvm == NULL) {
         // JVM is not initialized, load from resources directory 
-        strcpy(full_path, "resources/");
+        strcpy(full_path, SOURCE_PREFIX);
         strcat(full_path, "opencl/");
         strcat(full_path, filename);
         char * contents = slurp(full_path);
@@ -86,8 +86,8 @@ const char * get_cl_function_name(kernel_type_t k) {
 
 const char * get_source_include_directory() {
     if (jvm == NULL) {
-        char * results = malloc(1 + strlen("-I " SOURCE_PREFIX "opencl"));
-        strcpy(results, "-I " SOURCE_PREFIX "opencl");
+        char * results = malloc(1 + strlen("-I " SOURCE_PREFIX "opencl/"));
+        strcpy(results, "-I " SOURCE_PREFIX "opencl/");
         return results;
     } else {
         jint rs;
