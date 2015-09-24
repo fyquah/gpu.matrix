@@ -1,4 +1,10 @@
-#include "CL/cl.h"
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "../libs/cl.h"
+#include "files.h"
 
 typedef struct {
    cl_context context;

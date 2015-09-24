@@ -88,7 +88,6 @@ cl_kernel kernels_get(cl_context context, cl_device_id device, kernel_type_t ker
         printf("%s\n", log);
     }
     kernel = clCreateKernel(program, cl_function_name, &status);
-
     free((void*) file_contents);
     clReleaseProgram(program);
     return kernel;

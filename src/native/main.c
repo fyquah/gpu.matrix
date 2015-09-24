@@ -4,9 +4,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-// OpenCL
-#include <CL/cl.h>
-
 // Our stuff
 #include "utils.h"
 #include "ndarray.h"
