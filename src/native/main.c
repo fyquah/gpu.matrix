@@ -17,8 +17,8 @@ void range(double * data, int n) {
 ndarray * sample_a() {
     double data[24];
     range(data, 24);
-    index_t strides[2] = { 4, 1 };
-    index_t shape[2] = { 6, 4 };
+    index_t strides[2] = { 3, 1 };
+    index_t shape[2] = { 6, 3 };
     return ndarray_constructor(data, 2, shape, strides);
 }
 
@@ -26,17 +26,18 @@ ndarray * sample_b() {
     double data[4];
     range(data, 4);
     index_t strides[1] = { 1 };
-    index_t shape[1] = { 4 };
+    index_t shape[1] = { 3 };
     return ndarray_constructor(data, 1, shape, strides);
 }
 
 int main() {
     gpu_matrix_init();
     ndarray * mat = sample_a();
-    ndarray * arr = ndarray_add(mat, sample_b());
+    ndarray * arr = ndarray_broadcast(sample_b(), mat->ndims, mat->shape);
     printf("dimensions: %u\n", arr->ndims);
     printf("elements count: %u\n", ndarray_elements_count(arr));
     puts("data : ");
+    arr = ndarray_add(arr, arr);
     for (int i = 0 ; i < ndarray_elements_count(arr) ; i++) { 
         printf("%f ", arr->data[i]);
     }

@@ -9,6 +9,18 @@
    __typeof__ (b) _b = (b); \
  _a > _b ? _a : _b; })
 
+// note: TRY_AND_CATCH_ERROR macro is defined everytime it is required - 
+// we may require a slightly different version for depending on where it is used
+// (eg: sometimes we want to return, sometimes we just want to exit)
+// behavious is largely similiar in the same file, but should vary in different ones
+#define TRY_AND_CATCH_ERROR(statement, status_var) \
+statement;\
+if (status_var != CL_SUCCESS) { \
+    fprintf(stderr, "An error occured in running gpu.matrix at line %u of %s\n" , \
+            __LINE__, __FILE__);  \
+    exit(1); \
+}
+
 size_t * get_global_work_size(const ndarray * arr_x, const ndarray * arr_y, size_t * len) {
     const ndarray * big = (arr_x->ndims >= arr_y-> ndims) ? arr_x : arr_y;
     size_t ndims = (size_t) big->ndims;
@@ -153,52 +165,182 @@ cl_mem map_run_kernel(
     const index_t max_dims = MAX(arr_x->ndims, arr_y->ndims);
 
     number_of_elements = ndarray_elements_count(arr_x);
-    buffer_x = buffers_create(CL_MEM_READ_ONLY, datasize, NULL, &status);                                 
-    buffer_y = buffers_create(CL_MEM_READ_ONLY, datasize, NULL, &status);                                 
-    buffer_shape_x = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * arr_x->ndims, NULL, &status);
-    buffer_strides_x = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * arr_x->ndims, NULL, &status);
-    buffer_shape_y = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * arr_y->ndims, NULL, &status);
-    buffer_strides_y = buffers_create(CL_MEM_READ_ONLY, sizeof(index_t) * arr_y->ndims, NULL, &status);
-    buffer_output = buffers_create(CL_MEM_WRITE_ONLY,       
-            datasize, NULL, &status);                       
-    status = clEnqueueWriteBuffer(cmd_queue, buffer_x,      
-            CL_FALSE, 0, datasize,                          
-            arr_x->data, 0, NULL, NULL);
-    status = clEnqueueWriteBuffer(cmd_queue, buffer_shape_x,      
-            CL_FALSE, 0, sizeof(index_t) * arr_x->ndims,                          
-            arr_x->shape, 0, NULL, NULL);
-    status = clEnqueueWriteBuffer(cmd_queue, buffer_strides_x,      
-            CL_FALSE, 0, sizeof(index_t) * arr_x->ndims,                          
-            arr_x->strides, 0, NULL, NULL);
-    status = clEnqueueWriteBuffer(cmd_queue, buffer_y,      
-            CL_FALSE, 0, datasize,                          
-            arr_y->data, 0, NULL, NULL);
-    status = clEnqueueWriteBuffer(cmd_queue, buffer_shape_y,
-            CL_FALSE, 0, sizeof(index_t) * arr_y->ndims,                          
-            arr_y->shape, 0, NULL, NULL);
-    status = clEnqueueWriteBuffer(cmd_queue, buffer_strides_y,      
-            CL_FALSE, 0, sizeof(index_t) * arr_y->ndims,
-            arr_y->strides, 0, NULL, NULL);
-    status = clSetKernelArg(kernel, 0, sizeof(cl_mem),      
-            &buffer_x);                             
-    status = clSetKernelArg(kernel, 1, sizeof(cl_mem),
-            &buffer_shape_x);
-    status = clSetKernelArg(kernel, 2, sizeof(cl_mem),
-            &buffer_strides_x);
-    status = clSetKernelArg(kernel, 3, sizeof(unsigned),
-            &arr_x->ndims);
-    status = clSetKernelArg(kernel, 4, sizeof(cl_mem),      
-            &buffer_y);                             
-    status = clSetKernelArg(kernel, 5, sizeof(cl_mem),
-            &buffer_shape_y);
-    status = clSetKernelArg(kernel, 6, sizeof(cl_mem),
-            &buffer_strides_y);
-    status = clSetKernelArg(kernel, 7, sizeof(unsigned),
-            &arr_y->ndims);
-    status = clSetKernelArg(kernel, 8, sizeof(cl_mem),
-            &buffer_output);
-    status = clEnqueueNDRangeKernel(cmd_queue, kernel, global_work_size_dims,
-            NULL, global_work_size, NULL, 0, NULL, NULL);
+    TRY_AND_CATCH_ERROR(
+        buffer_x = buffers_create(CL_MEM_READ_ONLY, datasize, NULL, &status),
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        buffer_y = buffers_create(CL_MEM_READ_ONLY, datasize, NULL, &status),
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        buffer_shape_x = buffers_create(
+            CL_MEM_READ_ONLY,
+            sizeof(index_t) * arr_x->ndims,
+            NULL,
+            &status
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        buffer_strides_x = buffers_create(
+            CL_MEM_READ_ONLY,
+            sizeof(index_t) * arr_x->ndims,
+            NULL,
+            &status
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        buffer_shape_y = buffers_create(
+            CL_MEM_READ_ONLY,
+            sizeof(index_t) * arr_y->ndims,
+            NULL,
+            &status
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        buffer_strides_y = buffers_create(
+            CL_MEM_READ_ONLY,
+            sizeof(index_t) * arr_y->ndims,
+            NULL,
+            &status
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        buffer_output = buffers_create(
+            CL_MEM_WRITE_ONLY,
+            datasize,
+            NULL,
+            &status
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clEnqueueWriteBuffer(
+            cmd_queue, buffer_x,
+            CL_FALSE, 0, datasize,
+            arr_x->data, 0, NULL, NULL
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clEnqueueWriteBuffer(
+            cmd_queue, buffer_shape_x,
+            CL_FALSE, 0,
+            sizeof(index_t) * arr_x->ndims,
+            arr_x->shape, 0, NULL, NULL
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clEnqueueWriteBuffer(
+            cmd_queue, buffer_strides_x,
+            CL_FALSE, 0,
+            sizeof(index_t) * arr_x->ndims,
+            arr_x->strides,
+            0, NULL, NULL
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clEnqueueWriteBuffer(
+            cmd_queue, buffer_y,
+            CL_FALSE, 0, datasize,
+            arr_y->data, 0, NULL, NULL
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clEnqueueWriteBuffer(
+            cmd_queue, buffer_shape_y,
+            CL_FALSE, 0,
+            sizeof(index_t) * arr_y->ndims,
+            arr_y->shape, 0, NULL, NULL
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clEnqueueWriteBuffer(
+            cmd_queue, buffer_strides_y,
+            CL_FALSE, 0,
+            sizeof(index_t) * arr_y->ndims,
+            arr_y->strides, 0, NULL, NULL
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clSetKernelArg(
+            kernel, 0, sizeof(cl_mem),
+            &buffer_x
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clSetKernelArg(
+            kernel, 1, sizeof(cl_mem),
+            &buffer_shape_x
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clSetKernelArg(
+            kernel, 2, sizeof(cl_mem),
+            &buffer_strides_x
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clSetKernelArg(kernel, 3,
+            sizeof(index_t),
+            &arr_x->ndims
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clSetKernelArg(
+            kernel, 4, sizeof(cl_mem),
+            &buffer_y
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clSetKernelArg(
+            kernel, 5, sizeof(cl_mem),
+            &buffer_shape_y
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clSetKernelArg(
+            kernel, 6, sizeof(cl_mem),
+            &buffer_strides_y
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clSetKernelArg(
+            kernel, 7, sizeof(index_t),
+            &arr_y->ndims
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clSetKernelArg(
+            kernel, 8, sizeof(cl_mem),
+            &buffer_output
+        );,
+        status
+    );
+    TRY_AND_CATCH_ERROR(
+        status = clEnqueueNDRangeKernel(
+            cmd_queue, kernel, global_work_size_dims,
+            NULL, global_work_size, NULL, 0, NULL, NULL
+        );,
+        status
+    );
 
     // free memory
     free(global_work_size);
@@ -232,8 +374,33 @@ cl_mem map_helper(
     } else if (arr_x->ndims > arr_y->ndims) {
         // broadcasting
         ndarray * broadcasted = ndarray_broadcast(arr_y, arr_x->ndims, arr_x->shape);
+        puts("Dump broadcasted:");
+        for (index_t i = 0 ; i < ndarray_elements_count(broadcasted) ; i++) {
+            printf("%.2f ", broadcasted->data[i]);
+        }
+        puts("Strides");
+        for (index_t i =0  ; i < broadcasted->ndims ; i++) {
+            printf("%d ", broadcasted->strides[i]);
+        }
+        puts("Shape");
+        for (index_t i =0  ; i < broadcasted->ndims ; i++) {
+            printf("%d ", broadcasted->shape[i]);
+        }
+        puts("");
+        puts("Dump proper");
+        for (index_t i = 0 ; i < ndarray_elements_count(broadcasted) ; i++) {
+            printf("%.2f ", arr_x->data[i]);
+        }
+        puts("Strides");
+        for (index_t i =0  ; i < arr_x->ndims ; i++) {
+            printf("%d ", arr_x->strides[i]);
+        }
+        puts("Shape");
+        for (index_t i =0  ; i < arr_x->ndims ; i++) {
+            printf("%d ", arr_x->shape[i]);
+        }
+        puts("");
         cl_mem ret = map_helper(cmd_queue, kernel, arr_x, broadcasted);
-        ndarray_release(broadcasted);
         return ret;
     } else { 
         // arr_x->ndims < arr-y->ndims

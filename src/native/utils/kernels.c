@@ -2,6 +2,18 @@
 
 #define SOURCE_PREFIX "../../resources/"
 
+// note: TRY_AND_CATCH_ERROR macro is defined everytime it is required - 
+// we may require a slightly different version for depending on where it is used
+// (eg: sometimes we want to return, sometimes we just want to exit)
+// behavious is largely similiar in the same file, but should vary in different ones
+#define TRY_AND_CATCH_ERROR(statement, status_var) \
+statement;\
+if (status_var != CL_SUCCESS) { \
+    fprintf(stderr, "An error occured in running gpu.matrix at line %u of %s\n" , \
+            __LINE__, __FILE__);  \
+    exit(1); \
+}
+
 static JavaVM * jvm;
 
 void gpu_matrix_kernel_set_jvm(JNIEnv * env) {
@@ -129,11 +141,15 @@ cl_kernel kernels_get(cl_context context, cl_device_id device, kernel_type_t ker
     const char * filename = get_program_file_name(kernel_type);
     const char * file_contents = get_file_contents(filename);
     const char * cl_function_name = get_cl_function_name(kernel_type);
-
-    program = clCreateProgramWithSource(
-        context, 1, (const char **) &file_contents,
-        NULL, &status
+ 
+    TRY_AND_CATCH_ERROR(
+        program = clCreateProgramWithSource(
+            context, 1, (const char **) &file_contents,
+            NULL, &status
+        );,
+        status
     );
+
     include_dir = get_source_include_directory();
     status = clBuildProgram(
         program, 1, &device,
@@ -154,7 +170,14 @@ cl_kernel kernels_get(cl_context context, cl_device_id device, kernel_type_t ker
         // Print the log
         printf("%s\n", log);
     }
-    kernel = clCreateKernel(program, cl_function_name, &status);
+    TRY_AND_CATCH_ERROR(
+        kernel = clCreateKernel(
+            program,
+            cl_function_name,
+            &status
+        );,
+        status
+    );
     free((void*) file_contents);
     clReleaseProgram(program);
     return kernel;
