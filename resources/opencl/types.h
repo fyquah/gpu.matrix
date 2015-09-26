@@ -1,3 +1,6 @@
+#ifndef TYPE_H
+#define TYPE_H
+
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 struct ndarray {
     double * data;
@@ -7,3 +10,5 @@ struct ndarray {
 };
 typedef struct ndarray ndarray;
 typedef unsigned index_t;
+
+#endif TYPE_H

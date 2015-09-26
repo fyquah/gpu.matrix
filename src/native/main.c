@@ -36,7 +36,7 @@ ndarray * sample_b() {
 int main() {
     gpu_matrix_init();
     ndarray * arr = sample_a();
-    arr = ndarray_add_scalar(arr, 111);
+    arr = ndarray_add(arr, arr);
     printf("dimensions: %u\n", arr->ndims);
     printf("elements count: %u\n", ndarray_elements_count(arr));
     puts("data:");

@@ -14,6 +14,7 @@
             return 0; \
         } \
     } \
+    return 1; \
 }
 
 COPY_FACTORY(size_t);

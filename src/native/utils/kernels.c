@@ -1,6 +1,6 @@
 #include "kernels.h"
 
-#define SOURCE_PREFIX "../../resources/"
+#define RESOURCES_PREFIX "../../resources/"
 
 // note: TRY_AND_CATCH_ERROR macro is defined everytime it is required - 
 // we may require a slightly different version for depending on where it is used
@@ -14,19 +14,22 @@ if (status_var != CL_SUCCESS) { \
     exit(1); \
 }
 
-static JavaVM * jvm;
+// global buffers
+static JavaVM * jvm;                     // to load resources' path
+cl_kernel kernels_buffer[KERNELS_COUNT]; // to cache kernels
+cl_program program_buffer;               // to cache programs
 
 void gpu_matrix_kernel_set_jvm(JNIEnv * env) {
     jint rs = (*env)->GetJavaVM(env, &jvm);
     assert(rs == JNI_OK);
 }
 
-char * get_file_contents(const char * filename) {
+static char * get_file_contents(const char * filename) {
     char full_path[10000];
 
     if (jvm == NULL) {
         // JVM is not initialized, load from resources directory 
-        strcpy(full_path, SOURCE_PREFIX);
+        strcpy(full_path, RESOURCES_PREFIX);
         strcat(full_path, "opencl/");
         strcat(full_path, filename);
         char * contents = slurp(full_path);
@@ -57,7 +60,7 @@ char * get_file_contents(const char * filename) {
 
         // load results into a C string pointer
         contents_length = (*env)->GetStringUTFLength(env, (jstring) result);
-        contents_holder = (*env)->GetStringUTFChars(env, (jstring) result, NULL);
+        contents_holder = (char*) (*env)->GetStringUTFChars(env, (jstring) result, NULL);
         contents = malloc((1 + contents_length) * sizeof(char));
         for (int i = 0 ; i < contents_length ; i++) {
             contents[i] = contents_holder[i];
@@ -67,22 +70,6 @@ char * get_file_contents(const char * filename) {
 
         return contents;
     }
-}
-
-const char * get_program_file_name(kernel_type_t k) {
-    // wtf: 
-    static const char * file_names[] = {
-        "arimethic.cl",
-        "arimethic.cl",
-        "arimethic.cl",
-        "arimethic.cl",
-        "arimethic.cl",
-        "arimethic.cl",
-        "arimethic.cl",
-        "arimethic.cl",
-    };
-
-    return file_names[k];
 }
 
 const char * get_cl_function_name(kernel_type_t k) {
@@ -96,10 +83,10 @@ const char * get_cl_function_name(kernel_type_t k) {
     return module_names[k];
 }
 
-const char * get_source_include_directory() {
+char * get_compilation_options() {
     if (jvm == NULL) {
-        char * results = malloc(1 + strlen("-I " SOURCE_PREFIX "opencl/"));
-        strcpy(results, "-I " SOURCE_PREFIX "opencl/");
+        char * results = malloc(1 + strlen("-I " RESOURCES_PREFIX "opencl/"));
+        strcpy(results, "-I " RESOURCES_PREFIX "opencl/");
         return results;
     } else {
         jint rs;
@@ -121,7 +108,8 @@ const char * get_source_include_directory() {
 
         // load results into a C string pointer
         contents_length = (*env)->GetStringUTFLength(env, (jstring) result);
-        contents_holder = (*env)->GetStringUTFChars(env, (jstring) result, NULL);
+        contents_holder = (char*) (*env)->GetStringUTFChars(
+                env, (jstring) result, NULL);
         contents = malloc((1 + contents_length) * sizeof(char));
         for (int i = 0 ; i < contents_length ; i++) {
             contents[i] = contents_holder[i];
@@ -133,43 +121,105 @@ const char * get_source_include_directory() {
     }
 }
 
-cl_kernel kernels_get(cl_context context, cl_device_id device, kernel_type_t kernel_type) {
+static cl_program compile_program(
+        cl_context context,
+        cl_device_id device
+    ) {
     cl_int status;
-    cl_kernel kernel;
     cl_program program;
-    char * include_dir;
-    const char * filename = get_program_file_name(kernel_type);
-    const char * file_contents = get_file_contents(filename);
-    const char * cl_function_name = get_cl_function_name(kernel_type);
- 
+    char * file_contents, *build_options;
+
+    // loading the file contents
+    file_contents = get_file_contents("main.cl");
+
+    // create the program
+    // TODO: Load program from binary if it exists
+    // Overhead here is acceptable, as this function is called only once
     TRY_AND_CATCH_ERROR(
         program = clCreateProgramWithSource(
-            context, 1, (const char **) &file_contents,
+            context, 1, (const char**) &file_contents,
             NULL, &status
         );,
         status
     );
 
-    include_dir = get_source_include_directory();
+    // compile the program
+    build_options = get_compilation_options();
     status = clBuildProgram(
         program, 1, &device,
-        include_dir,
+        (const char*) build_options,
         NULL, NULL
     );
-    free(include_dir);
-    if (status == CL_BUILD_PROGRAM_FAILURE) {
-        size_t log_size;
-        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
 
-        // Allocate memory for the log
-        char *log = (char *) malloc(log_size);
+    // catch any compilation errors here
+    if (status != CL_SUCCESS) {
+        if (status == CL_BUILD_PROGRAM_FAILURE) {
+            size_t log_size;
+            char * log;
+            clGetProgramBuildInfo(
+                program,
+                device,
+                CL_PROGRAM_BUILD_LOG,
+                0,
+                NULL,
+                &log_size
+            );
 
-        // Get the log
-        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+            // Allocate memory for the log
+            log = (char *) malloc(log_size);
 
-        // Print the log
-        printf("%s\n", log);
+            // Get the log
+            clGetProgramBuildInfo(
+                program,
+                device,
+                CL_PROGRAM_BUILD_LOG,
+                log_size,
+                log,
+                NULL
+            );
+
+            // Print the log
+            fprintf(stderr, "%s\n", log);
+
+            // exit program!
+        }
+        fprintf(stderr, "An error occured at line %u in the file %s",
+            __LINE__, __FILE__);
+        exit(1);
     }
+
+    free((void*) build_options);
+    free((void*) file_contents);
+
+    // cache the results
+    program_buffer = program;
+
+    return program;
+}
+
+cl_program program_get(cl_context context, cl_device_id device) {
+    if (program_buffer == NULL) {
+        return compile_program(context, device);
+    } else {
+        return program_buffer;
+    }
+}
+
+static cl_kernel compile_kernel(
+        cl_context context,
+        cl_device_id device,
+        kernel_type_t kernel_type
+    ) {
+    cl_int status;
+    cl_kernel kernel;
+    cl_program program;
+    const char * cl_function_name = get_cl_function_name(kernel_type);
+ 
+
+    // Try obtaining the cached program or compiling the 
+    // program from scartch
+    program = program_get(context, device);
+
     TRY_AND_CATCH_ERROR(
         kernel = clCreateKernel(
             program,
@@ -178,7 +228,19 @@ cl_kernel kernels_get(cl_context context, cl_device_id device, kernel_type_t ker
         );,
         status
     );
-    free((void*) file_contents);
-    clReleaseProgram(program);
+
+    // cache the results
+    kernels_buffer[kernel_type] = kernel; 
+
     return kernel;
 }
+
+cl_kernel kernels_get(cl_context context, cl_device_id device, kernel_type_t kernel_type) {
+
+    if (kernels_buffer[kernel_type] != NULL) {
+        return kernels_buffer[kernel_type];
+    } else {
+        return compile_kernel(context, device, kernel_type); 
+    }
+}
+

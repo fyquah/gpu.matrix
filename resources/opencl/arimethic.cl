@@ -1,3 +1,6 @@
+#ifndef ARIMETHIC_CL
+#define ARIMETHIC_CL
+
 #include <types.h>
 
 // multipurpose arimethic kernels
@@ -68,3 +71,5 @@ ARIMETHIC_FACTORY(sub, -)
 ARIMETHIC_FACTORY(mul, *)
 ARIMETHIC_FACTORY(div, /)
 
+
+#endif ARIMETHIC_CL
