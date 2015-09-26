@@ -1,14 +1,19 @@
 // code structure for arimethic ops:
 
 // NDArray:
-// map_factory => map_helper => map_run_kernel
 // map_factory =>  takes in the numeric objects and kernel_id. Retrieve the appropriate kernel object for kernel_id and create a command queue. Array objects, kernel and cmd_queue are passed to map_helper. 
 // map_helper  => rearranges, broadcast the objects as appropriate, and pass arguments as they are to the map_run_kernel and return the results as a ndarray object
-// map_run_kernel => Takes in the objects and runs the kernels. Returns double*
+// map_run_kernel => Takes in the objects and runs the kernels. modifieds that double*ret argument
+// 
+// map_factory => map_helper => map_run_kernel
+// map_bang_factory => map_bang_helper => map_run_kernel
 //
 // Scalar:
-// map_scalar_factory => map_saclar_helper 
-//
+// map_scalar_factory => map_scalar_run_kernel 
+// map_saclar_bang_factory => map_scalar_run_kernel
+// similiar to non-scalar counterparts
+// note there is no helper for scalar as there is no position switching or coercingd
+// required
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -500,6 +505,42 @@ ndarray * map_scalar_factory(const ndarray * arr_x, double y, kernel_type_t kern
     return output;
 }
 
+void map_bang_helper(
+        cl_command_queue cmd_queue,
+        cl_kernel kernel,
+        ndarray * arr_x,
+        const ndarray * arr_y
+    ) {
+
+    if (arr_x->ndims == arr_y->ndims) {
+
+        if (arr_x->ndims <= 3) {
+            map_run_kernel(cmd_queue, kernel, arr_x, arr_y, arr_x->data);
+        } else {
+            // coerce the strides!
+            ndarray * coerced = ndarray_coerce_stride(arr_y, arr_x->strides);
+            map_run_kernel(cmd_queue, kernel, arr_x, coerced, arr_x->data);
+            ndarray_release(coerced);
+        }
+
+    } else if (arr_x->ndims > arr_y->ndims) {
+        // broadcasting
+        ndarray * broadcasted = ndarray_broadcast(arr_y, arr_x->ndims, arr_x->shape);
+        map_bang_helper(cmd_queue, kernel, arr_x, broadcasted);
+        ndarray_release(broadcasted);
+    } else { 
+        // arr_x->ndims < arr-y->ndims
+        // should not happen in map_bang_helper
+        fprintf(
+            stderr,
+            "An error occured (arr_x->ndims < arr-y->ndims) in running gpu.matrix"
+            "at line %u of %s\n" ,
+            __LINE__, __FILE__
+        );
+        exit(1);
+    }
+}
+
 // map_bang, we assume that arr_x is is compatible with arr_y in the sense
 // that we do not need have to broadcast arr_x to suit arr_y
 // hence, we will by pass map_helper, which handles coercing and broadcasting
@@ -512,35 +553,7 @@ void map_bang_factory(ndarray * arr_x, const ndarray * arr_y, kernel_type_t kern
         kernel_id
     );
 
-    if (arr_x->ndims == arr_y->ndims) {
-        map_run_kernel(
-            cmd_queue,
-            kernel,
-            arr_x,
-            arr_y,
-            arr_x->data
-        );
-    } else if(arr_x->ndims > arr_y->ndims) {
-        ndarray * broadcasted = ndarray_broadcast(
-            arr_y, arr_x->ndims, arr_x->shape          
-        );
-        map_run_kernel(
-            cmd_queue,
-            kernel,
-            arr_x,
-            broadcasted,
-            arr_x->data
-        );
-        ndarray_release(broadcasted);
-    } else {
-        fprintf(
-            stderr,
-            "An error occured (arr_x->ndims < arr-y->ndims) in running gpu.matrix"
-            "at line %u of %s\n" ,
-            __LINE__, __FILE__
-        );
-        exit(1);
-    }
+    map_bang_helper(cmd_queue, kernel, arr_x, arr_y);
 
     // free memory
     clReleaseCommandQueue(cmd_queue);
