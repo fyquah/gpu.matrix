@@ -1,3 +1,15 @@
+// code structure for arimethic ops:
+
+// NDArray:
+// map_factory => map_helper => map_run_kernel
+// map_factory =>  takes in the numeric objects and kernel_id. Retrieve the appropriate kernel object for kernel_id and create a command queue. Array objects, kernel and cmd_queue are passed to map_helper. 
+// map_helper  => rearranges, broadcast the objects as appropriate, and pass arguments as they are to the map_run_kernel and return the results as a ndarray object
+// map_run_kernel => Takes in the objects and runs the kernels. Returns double*
+//
+// Scalar:
+// map_scalar_factory => map_saclar_helper 
+//
+
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -149,11 +161,12 @@ ndarray * ndarray_broadcast(const ndarray * arr, index_t ndims, index_t * shape)
 
 // at this point, arr_x and arr_y are _assumed_ to be in compatible dimensions
 // i.e: the openCL code knows how to handle them. It doesn't mean that arr_x and arr_y are of equal dimensions
-cl_mem map_run_kernel(
+void map_run_kernel(
         cl_command_queue cmd_queue,
         cl_kernel kernel,
         const ndarray * arr_x,
-        const ndarray * arr_y
+        const ndarray * arr_y,
+        double * ret
     ) {
 
     cl_int status;
@@ -161,7 +174,11 @@ cl_mem map_run_kernel(
     cl_mem buffer_output, buffer_x, buffer_y, buffer_shape_x, buffer_strides_x, buffer_shape_y, buffer_strides_y;
     index_t number_of_elements = ndarray_elements_count(arr_x);
     size_t global_work_size_dims;
-    size_t * global_work_size = get_global_work_size(arr_x, arr_y, &global_work_size_dims);
+    size_t * global_work_size = get_global_work_size(
+        arr_x,
+        arr_y,
+        &global_work_size_dims
+    );
     const index_t max_dims = MAX(arr_x->ndims, arr_y->ndims);
 
     number_of_elements = ndarray_elements_count(arr_x);
@@ -342,6 +359,18 @@ cl_mem map_run_kernel(
         status
     );
 
+    clEnqueueReadBuffer(
+        cmd_queue,
+        buffer_output,
+        CL_TRUE,
+        0,
+        number_of_elements * sizeof(double),
+        ret,
+        0,
+        NULL,
+        NULL
+    );
+
     // free memory
     free(global_work_size);
     clReleaseMemObject(buffer_x);
@@ -350,11 +379,10 @@ cl_mem map_run_kernel(
     clReleaseMemObject(buffer_y);
     clReleaseMemObject(buffer_shape_y);
     clReleaseMemObject(buffer_strides_y);
-
-    return buffer_output;
+    clReleaseMemObject(buffer_output);
 }
 
-cl_mem map_helper(
+ndarray * map_helper(
         cl_command_queue cmd_queue,
         cl_kernel kernel,
         const ndarray * arr_x,
@@ -362,45 +390,30 @@ cl_mem map_helper(
     ) {
     
     if (arr_x->ndims == arr_y->ndims) {
+        double * data = malloc(sizeof(double) * ndarray_elements_count(arr_x));
+        ndarray * output;
+
         if (arr_x->ndims <= 3) {
-            return map_run_kernel(cmd_queue, kernel, arr_x, arr_y);
+             map_run_kernel(cmd_queue, kernel, arr_x, arr_y, data);
         } else {
             // coerce the strides!
             ndarray * coerced = ndarray_coerce_stride(arr_y, arr_x->strides);
-            cl_mem ret = map_run_kernel(cmd_queue, kernel, arr_x, coerced);
+            map_run_kernel(cmd_queue, kernel, arr_x, coerced, data);
             ndarray_release(coerced);
-            return ret;
         }
+
+        output = malloc(sizeof(ndarray));
+        output->data = data;
+        output->ndims = arr_x->ndims;
+        output->strides = array_index_t_copy(arr_x->strides, arr_x->ndims);
+        output->shape = array_index_t_copy(arr_x->shape, arr_x->ndims);
+        return output;
+
     } else if (arr_x->ndims > arr_y->ndims) {
         // broadcasting
         ndarray * broadcasted = ndarray_broadcast(arr_y, arr_x->ndims, arr_x->shape);
-        puts("Dump broadcasted:");
-        for (index_t i = 0 ; i < ndarray_elements_count(broadcasted) ; i++) {
-            printf("%.2f ", broadcasted->data[i]);
-        }
-        puts("Strides");
-        for (index_t i =0  ; i < broadcasted->ndims ; i++) {
-            printf("%d ", broadcasted->strides[i]);
-        }
-        puts("Shape");
-        for (index_t i =0  ; i < broadcasted->ndims ; i++) {
-            printf("%d ", broadcasted->shape[i]);
-        }
-        puts("");
-        puts("Dump proper");
-        for (index_t i = 0 ; i < ndarray_elements_count(broadcasted) ; i++) {
-            printf("%.2f ", arr_x->data[i]);
-        }
-        puts("Strides");
-        for (index_t i =0  ; i < arr_x->ndims ; i++) {
-            printf("%d ", arr_x->strides[i]);
-        }
-        puts("Shape");
-        for (index_t i =0  ; i < arr_x->ndims ; i++) {
-            printf("%d ", arr_x->shape[i]);
-        }
-        puts("");
-        cl_mem ret = map_helper(cmd_queue, kernel, arr_x, broadcasted);
+        ndarray * ret = map_helper(cmd_queue, kernel, arr_x, broadcasted);
+        ndarray_release(broadcasted);
         return ret;
     } else { 
         // arr_x->ndims < arr-y->ndims
@@ -408,11 +421,12 @@ cl_mem map_helper(
     }
 }
 
-cl_mem map_scalar_helper(
+void map_scalar_run_kernel(
         cl_command_queue cmd_queue,
         cl_kernel kernel,
         const ndarray * arr_x,
-        const double y 
+        const double y,
+        double * ret
     ) {
 
     cl_int status;
@@ -425,82 +439,124 @@ cl_mem map_scalar_helper(
             datasize, NULL, &status);
     buffer_output = buffers_create(CL_MEM_WRITE_ONLY,       
             datasize, NULL, &status);
+    status = clEnqueueWriteBuffer(
+        cmd_queue,
+        buffer_x,
+        CL_TRUE,
+        0,
+        datasize,
+        (void*) arr_x->data,
+        0,
+        NULL,
+        NULL
+    );
+
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &buffer_x);
     status |= clSetKernelArg(kernel, 1, sizeof(double), &y);
-    status |= clSetKernelArg(kernel, 2, sizeof(cl_mem), &buffer_output);                        
-    status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1,   
-            NULL, global_work_size, NULL, 0, NULL, NULL);   
-    clReleaseMemObject(buffer_x);
+    status |= clSetKernelArg(kernel, 2, sizeof(cl_mem), &buffer_output);                  status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1,   
+            NULL, global_work_size, NULL, 0, NULL, NULL);
+    clEnqueueReadBuffer(
+        cmd_queue,
+        buffer_output,
+        CL_TRUE,
+        0,
+        number_of_elements * sizeof(double),
+        ret,
+        0,
+        NULL,
+        NULL
+    );
 
-    return buffer_output;
+    clReleaseMemObject(buffer_x);
+    clReleaseMemObject(buffer_output);
 }
 
 ndarray * map_factory(const ndarray * arr_x, const ndarray * arr_y, kernel_type_t kernel_id) {
     cl_int status;
     cl_command_queue cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
-    cl_mem buffer_output = map_helper(
+    cl_kernel kernel = kernels_get(context_get(), device_get(), kernel_id);
+    return map_helper(
         cmd_queue,
-        kernels_get(context_get(), device_get(), kernel_id),
+        kernel,
         arr_x, arr_y
     );
-    ndarray * output = ndarray_clone_structure(arr_x->ndims >= arr_y->ndims ? arr_x : arr_y);
-    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE, 0, ndarray_datasize(arr_x), output->data, 0, NULL, NULL);
-
-    // free unused memory
-    clReleaseMemObject(buffer_output);
-    clReleaseCommandQueue(cmd_queue);
-
-    return output;
 }
 
 ndarray * map_scalar_factory(const ndarray * arr_x, double y, kernel_type_t kernel_id) {
     cl_int status;
     cl_command_queue cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
-    cl_mem buffer_output = map_scalar_helper(
+    ndarray * output = ndarray_clone_structure(arr_x);
+    map_scalar_run_kernel(
         cmd_queue,
         kernels_get(context_get(), device_get(), kernel_id),
-        arr_x, y
+        arr_x,
+        y,
+        output->data
     );
-    ndarray * output = ndarray_clone_structure(arr_x);
-    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE, 0, ndarray_datasize(arr_x), output->data, 0, NULL, NULL);
 
     // free unused memory
-    clReleaseMemObject(buffer_output);
     clReleaseCommandQueue(cmd_queue);
 
     return output;
 }
 
+// map_bang, we assume that arr_x is is compatible with arr_y in the sense
+// that we do not need have to broadcast arr_x to suit arr_y
+// hence, we will by pass map_helper, which handles coercing and broadcasting
 void map_bang_factory(ndarray * arr_x, const ndarray * arr_y, kernel_type_t kernel_id) {
     cl_int status;
     cl_command_queue cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
-    cl_mem buffer_output = map_helper(
-        cmd_queue,
-        kernels_get(context_get(), device_get(), kernel_id),
-        arr_x, arr_y
-    );
-    clEnqueueReadBuffer(
-        cmd_queue, buffer_output, CL_TRUE, 0, ndarray_datasize(arr_x),
-        arr_x->data, 0, NULL, NULL
+    cl_kernel kernel = kernels_get(
+        context_get(),
+        device_get(),
+        kernel_id
     );
 
+    if (arr_x->ndims == arr_y->ndims) {
+        map_run_kernel(
+            cmd_queue,
+            kernel,
+            arr_x,
+            arr_y,
+            arr_x->data
+        );
+    } else if(arr_x->ndims > arr_y->ndims) {
+        ndarray * broadcasted = ndarray_broadcast(
+            arr_y, arr_x->ndims, arr_x->shape          
+        );
+        map_run_kernel(
+            cmd_queue,
+            kernel,
+            arr_x,
+            broadcasted,
+            arr_x->data
+        );
+        ndarray_release(broadcasted);
+    } else {
+        fprintf(
+            stderr,
+            "An error occured (arr_x->ndims < arr-y->ndims) in running gpu.matrix"
+            "at line %u of %s\n" ,
+            __LINE__, __FILE__
+        );
+        exit(1);
+    }
+
     // free memory
-    clReleaseMemObject(buffer_output);
     clReleaseCommandQueue(cmd_queue);
 }
 
-void map_scalar_bang_factory(const ndarray * arr_x, double y, kernel_type_t kernel_id) {
+void map_scalar_bang_factory(ndarray * arr_x, double y, kernel_type_t kernel_id) {
     cl_int status;
     cl_command_queue cmd_queue = clCreateCommandQueue(context_get(), device_get(), 0, &status);
-    cl_mem buffer_output = map_scalar_helper(
+    map_scalar_run_kernel(
         cmd_queue,
         kernels_get(context_get(), device_get(), kernel_id),
-        arr_x, y
+        arr_x,
+        y,
+        arr_x->data
     );
-    clEnqueueReadBuffer(cmd_queue, buffer_output, CL_TRUE, 0, ndarray_datasize(arr_x), arr_x->data, 0, NULL, NULL);
-
-    // free unused memory
-    clReleaseMemObject(buffer_output);
+    
     clReleaseCommandQueue(cmd_queue);
 }
 
