@@ -52,6 +52,9 @@ public class NDArray {
     public native NDArray set(long i, long j, double v);
     public native NDArray set(long[] shape, double v);
 
+    public native NDArray equals(NDArray y);
+    public native NDArray equals(double y);
+
     // arimethic ops
     public native NDArray add(NDArray y);
     public native NDArray add(double y);

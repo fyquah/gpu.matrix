@@ -113,6 +113,22 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_set___3JD
 
 /*
  * Class:     gpu_matrix_NDArray
+ * Method:    equals
+ * Signature: (Lgpu/matrix/NDArray;)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_equals__Lgpu_matrix_NDArray_2
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    equals
+ * Signature: (D)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_equals__D
+  (JNIEnv *, jobject, jdouble);
+
+/*
+ * Class:     gpu_matrix_NDArray
  * Method:    add
  * Signature: (Lgpu/matrix/NDArray;)Lgpu/matrix/NDArray;
  */
@@ -177,18 +193,18 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_div__D
 
 /*
  * Class:     gpu_matrix_NDArray
- * Method:    print
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print
-  (JNIEnv *, jobject);
-
-/*
- * Class:     gpu_matrix_NDArray
  * Method:    finalize
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_finalize
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    print
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print
   (JNIEnv *, jobject);
 
 #ifdef __cplusplus

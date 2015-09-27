@@ -9,4 +9,6 @@
                    (System/getenv "$LD_LIBRARY_PATH"))]
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [net.mikera/core.matrix "0.40.0"]]
-  :aot [gpu.matrix.kernel-loader])
+  :aot [gpu.matrix.kernel-loader]
+  :profiles {:dev {:dependencies [[net.mikera/core.matrix.testing "0.0.4"]
+                                  [net.mikera/vectorz-clj "0.30.1"]]}})

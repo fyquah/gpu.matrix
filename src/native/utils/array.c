@@ -22,3 +22,4 @@ COPY_FACTORY(index_t);
 COPY_FACTORY(double);
 
 IS_EQUAL_FACTORY(index_t);
+IS_EQUAL_FACTORY(double);

@@ -24,6 +24,8 @@ ndarray * ndarray_constructor_from_shape(index_t, index_t*);
 // destructor
 void ndarray_release(ndarray *);
 
+bool ndarray_equals(const ndarray *, const ndarray*);
+
 // getters and setters
 void ndarray_set_1d(ndarray*, long i, double v);
 void ndarray_set_2d(ndarray*, long i, long j, double v);

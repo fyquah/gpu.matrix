@@ -36,17 +36,11 @@ ndarray * sample_b() {
 int main() {
     gpu_matrix_init();
     ndarray * arr = sample_a();
-    arr = ndarray_add(arr, arr);
-    printf("dimensions: %u\n", arr->ndims);
-    printf("elements count: %u\n", ndarray_elements_count(arr));
-    puts("data:");
-    for (int i = 0 ; i < ndarray_elements_count(arr) ; i++) { 
-        printf("%f ", arr->data[i]);
-    }
-    puts("");
-    puts("strides: ");
-    for (int i = 0 ; i < arr->ndims ; i++) {
-        printf("%u ", arr->strides[i]);
+    ndarray * arr2 = sample_a();
+    if (ndarray_equals(arr, arr2)) {
+        puts("Equal!");
+    } else {
+        puts("Not equal!");
     }
     puts("");
 }

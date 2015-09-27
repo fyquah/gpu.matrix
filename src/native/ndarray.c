@@ -675,6 +675,32 @@ void ndarray_set_nd(ndarray * arr, const index_t * indexes, double v) {
     arr->data[idx] = v;
 }
 
+bool ndarray_equals(const ndarray * arr_x, const ndarray * arr_y) {
+    if (arr_x->ndims != arr_y->ndims ||
+            !array_index_t_is_equal(arr_x->shape, arr_y->shape, arr_x->ndims)) {
+        return false;
+    } else {
+        if (array_index_t_is_equal(arr_x->strides, arr_y->strides, arr_x->ndims)) {
+            return array_double_is_equal(
+                arr_x->data,
+                arr_y->data,
+                ndarray_elements_count(arr_x)
+            );
+        } else {
+            ndarray * coerced = ndarray_coerce_stride(arr_y, arr_x->strides);
+            bool flag = array_double_is_equal(
+                arr_x->data,
+                arr_y->data,
+                ndarray_elements_count(arr_x)
+            );
+            ndarray_release(coerced);
+            return flag;
+        }
+    }
+
+    return false;
+}
+
 // Arimethic ops
 
 ndarray * ndarray_add(const ndarray * arr_x, const ndarray * arr_y) {
