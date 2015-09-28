@@ -359,11 +359,9 @@
 (extend-protocol mp/PZeroDimensionAccess
   NDArray
   (get-0d [^NDArray m]
-    (if (= (mp/dimensionality m) 0)
-      (.get m 0)
-      (error "todo: error message for get-0d")))
+    (with-check-ndims 0 m
+      (.get m 0)))
   (set-0d! [^NDArray m v]
-    (if (= (mp/dimensionality m) 0)
-      (.set m 0 (double v))
-      (error "TODO: Error message for set-od!"))))
+    (with-check-ndims 0 m
+      (.set m 0 (double v)))))
 
