@@ -17,6 +17,22 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_sample
 
 /*
  * Class:     gpu_matrix_NDArray
+ * Method:    newScalar
+ * Signature: (D)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_newScalar__D
+  (JNIEnv *, jclass, jdouble);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    newScalar
+ * Signature: ()Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_newScalar__
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     gpu_matrix_NDArray
  * Method:    createFromShape
  * Signature: ([J)Lgpu/matrix/NDArray;
  */

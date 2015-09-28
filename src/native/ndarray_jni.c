@@ -49,6 +49,19 @@ JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_init
     gpu_matrix_init();
 }
 
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_newScalar__D
+  (JNIEnv * env, jclass klass, jdouble v) {
+    ndarray * arr = ndarray_constructor_from_scalar(v);
+    return package_ndarray(env, arr);
+}
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_newScalar__
+  (JNIEnv * env, jclass klass) {
+    ndarray * arr = ndarray_constructor_from_scalar(0.0);
+    return package_ndarray(env, arr);
+}
+
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_createFromShape
   (JNIEnv * env, jclass klass, jlongArray shape) {
 

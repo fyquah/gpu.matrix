@@ -29,6 +29,8 @@ public class NDArray {
         );
     }
 
+    public native static NDArray newScalar(double v);
+    public native static NDArray newScalar();
     public native static NDArray createFromShape(long[] shape);
     public native static NDArray newInstance(double[] data, long ndims, long[] shape, long[] strides);
     private native static void init();

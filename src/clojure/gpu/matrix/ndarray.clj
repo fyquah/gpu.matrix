@@ -353,5 +353,17 @@
 (extend-protocol mp/PZeroDimensionConstruction
   NDArray
   (new-scalar-array
-    ([^NDArray m])
-    ([^NDArray m v])))
+    ([^NDArray m] (NDArray/newScalar 0))
+    ([^NDArray m v] (NDArray/newScalar v))))
+
+(extend-protocol mp/PZeroDimensionAccess
+  NDArray
+  (get-0d [^NDArray m]
+    (if (= (mp/dimensionality m) 0)
+      (.get m 0)
+      (error "todo: error message for get-0d")))
+  (set-0d! [^NDArray m v]
+    (if (= (mp/dimensionality m) 0)
+      (.set m 0 (double v))
+      (error "TODO: Error message for set-od!"))))
+

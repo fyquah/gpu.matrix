@@ -20,6 +20,7 @@ ndarray * ndarray_broadcast(const ndarray *, index_t, index_t *);
 // constructors
 ndarray * ndarray_constructor(double *, index_t, index_t*, index_t*);
 ndarray * ndarray_constructor_from_shape(index_t, index_t*);
+ndarray * ndarray_constructor_from_scalar(double);
 
 // destructor
 void ndarray_release(ndarray *);

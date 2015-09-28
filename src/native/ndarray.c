@@ -636,6 +636,14 @@ ndarray * ndarray_constructor_from_shape(index_t ndims, index_t * shape) {
     return output;
 }
 
+ndarray * ndarray_constructor_from_scalar(double v) {
+    ndarray * arr = malloc(sizeof(ndarray));
+    arr->data = malloc(sizeof(double));
+    *arr->data = v;
+    arr->ndims = 0;
+    return arr;
+}
+
 ndarray * ndarray_clone_structure(const ndarray * arr_x) {
     const unsigned datasize = ndarray_datasize(arr_x);
     ndarray * output = malloc(sizeof(ndarray));
