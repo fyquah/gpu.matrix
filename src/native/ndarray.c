@@ -859,3 +859,159 @@ void ndarray_div_bang(ndarray * arr_x, const ndarray * arr_y) {
 void ndarray_div_scalar_bang(ndarray * arr_x, const double y) {
     map_scalar_bang_factory(arr_x, y, KERNEL_DIV_SCALAR);
 }
+
+ndarray * ndarray_mmul(ndarray * arr_x, ndarray * arr_y) {
+    ndarray * output;
+    size_t datasize_x, datasize_y;
+    size_t global_work_size[2];
+    cl_int status;
+    cl_command_queue cmd_queue = clCreateCommandQueue(
+        context_get(),
+        device_get(),
+        0,
+        &status
+    );
+    cl_mem buffer_x, buffer_shape_x, buffer_strides_x;
+    cl_mem buffer_y, buffer_shape_y, buffer_strides_y;
+    cl_mem buffer_output, buffer_strides_output;
+
+    // Allocate memory for output ndarray object
+    output = malloc(sizeof(ndarray));
+    output->data = malloc(sizeof(double) * arr_x->shape[0] * arr_y->shape[1]);
+    output->shape = malloc(sizeof(index_t) * 2);
+    output->strides = malloc(sizeof(index_t) * 2);
+
+    // write shape and strides data
+    output->shape[0] = arr_x->shape[0];
+    output->shape[1] = arr_y->shape[1];
+    output->strides[0] = arr_y->shape[1];
+    output->strides[1] = 1;
+
+    global_work_size[0] = arr_x->shape[0];
+    global_work_size[1] = arr_y->shape[1];
+    datasize_x = ndarray_datasize(arr_x);
+    datasize_y = ndarray_datasize(arr_y);
+    cl_kernel kernel = kernels_get(
+        context_get(),
+        device_get(),
+        KERNEL_MMUL 
+    );
+    buffer_x = buffers_create(
+        CL_MEM_READ_ONLY,
+        datasize_x,
+        NULL,
+        &status
+    );
+    buffer_strides_x = buffers_create(
+        CL_MEM_READ_ONLY,
+        sizeof(index_t) * 2,
+        NULL,
+        &status
+    );
+    buffer_shape_x = buffers_create(
+        CL_MEM_READ_ONLY,
+        sizeof(index_t) * 2,
+        NULL,
+        &status
+    );
+    buffer_y = buffers_create(
+        CL_MEM_READ_ONLY,
+        datasize_y,
+        NULL,
+        &status
+    );
+    buffer_strides_y = buffers_create(
+        CL_MEM_READ_ONLY,
+        sizeof(index_t) * 2,
+        NULL,
+        &status
+    );
+    buffer_shape_y = buffers_create(
+        CL_MEM_READ_ONLY,
+        sizeof(index_t) * 2,
+        NULL,
+        &status
+    );
+    buffer_output = buffers_create(
+        CL_MEM_WRITE_ONLY,
+        sizeof(double) * arr_x->shape[0] * arr_y->shape[1],
+        NULL,
+        &status
+    );
+    buffer_strides_output = buffers_create(
+        CL_MEM_READ_ONLY,
+        sizeof(index_t) * 2,
+        NULL,
+        &status
+    );
+    
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_x,
+        CL_FALSE, 0, datasize_x,
+        arr_x->data, 0, NULL, NULL
+    );
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_shape_x,
+        CL_FALSE, 0, 2 * sizeof(index_t),
+        arr_x->shape, 0, NULL, NULL
+    );
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_strides_x,
+        CL_FALSE, 0, 2 * sizeof(index_t),
+        arr_x->strides, 0, NULL, NULL
+    );
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_y,
+        CL_FALSE, 0, datasize_y,
+        arr_y->data, 0, NULL, NULL
+    );
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_shape_y,
+        CL_FALSE, 0, 2 * sizeof(index_t),
+        arr_y->shape, 0, NULL, NULL
+    );
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_strides_y,
+        CL_FALSE, 0, 2 * sizeof(index_t),
+        arr_y->strides, 0, NULL, NULL
+    );
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_strides_output,
+        CL_FALSE, 0, 2 * sizeof(index_t),
+        output->strides, 0, NULL, NULL
+    );
+
+    status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &buffer_x);
+    status = clSetKernelArg(kernel, 1, sizeof(cl_mem), &buffer_shape_x);
+    status = clSetKernelArg(kernel, 2, sizeof(cl_mem), &buffer_strides_x);
+    status = clSetKernelArg(kernel, 3, sizeof(cl_mem), &buffer_y);
+    status = clSetKernelArg(kernel, 4, sizeof(cl_mem), &buffer_shape_y);
+    status = clSetKernelArg(kernel, 5, sizeof(cl_mem), &buffer_strides_y);
+    status = clSetKernelArg(kernel, 6, sizeof(cl_mem), &buffer_output);
+    status = clSetKernelArg(kernel, 7, sizeof(cl_mem), &buffer_strides_output);
+
+    status = clEnqueueNDRangeKernel(
+        cmd_queue,
+        kernel,
+        2,
+        NULL,
+        global_work_size,
+        NULL,
+        0,
+        NULL,
+        NULL
+    );
+    clEnqueueReadBuffer(
+        cmd_queue,
+        buffer_output,
+        CL_TRUE,
+        0,
+        sizeof(double) * arr_x->shape[0] * arr_y->shape[1],
+        output->data,
+        0,
+        NULL,
+        NULL
+    );
+
+    return output;
+}

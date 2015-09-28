@@ -59,3 +59,4 @@ ndarray * ndarray_div_scalar(const ndarray *, const double);
 void ndarray_div_bang(ndarray *, const ndarray *);
 void ndarray_div_scalar_bang(ndarray *, const double);
 
+ndarray * ndarray_mmul(ndarray *, ndarray *);

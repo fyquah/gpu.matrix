@@ -77,7 +77,8 @@ const char * get_cl_function_name(kernel_type_t k) {
         "add", "add_scalar",
         "sub", "sub_scalar",
         "mul", "mul_scalar",
-        "div", "div_scalar"
+        "div", "div_scalar",
+        "mmul"
     };
 
     return module_names[k];
@@ -215,7 +216,6 @@ static cl_kernel compile_kernel(
     cl_program program;
     const char * cl_function_name = get_cl_function_name(kernel_type);
  
-
     // Try obtaining the cached program or compiling the 
     // program from scartch
     program = program_get(context, device);

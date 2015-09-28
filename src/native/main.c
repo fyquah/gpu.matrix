@@ -25,6 +25,17 @@ ndarray * sample_a() {
     return ndarray_constructor(data, 2, shape, strides);
 }
 
+ndarray * sample_c() {
+    double data[12];
+    range(data, 12);
+    for (int i = 0 ; i < 12; i++) {
+        data[i] *= 2;
+    }
+    index_t strides[2] = { 3, 1 };
+    index_t shape[2] = { 4, 3 };
+    return ndarray_constructor(data, 2, shape, strides);
+}
+
 ndarray * sample_b() {
     double data[4];
     range(data, 4);
@@ -35,12 +46,37 @@ ndarray * sample_b() {
 
 int main() {
     gpu_matrix_init();
-    ndarray * arr = sample_a();
-    ndarray * arr2 = sample_a();
-    if (ndarray_equals(arr, arr2)) {
-        puts("Equal!");
-    } else {
-        puts("Not equal!");
+    ndarray * mat_a = sample_a();
+    ndarray * mat_c = sample_c();
+    ndarray * output = ndarray_mmul(mat_a, mat_c);
+
+    puts("[");
+    for (int i = 0 ; i < mat_a->shape[0] ; i++) {
+        for (int j = 0 ; j < mat_a->shape[1] ; j++) {
+            printf("%.2f ", mat_a->data[i * mat_a->shape[1] + j]);
+        }
+        puts("");
     }
+    puts("]");
+
+    puts("[");
+    for (int i = 0 ; i < mat_c->shape[0] ; i++) {
+        for (int j = 0 ; j < mat_c->shape[1] ; j++) {
+            printf("%.2f ", mat_c->data[i * mat_c->shape[1] + j]);
+        }
+        puts("");
+    }
+    puts("]");
+
+    puts("[");
+    for (int i = 0 ; i < output->shape[0] ; i++) {
+        for (int j = 0 ; j < output->shape[1] ; j++) {
+            printf("%.2f ", output->data[i * output->shape[1] + j]);
+        }
+        puts("");
+    }
+    puts("]");
     puts("");
+
+    return 0;
 }
