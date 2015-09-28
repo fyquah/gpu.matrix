@@ -52,8 +52,12 @@ public class NDArray {
     public native NDArray set(long i, long j, double v);
     public native NDArray set(long[] shape, double v);
 
-    public native NDArray equals(NDArray y);
-    public native NDArray equals(double y);
+    // value equality
+    public native boolean equals(NDArray y);
+    public native boolean equals(double y);
+
+    // returns a flatten representation in row-major order
+    public native double[] flatten();
 
     // arimethic ops
     public native NDArray add(NDArray y);

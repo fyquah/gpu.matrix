@@ -196,7 +196,38 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_set___3JD
     return this;
 }
 
-JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print
+JNIEXPORT jboolean JNICALL Java_gpu_matrix_NDArray_equals__Lgpu_matrix_NDArray_2
+  (JNIEnv * env, jobject this, jobject obj) {
+    ndarray * arr_x = retrieve_ndarray(env, this);
+    ndarray * arr_y = retrieve_ndarray(env, obj);
+
+    return (arr_x == arr_y ||
+        ndarray_equals(arr_x, arr_y));
+}
+
+JNIEXPORT jboolean JNICALL Java_gpu_matrix_NDArray_equals__D
+  (JNIEnv * env, jobject this, jdouble y) {
+
+    ndarray * arr = retrieve_ndarray(env, this);
+    return ndarray_equals_scalar(arr, (double) y);
+}
+
+JNIEXPORT jdoubleArray JNICALL Java_gpu_matrix_NDArray_flatten
+  (JNIEnv * env, jobject this) {
+    ndarray * arr = retrieve_ndarray(env, this);
+    index_t count = ndarray_elements_count(arr);
+    double * data = ndarray_flatten(arr);
+    jdoubleArray ret = (*env)->NewDoubleArray(
+        env, count
+    );
+    (*env)->SetDoubleArrayRegion(
+        env, ret, 0, count, data
+    );
+    free(data);
+    return ret;
+}
+
+  JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_print
   (JNIEnv * env, jobject this) {
     ndarray * arr = retrieve_ndarray(env, this);
     double * data = arr->data;

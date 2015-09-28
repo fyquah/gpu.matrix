@@ -33,7 +33,7 @@
 ; construct a persistent vector representation of the data
 (defmethod construct-matrix :default
   [data]
-  (let [vm (mp/construct-matrix [] (m/shape data))]
+  (let [vm (mp/construct-matrix [] data)]
     (construct-matrix vm)))
 
 (extend-protocol mp/PImplementation
@@ -331,3 +331,27 @@
   (native [m] m)
   (native? [m] true))
 
+(extend-protocol mp/PValueEquality
+  NDArray
+  (value-equals [^NDArray m a]
+    (or (= m a)
+        (with-coerce-param [a a]
+          (.equals m a)))))
+
+(extend-protocol mp/PMatrixEquality
+  NDArray
+  (matrix-equals [m a]
+    (or (= m a)
+        (with-coerce-param [a a]
+          (.equals m a)))))
+
+(extend-protocol mp/PDoubleArrayOutput
+  NDArray
+  (to-double-array [^NDArray m] (.flatten m))
+  (as-double-array [^NDArray m] (.flatten m)))
+
+(extend-protocol mp/PZeroDimensionConstruction
+  NDArray
+  (new-scalar-array
+    ([^NDArray m])
+    ([^NDArray m v])))

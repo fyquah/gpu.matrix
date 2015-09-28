@@ -701,6 +701,48 @@ bool ndarray_equals(const ndarray * arr_x, const ndarray * arr_y) {
     return false;
 }
 
+bool ndarray_equals_scalar(const ndarray * arr, const double y) {
+    if (arr->ndims != 0) {
+        return false;
+    } else {
+        return (*arr->data) == y;
+    }
+    // to prevent clang error
+    return false;
+}
+
+void ndarray_flatten_recur(
+    const index_t dim,              // the current dimension
+    const ndarray * src,
+    const index_t src_index_accum,
+    double * dest,
+    index_t * index) {
+
+    for (index_t i = 0 ; i < src->shape[dim] ; i++) {
+        const index_t src_index = src_index_accum + i * src->strides[dim];
+
+        if (dim == src->ndims - 1) {
+            dest[*index] = src->data[src_index];
+            (*index)++;
+        } else {
+            ndarray_flatten_recur(
+                dim + 1,
+                src,
+                src_index,
+                dest,
+                index
+            );
+        }
+    }
+}
+
+double * ndarray_flatten(const ndarray * arr) {
+    double * data = malloc(ndarray_elements_count(arr) * sizeof(double));
+    index_t idx = 0;
+    ndarray_flatten_recur(0, arr, 0, data, &idx);
+    return data;
+}
+
 // Arimethic ops
 
 ndarray * ndarray_add(const ndarray * arr_x, const ndarray * arr_y) {

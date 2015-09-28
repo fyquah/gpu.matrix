@@ -25,6 +25,8 @@ ndarray * ndarray_constructor_from_shape(index_t, index_t*);
 void ndarray_release(ndarray *);
 
 bool ndarray_equals(const ndarray *, const ndarray*);
+bool ndarray_equals_scalar(const ndarray*, const double);
+double * ndarray_flatten(const ndarray *);
 
 // getters and setters
 void ndarray_set_1d(ndarray*, long i, double v);
