@@ -17,6 +17,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "ndarray.h"
 #include "utils.h"
@@ -683,10 +684,52 @@ void ndarray_set_nd(ndarray * arr, const index_t * indexes, double v) {
     arr->data[idx] = v;
 }
 
+bool ndarray_equals_epsilon(
+        const ndarray * arr_x,
+        const ndarray * arr_y,
+        double epsilon
+    ) {
+    epsilon = fabs(epsilon);
+
+    if (arr_x->ndims != arr_y->ndims ||
+            !array_index_t_is_equal(arr_x->shape, arr_y->shape, arr_x->ndims)) {
+        return false;
+    } else if (arr_x->ndims == 0) {
+        return (*arr_x->data) == (*arr_y->data);
+    } else {
+        ndarray * coerced;
+        
+        if (!array_index_t_is_equal(arr_x->strides, arr_y->strides, arr_x->ndims)) {
+            coerced = ndarray_coerce_stride(arr_y, arr_x->strides);
+        } else {
+            coerced = (ndarray*) arr_y;
+        }
+
+        for(index_t i = 0 ; i < ndarray_elements_count(arr_x) ; ++i) {
+            if (fabs(arr_x->data[i] - coerced->data[i]) > epsilon) {
+                if (coerced != arr_y) { 
+                    ndarray_release(coerced);
+                }
+                return false;
+            }
+        }
+
+        if (coerced != arr_y) {
+            ndarray_release(coerced);
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 bool ndarray_equals(const ndarray * arr_x, const ndarray * arr_y) {
     if (arr_x->ndims != arr_y->ndims ||
             !array_index_t_is_equal(arr_x->shape, arr_y->shape, arr_x->ndims)) {
         return false;
+    } else if (arr_x->ndims == 0) {
+        return (*arr_x->data) == (*arr_y->data);
     } else {
         if (array_index_t_is_equal(arr_x->strides, arr_y->strides, arr_x->ndims)) {
             return array_double_is_equal(

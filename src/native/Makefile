@@ -1,5 +1,5 @@
 UNAME_S := $(shell uname -s)
-FLAGS=-O2 -fPIC -std=c99 
+FLAGS=-O2 -fPIC -std=c99 -lm
 .DEFAULT_GOAL := all
 
 ifeq ($(UNAME_S),Linux)

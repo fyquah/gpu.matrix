@@ -26,6 +26,7 @@ ndarray * ndarray_constructor_from_scalar(double);
 void ndarray_release(ndarray *);
 
 bool ndarray_equals(const ndarray *, const ndarray*);
+bool ndarray_equals_epsilon(const ndarray *, const ndarray*, double);
 bool ndarray_equals_scalar(const ndarray*, const double);
 double * ndarray_flatten(const ndarray *);
 

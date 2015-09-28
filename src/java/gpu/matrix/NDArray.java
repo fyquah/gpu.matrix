@@ -56,6 +56,7 @@ public class NDArray {
 
     // value equality
     public native boolean equals(NDArray y);
+    public native boolean equals(NDArray y, double epsilon);
     public native boolean equals(double y);
 
     // returns a flatten representation in row-major order

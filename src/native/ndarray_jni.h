@@ -138,6 +138,14 @@ JNIEXPORT jboolean JNICALL Java_gpu_matrix_NDArray_equals__Lgpu_matrix_NDArray_2
 /*
  * Class:     gpu_matrix_NDArray
  * Method:    equals
+ * Signature: (Lgpu/matrix/NDArray;D)Z
+ */
+JNIEXPORT jboolean JNICALL Java_gpu_matrix_NDArray_equals__Lgpu_matrix_NDArray_2D
+  (JNIEnv *, jobject, jobject, jdouble);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    equals
  * Signature: (D)Z
  */
 JNIEXPORT jboolean JNICALL Java_gpu_matrix_NDArray_equals__D

@@ -218,6 +218,15 @@ JNIEXPORT jboolean JNICALL Java_gpu_matrix_NDArray_equals__Lgpu_matrix_NDArray_2
         ndarray_equals(arr_x, arr_y));
 }
 
+JNIEXPORT jboolean JNICALL Java_gpu_matrix_NDArray_equals__Lgpu_matrix_NDArray_2D
+  (JNIEnv * env, jobject this, jobject obj, jdouble eps) {
+    ndarray * arr_x = retrieve_ndarray(env, this);
+    ndarray * arr_y = retrieve_ndarray(env, obj);
+    
+    return (arr_x == arr_y ||
+        ndarray_equals_epsilon(arr_x, arr_y, eps));
+}
+
 JNIEXPORT jboolean JNICALL Java_gpu_matrix_NDArray_equals__D
   (JNIEnv * env, jobject this, jdouble y) {
 

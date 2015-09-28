@@ -7,3 +7,4 @@
 
 (deftest compliance-tests-1D
   (compliance/instance-test (mp/construct-matrix (NDArray/sample) [ 1 2 3 4 5])))
+

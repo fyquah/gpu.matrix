@@ -343,7 +343,11 @@
   (matrix-equals [m a]
     (or (= m a)
         (with-coerce-param [a a]
-          (.equals m a)))))
+          (.equals m a))))
+  (matrix-equals-epsilon [^NDArray m ^NDArray a epsilon]
+    (or (= m a)
+        (with-coerce-param [a a]
+          (.equals m a (double epsilon))))))
 
 (extend-protocol mp/PDoubleArrayOutput
   NDArray
