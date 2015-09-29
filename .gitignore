@@ -8,6 +8,7 @@ src/native/out/
 **.o
 **.class
 target/
+checkouts/
 
 # Ignore swapfiles
 **.swp
@@ -18,3 +19,4 @@ target/
 # Ignore REPL stuff
 .lein-repl-history
 .nrepl-port
+.lein-failures
