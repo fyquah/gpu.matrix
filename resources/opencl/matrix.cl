@@ -14,7 +14,7 @@ __kernel void mmul (
     index_t row = get_global_id (0);
     index_t col = get_global_id (1);
 
-    int sum = 0.0;
+    double sum = 0.0;
 
     for (index_t i = 0 ; i < shape_x[1]; i++) {
         sum += data_x[row * strides_x[0] + i * strides_x[1]] * 
@@ -23,3 +23,4 @@ __kernel void mmul (
 
     data_output[row * strides_output[0] + col * strides_output[1]] = sum;
 }
+

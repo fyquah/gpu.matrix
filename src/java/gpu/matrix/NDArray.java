@@ -45,14 +45,18 @@ public class NDArray {
     public native long dimensionality();
     public native long[] shape();
     public native NDArray clone();
+    public native NDArray cloneStructure();
 
-    // getters and setters
+    // getters and setters, mutates the object in place
     public native double get(long i);
     public native double get(long i, long j);
     public native double get(long [] indexes);
     public native NDArray set(long i, double v);
     public native NDArray set(long i, long j, double v);
     public native NDArray set(long[] shape, double v);
+    public native NDArray fill(double v);
+    public native NDArray assign(double v);
+    public native NDArray assign(NDArray src);
 
     // value equality
     public native boolean equals(NDArray y);
@@ -72,9 +76,12 @@ public class NDArray {
     public native NDArray div(NDArray y);
     public native NDArray div(double y);
 
+    // matrix specific computations
+    public native NDArray mmul(NDArray x);
+
     @Override
     protected native void finalize();
 
-    // For debuggin purposes
+    // For debugging purposes
     public native void print();
 }

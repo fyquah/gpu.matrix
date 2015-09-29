@@ -65,14 +65,19 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_newScalar__
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_createFromShape
   (JNIEnv * env, jclass klass, jlongArray shape) {
 
+    jboolean is_copy;
     index_t len = (*env)->GetArrayLength(env, shape);
-    index_t * index_t_shape = jlong_to_index_t((*env)->GetLongArrayElements(env, shape, 0), len);
+    jlong * long_shape = (*env)->GetLongArrayElements(env, shape, &is_copy);
+    index_t * index_t_shape = jlong_to_index_t(long_shape, len);
     jobject ret = package_ndarray(
         env,
         ndarray_constructor_from_shape(len, index_t_shape)
     );
 
-    free(shape);
+    if (is_copy) {
+        free(long_shape);
+    }
+    free(index_t_shape);
 
     return ret;
 }
@@ -205,7 +210,49 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_set___3JD
     ndarray_set_nd(
         arr, indexes, v
     );
-    free(indexes);
+    return this;
+}
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_fill
+  (JNIEnv * env, jobject this, jdouble v) {
+    ndarray * arr = retrieve_ndarray(env, this);
+    for (index_t i = 0 ; i < ndarray_elements_count(arr) ; i++) {
+        arr->data[i] = (double) v;
+    }
+    return this;
+}
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_assign__D
+  (JNIEnv * env, jobject this, jdouble v) {
+    ndarray * arr = retrieve_ndarray(env, this);
+    for (index_t i = 0 ; i < ndarray_elements_count(arr) ; i++) {
+        arr->data[i] = (double) v;
+    }
+    return this;
+}
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_assign__Lgpu_matrix_NDArray_2
+  (JNIEnv * env, jobject this, jobject obj) {
+    ndarray * arr = retrieve_ndarray(env, this); 
+    ndarray * src = ndarray_broadcast(
+        retrieve_ndarray(env, obj),
+        arr->ndims,
+        arr->shape
+    );
+
+    // Free the value holders of arr stuff
+    free(arr->data);
+    free(arr->shape);
+    free(arr->strides);
+
+    // free the src 
+    free(src);
+
+    arr->data = src->data;
+    arr->shape = src->shape;
+    arr->strides = src->strides;
+
+     
     return this;
 }
 
@@ -280,6 +327,17 @@ JNIEXPORT jdoubleArray JNICALL Java_gpu_matrix_NDArray_flatten
     
     puts("------");
     fflush(stdout);
+}
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_mmul
+  (JNIEnv * env, jobject this, jobject obj) {
+    ndarray * arr_x = retrieve_ndarray(env, this);
+    ndarray * arr_y = retrieve_ndarray(env, obj);
+
+    return package_ndarray(
+        env,
+        ndarray_mmul(arr_x, arr_y)
+    );
 }
 
 JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_finalize

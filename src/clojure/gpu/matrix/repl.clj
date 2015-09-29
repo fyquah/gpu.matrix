@@ -8,7 +8,7 @@
      (require '[clojure.core.matrix :as m])
      (require 'gpu.matrix)
      (def x 1)
-     (def m (mp/construct-matrix  (gpu.matrix.NDArray.) [[1 2 3] [4 5 6]]))
+     (def m (mp/construct-matrix  (gpu.matrix.NDArray.) [[1 2 3] [4 5 6] [7 8 9]]))
      (def arr (mp/construct-matrix (gpu.matrix.NDArray.) [1 2 3]))))
 
 (defn populate []

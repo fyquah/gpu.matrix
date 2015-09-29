@@ -22,8 +22,9 @@
   (double data))
 (defmethod construct-matrix clojure.lang.PersistentVector
   [data]
-  (let [ndims (m/dimensionality data)
-          shape (m/shape data)]
+  (let [data (m/to-nested-vectors data)
+        ndims (m/dimensionality data)
+        shape (m/shape data)]
       (NDArray/newInstance
         (double-array (flatten data))
         ndims
@@ -315,12 +316,25 @@
 (extend-protocol mp/PMatrixMultiply
   NDArray
   (element-multiply [^NDArray m a]
-    (with-coerce-param [a a] (.mul m a))))
+    (with-coerce-param [a a] (.mul m a)))
+  (matrix-multiply [^NDArray m a]
+    (with-coerce-param [a a]
+      (if (and (= (mp/dimensionality m) 2)
+               (= (mp/dimensionality a) 2)
+               (= (second (mp/get-shape m))
+                  (first (mp/get-shape a))))
+        (.mmul m a)
+        (error "Incorrect dimensionality / shape in matrix-multiply")))))
 
 (extend-protocol mp/PMatrixDivide
   NDArray
   (element-divide [^NDArray m a]
     (with-coerce-param [a a] (.div m a))))
+
+(extend-protocol mp/PNumerical
+  NDArray
+  (numerical? [m]
+    true))
 
 (extend-protocol mp/PTypeInfo
   NDArray
@@ -368,4 +382,20 @@
   (set-0d! [^NDArray m v]
     (with-check-ndims 0 m
       (.set m 0 (double v)))))
+
+(extend-protocol mp/PMutableMatrixConstruction
+  NDArray
+  (mutable-matrix [^NDArray m]
+    (.clone m)))
+
+(extend-protocol mp/PMutableFill
+  NDArray
+  (fill! [^NDArray m v]
+    (.fill m (double v))))
+
+(extend-protocol mp/PImmutableAssignment
+  NDArray
+  (assign [^NDArray m src]
+    (with-coerce-param [src src]
+      (.assign (.clone m) src))))
 

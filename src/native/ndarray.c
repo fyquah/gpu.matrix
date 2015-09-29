@@ -177,7 +177,9 @@ void map_run_kernel(
 
     cl_int status;
     const unsigned datasize = ndarray_datasize(arr_x);
-    cl_mem buffer_output, buffer_x, buffer_y, buffer_shape_x, buffer_strides_x, buffer_shape_y, buffer_strides_y;
+    cl_mem buffer_output, buffer_x, buffer_y,
+           buffer_shape_x, buffer_strides_x,
+           buffer_shape_y, buffer_strides_y;
     index_t number_of_elements = ndarray_elements_count(arr_x);
     size_t global_work_size_dims;
     size_t * global_work_size = get_global_work_size(
@@ -407,7 +409,7 @@ ndarray * map_helper(
             map_run_kernel(cmd_queue, kernel, arr_x, coerced, data);
             ndarray_release(coerced);
         }
-
+ 
         output = malloc(sizeof(ndarray));
         output->data = data;
         output->ndims = arr_x->ndims;
@@ -621,11 +623,11 @@ ndarray * ndarray_constructor_from_shape(index_t ndims, index_t * shape) {
     for (int i = 0 ; i < ndims ; i++) {
         number_of_elements *= shape[i];
     }
-    datasize = number_of_elements * sizeof(size_t);
+    datasize = number_of_elements * sizeof(double);
     // datasize immutable from this point!
 
     ndarray * output = malloc(sizeof(ndarray));
-    output->data     = (double*) malloc(datasize);
+    output->data     = malloc(datasize);
     output->ndims    = ndims;
     output->shape    = array_index_t_copy(shape, ndims);
     output->strides  = ndarray_make_basic_strides(ndims, shape);
@@ -860,6 +862,7 @@ void ndarray_div_scalar_bang(ndarray * arr_x, const double y) {
     map_scalar_bang_factory(arr_x, y, KERNEL_DIV_SCALAR);
 }
 
+// matrix multiplication
 ndarray * ndarray_mmul(ndarray * arr_x, ndarray * arr_y) {
     ndarray * output;
     size_t datasize_x, datasize_y;
@@ -880,6 +883,7 @@ ndarray * ndarray_mmul(ndarray * arr_x, ndarray * arr_y) {
     output->data = malloc(sizeof(double) * arr_x->shape[0] * arr_y->shape[1]);
     output->shape = malloc(sizeof(index_t) * 2);
     output->strides = malloc(sizeof(index_t) * 2);
+    output->ndims = 2;
 
     // write shape and strides data
     output->shape[0] = arr_x->shape[0];
