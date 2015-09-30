@@ -580,8 +580,10 @@ void map_scalar_bang_factory(ndarray * arr_x, double y, kernel_type_t kernel_id)
 
 void ndarray_release(ndarray * arr) {
     free(arr->data);
-    free(arr->shape);
-    free(arr->strides);
+    if (arr->ndims != 0) {
+        free(arr->shape);
+        free(arr->strides);
+    }
     free(arr);
 }
 
