@@ -2,4 +2,4 @@
 ; It dynamically loads all the implementaiton relevant to gpu.matrix
 
 (ns gpu.matrix
-  (:require gpu.matrix.ndarray))
+  (:require gpu.matrix.impl.ndarray))
