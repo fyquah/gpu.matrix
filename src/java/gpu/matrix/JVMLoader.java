@@ -1,8 +1,9 @@
 package gpu.matrix;
+import gpu.matrix.KernelLoader;
 
 public class JVMLoader {
     static {
-        System.loadLibrary("gpu-matrix");
+        KernelLoader.loadLibrary("gpu-matrix");
     }
 
     public native static void init();

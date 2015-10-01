@@ -6,7 +6,7 @@ import gpu.matrix.JVMLoader;
 public class NDArray {
     // Static methods
     static {
-        System.loadLibrary("gpu-matrix");
+        KernelLoader.loadLibrary("gpu-matrix");
         init();
         JVMLoader.init();
     }
