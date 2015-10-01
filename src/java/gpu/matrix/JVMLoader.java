@@ -1,4 +1,5 @@
 package gpu.matrix;
+import gpu.matrix.KernelLoader;
 
 import gpu.matrix.KernelLoader;
 

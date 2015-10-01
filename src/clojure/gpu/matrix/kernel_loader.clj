@@ -5,17 +5,26 @@
               :methods  [^{:static true} [loadProgram [String] String]
                          ^{:static true} [getIncludeProgramDir [] String]
                          ^{:static true} [loadLibrary [String] void]]))
-
-(def OPENCL-PREFIX "opencl/")
-(def OPENCL-INCLUDE-DIR (.. ClassLoader (getSystemResource OPENCL-PREFIX) (getPath)))
-(def SHARED-LIB-PATH "native/")
-
 (defmacro cond-starts-with [string & args]
   `(cond
      ~@(mapcat (fn [prefix ret]
                  [`(.startsWith ~string ~prefix) ret])
                (take-nth 2 args)
                (take-nth 2 (next args)))))
+
+(def OPENCL-PREFIX "opencl/")
+(def OPENCL-INCLUDE-DIR (.. ClassLoader (getSystemResource OPENCL-PREFIX) (getPath)))
+(def SHARED-LIB-PATH
+  (let [os-name (.. System (getProperty "os.name") (toLowerCase))
+        os-arch (.. System (getProperty "os.arch"))]
+    (str "native/"
+         (cond-starts-with os-name
+                           "win"      "win/"
+                           "mac"      "mac/"
+                           "linux"    "linux/"
+                           "freebsd"  "freebsd"
+                           "solaris"  "solaris/")
+         os-arch "/")))
 
 (defn get-lib-extension []
   (let [os-name (.. System (getProperty "os.name") (toLowerCase))]
