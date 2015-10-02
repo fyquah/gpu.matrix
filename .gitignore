@@ -1,9 +1,9 @@
 # Ignore binaries
 src/native/out/
 **.out
-**.so
-**.dylib
-**.dll
+src/native/**.so
+src/native/**.dylib
+src/native/**.dll
 **.a
 **.o
 **.class
