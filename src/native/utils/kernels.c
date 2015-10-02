@@ -51,9 +51,9 @@ static char * get_file_contents(const char * filename) {
 
         rs = (*jvm)->AttachCurrentThread(jvm, (void**) &env, NULL);
         assert(rs == JNI_OK);
-        klass = (*env)->FindClass(env, "gpu/matrix/KernelLoader");
+        klass = (*env)->FindClass(env, "gpu/matrix/LoaderUtils");
         method = (*env)->GetStaticMethodID(env,
-            klass, "loadProgram",
+            klass, "clLoadProgram",
             "(Ljava/lang/String;)Ljava/lang/String;");
         arg = (jobject) (*env)->NewStringUTF(env, full_path);
         result = (*env)->CallStaticObjectMethod(env, klass, method, arg);
@@ -101,9 +101,9 @@ char * get_compilation_options() {
 
         rs = (*jvm)->AttachCurrentThread(jvm, (void**) &env, NULL);
         assert(rs == JNI_OK);
-        klass = (*env)->FindClass(env, "gpu/matrix/KernelLoader");
+        klass = (*env)->FindClass(env, "gpu/matrix/LoaderUtils");
         method = (*env)->GetStaticMethodID(env,
-            klass, "getIncludeProgramDir",
+            klass, "clGetCompilationFlags",
             "()Ljava/lang/String;");
         result = (*env)->CallStaticObjectMethod(env, klass, method);
 

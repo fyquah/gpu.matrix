@@ -1,14 +1,14 @@
 package gpu.matrix;
 import java.nio.ByteBuffer;
 import gpu.matrix.ArrayHelper;
-import gpu.matrix.JVMLoader;
-import gpu.matrix.KernelLoader;
+import gpu.matrix.Initializer;
+import gpu.matrix.LoaderUtils;
 
 public class NDArray {
     // Static methods
     static {
-        KernelLoader.loadLibrary("gpu-matrix");
-        init();
+        LoaderUtils.loadLibrary("gpu-matrix");
+        Initializer.init();
     }
 
     public native static NDArray sample();
@@ -33,8 +33,6 @@ public class NDArray {
     public native static NDArray newScalar();
     public native static NDArray createFromShape(long[] shape);
     public native static NDArray newInstance(double[] data, long ndims, long[] shape, long[] strides);
-    // init calls gpu_matrix_init(), which initalizes various stuff (like platform)
-    private native static void init();
 
     // constructors
     public NDArray(){}

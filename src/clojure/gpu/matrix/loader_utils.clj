@@ -1,10 +1,13 @@
-(ns gpu.matrix.kernel-loader
+"Various utilities to load native / openCL resources."
+
+(ns gpu.matrix.loader-utils
   (:require [clojure.java.io :as io])
-  (:gen-class :name     gpu.matrix.KernelLoader
+  (:gen-class :name     gpu.matrix.LoaderUtils
               :prefix   java- 
-              :methods  [^{:static true} [loadProgram [String] String]
-                         ^{:static true} [getIncludeProgramDir [] String]
+              :methods  [^{:static true} [clLoadProgram [String] String]
+                         ^{:static true} [clGetCompilationFlags [] String]
                          ^{:static true} [loadLibrary [String] void]]))
+
 (defmacro cond-starts-with [string & args]
   `(cond
      ~@(mapcat (fn [prefix ret]
@@ -34,12 +37,14 @@
                                "linux" "so"))))
 
 (defn ^{:static true}
-  java-loadProgram
+  java-clLoadProgram
+  "Loads a opencl program as a string"
   ^String [^String file-name]
   (slurp (ClassLoader/getSystemResource (str OPENCL-PREFIX file-name))))
 
 (defn ^{:static true}
-  java-getIncludeProgramDir
+  java-clGetCompilationFlags 
+  "Get compilation flags for openCL"
   ^String []
   (str "-I " OPENCL-INCLUDE-DIR))
 
@@ -48,7 +53,7 @@
 (defn ^{:static true}
   java-loadLibrary
   "Attempt to load from java.library.path where possible, otherwise load
-  from resources/~SHARED-LIB-PATH"
+  from resources/SHARED-LIB-PATH"
   [^String lib-name]
   (when-not (contains? @libs-loaded-atom lib-name)
     (try

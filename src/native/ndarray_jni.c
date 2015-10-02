@@ -42,14 +42,6 @@ index_t* jlong_to_index_t(jlong* arr, index_t len) {
     return ret;
 }
 
-// static methods
-
-JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_init
-  (JNIEnv * env, jclass klass) {
-    gpu_matrix_init();
-}
-
-
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_newScalar__D
   (JNIEnv * env, jclass klass, jdouble v) {
     ndarray * arr = ndarray_constructor_from_scalar(v);

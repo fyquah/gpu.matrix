@@ -18,7 +18,7 @@ TARGET_FILE=${OUT_DIR}/main
 
 OBJECT_FILES=ndarray.o utils/array.o utils/cl_helper.o utils/files.o \
 	     utils/kernels.o
-JNI_OBJECT_FILES=ndarray_jni.o jvmloader_jni.o
+JNI_OBJECT_FILES=ndarray_jni.o initializer_jni.o
 
 # Rules:
 
