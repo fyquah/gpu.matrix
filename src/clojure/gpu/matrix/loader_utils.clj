@@ -66,9 +66,17 @@
               current-time (.. (new java.util.Date) (getTime)) 
               tmp-lib-path (str tmp-dir
                                 current-time ; to prevent duplication
-                                "lib" lib-name lib-extension)]
-          (with-open [in (ClassLoader/getSystemResourceAsStream
+                                "lib" lib-name lib-extension)
+              input-stream
+              (ClassLoader/getSystemResourceAsStream
                            (str SHARED-LIB-PATH "lib" lib-name lib-extension))]
+          ; throws an exception if the input stream cannot be opened!
+          ; eg: no permission or file not found
+          (when (nil? input-stream)
+            (throw (new UnsatisfiedLinkError
+                        (str "Cannot open shared library in java.library.path "
+                             "or resource-path!"))))
+          (with-open [in input-stream]
             (with-open [out (io/output-stream tmp-lib-path)]
               (io/copy in out)))
           (System/load tmp-lib-path)
