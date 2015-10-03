@@ -11,4 +11,4 @@ struct ndarray {
 typedef struct ndarray ndarray;
 typedef unsigned index_t;
 
-#endif TYPE_H
+#endif

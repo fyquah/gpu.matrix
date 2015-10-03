@@ -3,4 +3,5 @@
 
 #include <types.h> 
 #include "arimethic.cl"
+#include "vector.cl"
 #include "matrix.cl"

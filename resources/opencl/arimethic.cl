@@ -51,7 +51,7 @@ __kernel void op_name(\
         case 2:\
         case 3: { \
             index_t idx_x = 0, idx_y = 0;\
-            for (int i = 0 ; i < ndims ; i++) {\
+            for (index_t i = 0 ; i < ndims ; i++) {\
                 index_t global_id = (index_t) get_global_id (i);\
                 idx_x += strides_x[i] * global_id; \
                 idx_y += strides_y[i] * global_id; \
@@ -72,4 +72,4 @@ ARIMETHIC_FACTORY(mul, *)
 ARIMETHIC_FACTORY(div, /)
 
 
-#endif ARIMETHIC_CL
+#endif
