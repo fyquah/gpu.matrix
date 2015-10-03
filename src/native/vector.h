@@ -1,11 +1,4 @@
-#include "types.h"
-
-typedef struct {
-    double * data;
-    index_t length;
-    index_t stride;
-} vector;
-
+// BLAS 1 vector functions and subroutines
 // BLAS reference:
 // http://www.netlib.org/lapack/lug/node145.html
 //
@@ -16,9 +9,25 @@ typedef struct {
 // DOTU  $ dot \leftarrow x ^ {T} y $   C, Z
 // _DOTC     $ dot \leftarrow x ^ {H} y $   C, Z
 
+#include "types.h"
+#include "utils.h"
+
+typedef struct {
+    double * data;
+    index_t length;
+    index_t stride;
+} vector;
+
+#define THREADS_COUNT 100;
+
+// Release memory
+// Does not naively release memory, need to do some GC resolution
+void gpu_matrix_release(vector *);
+
+// BLAS 1 headers
 vector * gpu_matrix_vector_axpy(vector * x, double a, vector * y);
 vector * gpu_matrix_vector_swap(vector * x, vector * y);
-vector * gpu_matrix_vector_scal(vecetor * x, double a);
+vector * gpu_matrix_vector_scal(vector * x, double a);
 vector * gpu_matrix_vector_copy();
 double gpu_matrix_vector_dot(vector * x, vector * y);
 double gpu_matrix_vector_nrm2(vector * x);

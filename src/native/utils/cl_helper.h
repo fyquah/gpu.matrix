@@ -1,3 +1,6 @@
+#ifndef CL_HELPER_H
+#define CL_HELPER_H
+
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
@@ -21,3 +24,5 @@ void gpu_matrix_init();
 void gpu_matrix_destroy();
 cl_mem buffers_create(cl_mem_flags, size_t, void*, cl_int*);
 cl_command_queue command_queue_create(cl_command_queue_properties properties, cl_int * errcode_res);
+
+#endif

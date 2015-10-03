@@ -78,7 +78,7 @@ const char * get_cl_function_name(kernel_type_t k) {
         "sub", "sub_scalar",
         "mul", "mul_scalar",
         "div", "div_scalar",
-        "mmul"
+        "mmul", "vector_axpy"
     };
 
     return module_names[k];
