@@ -101,4 +101,72 @@ vector * gpu_matrix_vector_axpy(vector * v_x, double alpha, vector * v_y) {
     return output;
 }
 
+double gpu_matrix_vector_asum(vector * v_x) {
+    size_t datasize = gpu_matrix_vector_datasize(v_x);
+    cl_int status;
+    double output;
+    cl_mem buffer_data;
+    cl_command_queue cmd_queue;
+    cl_kernel kernel;
+    index_t remaining_length = v_x->length;
+   
+    
+    cmd_queue = clCreateCommandQueue(
+        context_get(),
+        device_get(),
+        0,
+        &status
+    );
+    buffer_data = buffers_create(
+        CL_MEM_READ_WRITE,
+        datasize,
+        NULL,
+        &status
+    );
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_data,
+        CL_FALSE, 0, datasize,
+        v_x->data, 0, NULL, NULL
+    );
+    kernel = kernels_get(
+        context_get(),
+        device_get(),
+        KERNEL_VECTOR_ASUM
+    );
 
+    
+    status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &buffer_data);
+    status |= clSetKernelArg(kernel, 2, sizeof(index_t), &v_x->stride);
+
+    while(remaining_length > 1) {
+        size_t global_work_size[1] = { remaining_length / 2 };
+        status = clSetKernelArg(kernel, 1, sizeof(index_t), &remaining_length);
+        status = clEnqueueNDRangeKernel(
+            cmd_queue,
+            kernel,
+            1,
+            NULL,
+            global_work_size,
+            NULL,
+            0,
+            NULL,
+            NULL
+        );
+        remaining_length = (remaining_length+1) >> 1;
+    }
+
+    clEnqueueReadBuffer(
+        cmd_queue,
+        buffer_data,
+        CL_TRUE,
+        0,
+        sizeof(double),
+        &output,
+        0,
+        NULL,
+        NULL
+    );
+    clReleaseMemObject(buffer_data);
+
+    return output;
+}

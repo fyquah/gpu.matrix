@@ -1,6 +1,6 @@
 UNAME_S := $(shell uname -s)
 ARCH := $(shell uname -m)
-FLAGS=-O2 -fPIC -std=c99 -lm
+FLAGS=-fPIC -std=c99 -lm
 .DEFAULT_GOAL := all
 OUT_DIR=out
 TARGET_FILE=${OUT_DIR}/main

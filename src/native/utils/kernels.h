@@ -21,7 +21,8 @@ typedef const unsigned kernel_type_t;
 #define KERNEL_DIV_SCALAR 7
 #define KERNEL_MMUL 8
 #define KERNEL_VECTOR_AXPY 9
-#define KERNELS_COUNT 10
+#define KERNEL_VECTOR_ASUM 10
+#define KERNELS_COUNT 11
 
 // Compiles the program and cahce it in a global buffer
 static cl_program compile_program(cl_context, cl_device_id);

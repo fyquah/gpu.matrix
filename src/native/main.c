@@ -10,12 +10,14 @@
 #include "utils.h"
 #include "ndarray.h"
 #include "vector.h"
-#define LENGTH 20000
+#define LENGTH 200000000
 
 
 int main() {
-    vector a, b;
-    double *data_a, *data_b;
+    vector a, b, *c;
+    int d;
+    double *data_a, *data_b, output;
+    scanf("%d", &d);
 
     gpu_matrix_init();
 
@@ -34,26 +36,27 @@ int main() {
     }
 
     struct timeval stop, start;
+
     gettimeofday(&start, NULL);
-    vector * c = gpu_matrix_vector_axpy(&a, 12.0, &b);
+    // CODE HERE
+    output = 0.0;
+    for (int i = 0 ; i < LENGTH ; i++) {
+        output = output + a.data[i];
+    }
+    // END OF CODE
     gettimeofday(&stop, NULL);
     printf("Took %ld microseconds\n", stop.tv_usec + stop.tv_sec * 1000000 - 
             (start.tv_usec + start.tv_sec * 1000000));
+
+    output = gpu_matrix_vector_asum(&a);
     gettimeofday(&start, NULL);
-    
-    printf("%ld\n", c->length);
-    for (int i = 0 ; i < LENGTH ; i++) {
-        if(fabs(c->data[i] - (a.data[i] * 12.0 + b.data[i])) > 0.0001) {
-            puts("WRONG");
-            exit(1);
-        }
-    }
-
+    // CODE HERE
+    output = gpu_matrix_vector_asum(&a);
+    // END OF CODE
     gettimeofday(&stop, NULL);
-    printf("%ld microseconds\n", stop.tv_usec + stop.tv_sec * 1000000 - 
+    printf("Took %ld microseconds\n", stop.tv_usec + stop.tv_sec * 1000000 - 
             (start.tv_usec + start.tv_sec * 1000000));
-    puts("RIGHT!");
-
+    
 
     return 0;
 }

@@ -74,11 +74,15 @@ static char * get_file_contents(const char * filename) {
 
 const char * get_cl_function_name(kernel_type_t k) {
     static const char * module_names[] = {
+        // NDArray ops
         "add", "add_scalar",
         "sub", "sub_scalar",
         "mul", "mul_scalar",
         "div", "div_scalar",
-        "mmul", "vector_axpy"
+        "mmul",
+        // Vector opts 
+        "vector_axpy",
+        "vector_asum"
     };
 
     return module_names[k];
