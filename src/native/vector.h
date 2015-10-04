@@ -9,6 +9,7 @@
 // DOTU  $ dot \leftarrow x ^ {T} y $   C, Z
 // _DOTC     $ dot \leftarrow x ^ {H} y $   C, Z
 
+#include <time.h>
 #include "types.h"
 #include "utils.h"
 

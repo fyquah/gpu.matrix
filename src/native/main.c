@@ -10,14 +10,14 @@
 #include "utils.h"
 #include "ndarray.h"
 #include "vector.h"
-#define LENGTH 200000000
+#define LENGTH 4194304 
+#define ENABLE_PROFILING 1
 
 
 int main() {
     vector a, b, *c;
-    int d;
+    int d = 123;
     double *data_a, *data_b, output;
-    scanf("%d", &d);
 
     gpu_matrix_init();
 
@@ -37,6 +37,8 @@ int main() {
 
     struct timeval stop, start;
 
+    output = gpu_matrix_vector_asum(&a);
+
     gettimeofday(&start, NULL);
     // CODE HERE
     output = 0.0;
@@ -44,18 +46,11 @@ int main() {
         output = output + a.data[i];
     }
     // END OF CODE
-    gettimeofday(&stop, NULL);
-    printf("Took %ld microseconds\n", stop.tv_usec + stop.tv_sec * 1000000 - 
-            (start.tv_usec + start.tv_sec * 1000000));
 
-    output = gpu_matrix_vector_asum(&a);
-    gettimeofday(&start, NULL);
-    // CODE HERE
-    output = gpu_matrix_vector_asum(&a);
-    // END OF CODE
     gettimeofday(&stop, NULL);
-    printf("Took %ld microseconds\n", stop.tv_usec + stop.tv_sec * 1000000 - 
-            (start.tv_usec + start.tv_sec * 1000000));
+    float time_taken = (stop.tv_usec + stop.tv_sec * 1000000 - 
+            (start.tv_usec + start.tv_sec * 1000000)) / 1000.0;
+    printf("Pure SW took %f milliseconds\n", time_taken);
     
 
     return 0;
