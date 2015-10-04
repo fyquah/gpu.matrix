@@ -4,18 +4,23 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
+#include <math.h>
 
 // Our stuff
 #include "utils.h"
 #include "ndarray.h"
 #include "vector.h"
-#define LENGTH 400000000
+#define LENGTH 20000
 
-double data_a[LENGTH], data_b[LENGTH];
 
 int main() {
     vector a, b;
+    double *data_a, *data_b;
+
     gpu_matrix_init();
+
+    data_a = malloc(sizeof(double) * LENGTH);
+    data_b = malloc(sizeof(double) * LENGTH);
     a.length = LENGTH;
     b.length = LENGTH;
     a.stride = 1;
@@ -38,7 +43,7 @@ int main() {
     
     printf("%ld\n", c->length);
     for (int i = 0 ; i < LENGTH ; i++) {
-        if(c->data[i] != a.data[i] * 12.0 + b.data[i]) {
+        if(fabs(c->data[i] - (a.data[i] * 12.0 + b.data[i])) > 0.0001) {
             puts("WRONG");
             exit(1);
         }
