@@ -107,6 +107,12 @@ void describe_event(const char * description, cl_ulong time) {
     printf("%s: %.3f milliseconds\n", description, ((double) time * 0.000001));
 }
 
+void gpu_matrix_vector_swap(vector * v_x, vector * v_y) {
+    vector tmp_x = *v_x;
+    *v_x = *v_y;
+    *v_y = tmp_x;
+}
+
 double gpu_matrix_vector_asum(vector * v_x) {
     size_t datasize = gpu_matrix_vector_datasize(v_x);
     cl_int status;

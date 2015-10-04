@@ -29,29 +29,14 @@ int main() {
     b.stride = 1;
     a.data = data_a;
     b.data = data_b;
-
-    for (int i = 0 ; i < LENGTH ; i++) {
-        a.data[i] = 1.20 * i;
-        b.data[i] = 35.0 * i;
-    }
-
-    struct timeval stop, start;
-
-    output = gpu_matrix_vector_asum(&a);
-
-    gettimeofday(&start, NULL);
-    // CODE HERE
-    output = 0.0;
-    for (int i = 0 ; i < LENGTH ; i++) {
-        output = output + a.data[i];
-    }
-    // END OF CODE
-
-    gettimeofday(&stop, NULL);
-    float time_taken = (stop.tv_usec + stop.tv_sec * 1000000 - 
-            (start.tv_usec + start.tv_sec * 1000000)) / 1000.0;
-    printf("Pure SW took %f milliseconds\n", time_taken);
     
+    for(int i = 0 ; i < LENGTH ; i++) {
+        a.data[i] = 1;
+        b.data[i] = 2;
+    }
+    
+    printf("a[0] = %.2f\n", a.data[0]);
+    printf("b[0] = %.2f\n", b.data[0]);
 
     return 0;
 }

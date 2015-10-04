@@ -27,9 +27,9 @@ void gpu_matrix_release(vector *);
 
 // BLAS 1 headers
 vector * gpu_matrix_vector_axpy(vector * x, double a, vector * y);
-vector * gpu_matrix_vector_swap(vector * x, vector * y);
 vector * gpu_matrix_vector_scal(vector * x, double a);
 vector * gpu_matrix_vector_copy();
+void gpu_matrix_vector_swap(vector * x, vector * y);
 double gpu_matrix_vector_dot(vector * x, vector * y);
 double gpu_matrix_vector_nrm2(vector * x);
 double gpu_matrix_vector_asum(vector * x);
