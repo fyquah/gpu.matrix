@@ -10,7 +10,7 @@
 #include "utils.h"
 #include "ndarray.h"
 #include "vector.h"
-#define LENGTH 4194304 
+#define LENGTH 4194304
 #define ENABLE_PROFILING 1
 
 
@@ -29,14 +29,14 @@ int main() {
     b.stride = 1;
     a.data = data_a;
     b.data = data_b;
-    
-    for(int i = 0 ; i < LENGTH ; i++) {
-        a.data[i] = 1;
-        b.data[i] = 2;
+
+    for (int i = 0 ; i < LENGTH ; i++) {
+        data_a[i] = 1;
     }
-    
-    printf("a[0] = %.2f\n", a.data[0]);
-    printf("b[0] = %.2f\n", b.data[0]);
+
+    output = gpu_matrix_vector_asum(&b);
+
+    printf("%.2f", output);
 
     return 0;
 }

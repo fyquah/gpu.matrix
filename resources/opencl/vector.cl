@@ -3,6 +3,21 @@
 
 #include <types.h>
 
+__kernel void vector_mul (
+    __global const double * data_x,
+    const index_t length_x,
+    const index_t stride_x,
+    __global const double * data_y,
+    const index_t length_y,
+    const index_t stride_y,
+    // Output memory locations
+    __global double * data_output
+) {
+    index_t global_id = get_global_id (0);
+    data_output[global_id] = data_x[global_id * stride_x] *
+        data_y[global_id * stride_y];
+}
+
 __kernel void vector_asum (
     __global double * data,
     const index_t len,
