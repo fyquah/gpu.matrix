@@ -10,14 +10,15 @@
 #include "utils.h"
 #include "ndarray.h"
 #include "vector.h"
-#define LENGTH 4194304
+#define LENGTH 400000
 #define ENABLE_PROFILING 1
 
 
 int main() {
-    vector a, b, *c;
+    vector a, b;
     int d = 123;
-    double *data_a, *data_b, output;
+    double *data_a, *data_b;
+    vector * output;
 
     gpu_matrix_init();
 
@@ -35,9 +36,15 @@ int main() {
         b.data[i] = i * 1.3;
     }
 
-    output = gpu_matrix_vector_asum(&b);
-    output = gpu_matrix_vector_asum(&b);
-    printf("%.2f", output);
+    output = gpu_matrix_vector_axpy(&a, 12.0, &b);
+    printf("%.2f ", output->data[0]);
+    for (index_t i = 0 ; i < LENGTH ; i++) {
+        if (fabs(a.data[i]  * 12 + b.data[i] - output->data[i]) > 0.001) {
+            puts("WRONG!");
+            exit(1);
+        }
+    }
+    puts("CORRECT!");
 
     return 0;
 }
