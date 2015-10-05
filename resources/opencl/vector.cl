@@ -4,6 +4,7 @@
 #include <types.h>
 
 __kernel void vector_mul (
+    // The acutla parameters to the kernel
     __global const double * data_x,
     const index_t length_x,
     const index_t stride_x,
@@ -14,7 +15,8 @@ __kernel void vector_mul (
     __global double * data_output
 ) {
     index_t global_id = get_global_id (0);
-    data_output[global_id] = data_x[global_id * stride_x] *
+    data_output[global_id] = 
+        data_x[global_id * stride_x] *
         data_y[global_id * stride_y];
 }
 
@@ -50,3 +52,4 @@ __kernel void vector_axpy (
 }
 
 #endif
+

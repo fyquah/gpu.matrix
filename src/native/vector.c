@@ -1,11 +1,9 @@
 #include "vector.h"
 
-#define ENABLE_PROFILING 0
-
 const index_t ONE = 1;
 
 void gpu_matrix_release(vector * x) {
-    // TODO!
+    // TODO, don't just free
 }
 
 size_t gpu_matrix_vector_datasize(vector * x) {
@@ -67,7 +65,7 @@ vector * gpu_matrix_vector_axpy(vector * v_x, double alpha, vector * v_y) {
         v_y->data, 0, NULL, NULL
     );
 
-    status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &buffer_x);
+    status  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &buffer_x);
     status |= clSetKernelArg(kernel, 1, sizeof(index_t), &v_x->length);
     status |= clSetKernelArg(kernel, 2, sizeof(index_t), &v_x->stride);
     status |= clSetKernelArg(kernel, 3, sizeof(double), &alpha);
@@ -113,6 +111,7 @@ void gpu_matrix_vector_swap(vector * v_x, vector * v_y) {
 
 double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {
     size_t datasize = gpu_matrix_vector_datasize(v_x);
+    size_t global_work_size[1] = { v_x->length };
     cl_int status;
     double output;
     cl_mem buffer_data_output, buffer_data_x, buffer_data_y;
@@ -122,7 +121,7 @@ double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {
     cl_event write_buffer_x_event, write_buffer_y_event,
              enqueue_event, read_buffer_event;
     cl_event events_arr[10];
-
+    
 #ifdef ENABLE_PROFILING
     cl_ulong write_buffer_x_start, write_buffer_x_end,
              write_buffer_y_start, write_buffer_y_end,
@@ -132,12 +131,17 @@ double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {
     total_time = 0;
     wall_clock_time = clock();
 #endif
-    
+
     cmd_queue = clCreateCommandQueue(
         context_get(),
         device_get(),
-        CL_QUEUE_PROFILING_ENABLE,
+        0,
         &status
+    );
+    kernel = kernels_get(
+        context_get(),
+        device_get(),
+        KERNEL_VECTOR_MUL
     );
     buffer_data_x = buffers_create(
         CL_MEM_READ_ONLY,
@@ -160,21 +164,21 @@ double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {
 
     status = clEnqueueWriteBuffer(
         cmd_queue, buffer_data_x,
-        CL_TRUE, 0, datasize,
-        v_x->data, 0, NULL, &write_buffer_x_event 
+        CL_FALSE, 0, datasize,
+        v_x->data, 0, NULL,
+        &write_buffer_x_event
     );
     status = clEnqueueWriteBuffer(
         cmd_queue, buffer_data_y,
-        CL_TRUE,
-        0,
-        datasize,
-        v_y->data, 0, NULL, &write_buffer_y_event
+        CL_FALSE, 0, datasize,
+        v_y->data, 0, NULL, 
+        &write_buffer_y_event
     );
     events_arr[0] = write_buffer_x_event;
     events_arr[1] = write_buffer_y_event;
     clWaitForEvents(2, events_arr);
 
-    // Print write buffer profilling information
+// Print write buffer profilling information
 #ifdef ENABLE_PROFILING
     clGetEventProfilingInfo(
         write_buffer_x_event,
@@ -205,18 +209,19 @@ double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {
         NULL
     );
 
-    describe_event("clEnqueueWriteBuffer on buffer_x: ", write_buffer_x_end - write_buffer_x_start);
-    describe_event("clEnqueueWriteBuffer on buffer_y: ", write_buffer_y_end - write_buffer_y_start);
+    describe_event(
+        "clEnqueueWriteBuffer on buffer_x: ",
+        write_buffer_x_end - write_buffer_x_start
+    );
+    describe_event(
+        "clEnqueueWriteBuffer on buffer_y: ",
+        write_buffer_y_end - write_buffer_y_start
+    );
     total_time += write_buffer_x_end - write_buffer_x_start;
     total_time += write_buffer_y_end - write_buffer_y_start;
 #endif
 
     // Compute the Interleave multiplication first
-    kernel = kernels_get(
-        context_get(),
-        device_get(),
-        KERNEL_VECTOR_MUL
-    );
     status  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &buffer_data_x);
     status |= clSetKernelArg(kernel, 1, sizeof(index_t), &v_x->length);
     status |= clSetKernelArg(kernel, 2, sizeof(index_t), &v_x->stride);
@@ -224,18 +229,36 @@ double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {
     status |= clSetKernelArg(kernel, 4, sizeof(index_t), &v_y->length);
     status |= clSetKernelArg(kernel, 5, sizeof(index_t), &v_y->stride);
     status |= clSetKernelArg(kernel, 6, sizeof(cl_mem), &buffer_data_output);
-    clEnqueueNDRangeKernel(
+    status = clEnqueueNDRangeKernel(
         cmd_queue,
         kernel,
         1,
         NULL,
-        &datasize,
+        global_work_size,
         NULL,
         0,
         NULL,
-        &enqueue_event
+        &enqueue_event 
     );
 
+#ifdef ENABLE_PROFILING
+        clGetEventProfilingInfo(
+            enqueue_event,
+            CL_PROFILING_COMMAND_START,
+            sizeof(cl_ulong),
+            &enqueue_start,
+            NULL
+        );
+        clGetEventProfilingInfo(
+            enqueue_event,
+            CL_PROFILING_COMMAND_END,
+            sizeof(cl_ulong),
+            &enqueue_end,
+            NULL
+        );
+        describe_event("clEnqueueNDRangeKernel ", enqueue_end - enqueue_start);
+        total_time += enqueue_end - enqueue_start;
+#endif
     // Then, compute the sum 
     kernel = kernels_get(
         context_get(),
@@ -261,26 +284,8 @@ double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {
             &enqueue_event 
         );
         remaining_length = (remaining_length+1) >> 1;
-        // clWaitForEvents(1, &enqueue_event);
+        clWaitForEvents(1, &enqueue_event);
 
-#ifdef ENABLE_PROFILING
-        clGetEventProfilingInfo(
-            enqueue_event,
-            CL_PROFILING_COMMAND_START,
-            sizeof(cl_ulong),
-            &enqueue_start,
-            NULL
-        );
-        clGetEventProfilingInfo(
-            enqueue_event,
-            CL_PROFILING_COMMAND_END,
-            sizeof(cl_ulong),
-            &enqueue_end,
-            NULL
-        );
-        describe_event("clEnqueueNDRangeKernel ", enqueue_end - enqueue_start);
-        total_time += enqueue_end - enqueue_start;
-#endif
         clReleaseEvent(enqueue_event);
     }
 
@@ -316,7 +321,7 @@ double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {
 
     printf("Total HW Time : %.2f milliseconds\n", ((double) total_time) * 0.000001);
 #endif
-
+    // Release buffer objects
     clReleaseMemObject(buffer_data_output);
     clReleaseEvent(read_buffer_event);
     clReleaseEvent(write_buffer_x_event);
@@ -325,7 +330,6 @@ double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {
 #ifdef ENABLE_PROFILING
     printf("Wall clock time: %f milliseconds\n",
         ((float) clock() - wall_clock_time )/CLOCKS_PER_SEC*1000 );
-
 #endif
 
     return output;

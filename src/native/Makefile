@@ -1,9 +1,11 @@
 UNAME_S := $(shell uname -s)
 ARCH := $(shell uname -m)
-FLAGS=-fPIC -std=c99 -lm
+FLAGS=-fPIC -std=c99 -lm 
 .DEFAULT_GOAL := all
 OUT_DIR=out
 TARGET_FILE=${OUT_DIR}/main
+
+FLAGS+=-D ENABLE_PROFILING
 
 ifeq ($(UNAME_S),Linux)
     FLAGS += -D LINUX -lOpenCL -I/usr/lib/jvm/java-1.7.0-openjdk-amd64/include/
