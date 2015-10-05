@@ -71,9 +71,9 @@ void test_vector_blas() {
 
     if (fabs(expected_dot_product_output - dot_product_output) / 
             expected_dot_product_output <= 0.001) {
-        puts("CORRECT!");
+        puts("CORRECT!\n");
     } else {
-        puts("WRONG!");
+        puts("WRONG!\n");
     }
 
     puts("VECTOR_ASUM TEST:");
@@ -85,9 +85,9 @@ void test_vector_blas() {
     }
 
     if(is_simliar(asum_output, expected_asum_output)) {
-        puts("CORRECT!");
+        puts("CORRECT!\n");
     } else {
-        puts("WRONG!");
+        puts("WRONG!\n");
     }
 
 }
