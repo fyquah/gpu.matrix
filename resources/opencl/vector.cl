@@ -27,7 +27,7 @@ __kernel void vector_asum (
     index_t first_id = global_id * stride;
     index_t second_id = (global_id + ((len+1) / 2) ) * stride;
 
-    data[first_id] *= data[second_id];
+    data[first_id] += data[second_id];
 }
 
 __kernel void vector_axpy (

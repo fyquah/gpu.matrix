@@ -31,11 +31,12 @@ int main() {
     b.data = data_b;
 
     for (int i = 0 ; i < LENGTH ; i++) {
-        data_a[i] = 1;
+        a.data[i] = i * 1.2;
+        b.data[i] = i * 1.3;
     }
 
     output = gpu_matrix_vector_asum(&b);
-
+    output = gpu_matrix_vector_asum(&b);
     printf("%.2f", output);
 
     return 0;
