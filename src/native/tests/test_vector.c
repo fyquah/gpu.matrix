@@ -1,9 +1,25 @@
 #include "../utils.h"
 #include "../vector.h"
+#include "../types.h"
 #include "test_vector.h"
 
 // because 2^22 is kinda cool :
 #define LENGTH 4194304
+
+bool is_simliar(double a, double b) {
+    if (a < b) {
+        double tmp_a = a;
+        a = b;
+        b = tmp_a;
+    }
+
+    if (a == b || fabs((a-b)/a) <= 0.001) {
+        return true;
+    } else {
+        return false;
+    }
+    return false;
+}
 
 void test_vector_blas() {
     vector a, b;
@@ -61,6 +77,19 @@ void test_vector_blas() {
     }
 
     puts("VECTOR_ASUM TEST:");
+    flag = true;
+    asum_output = gpu_matrix_vector_asum(&a);
+    expected_asum_output = 0;
+    for (index_t i = 0 ; i < LENGTH ; i++) {
+        expected_asum_output += a.data[i];
+    }
+
+    if(is_simliar(asum_output, expected_asum_output)) {
+        puts("CORRECT!");
+    } else {
+        puts("WRONG!");
+    }
+
 }
 
 void test_vector() {
