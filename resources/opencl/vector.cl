@@ -32,6 +32,23 @@ __kernel void vector_asum (
     data[first_id] += data[second_id];
 }
 
+__kernel void vector_axpy_bang (
+    // The actual parameters to the kernel
+    __global double * data_x,
+    const index_t length_x,
+    const index_t stride_x,
+    const double alpha,
+    __global const double * data_y,
+    const index_t length_y,
+    const index_t stride_y
+) {
+    index_t global_id = get_global_id (0);
+
+    data_x[global_id * stride_x] = alpha * 
+        data_x[global_id * stride_x] +
+        data_y[global_id * stride_y];
+}
+
 __kernel void vector_axpy (
     // The actual parameters to the kernel
     __global const double * data_x,

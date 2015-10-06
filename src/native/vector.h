@@ -9,15 +9,13 @@
 // DOTU  $ dot \leftarrow x ^ {T} y $   C, Z
 // _DOTC     $ dot \leftarrow x ^ {H} y $   C, Z
 
+#ifndef VECTOR_H
+#define VECTOR_H
+
 #include <time.h>
 #include "types.h"
 #include "utils.h"
-
-typedef struct {
-    double * data;
-    index_t length;
-    index_t stride;
-} vector;
+#include "buffers/vector.h"
 
 #define THREADS_COUNT 100;
 
@@ -34,3 +32,4 @@ double gpu_matrix_vector_dot(vector * x, vector * y);
 double gpu_matrix_vector_nrm2(vector * x);
 double gpu_matrix_vector_asum(vector * x);
 
+#endif

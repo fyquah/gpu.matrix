@@ -82,6 +82,7 @@ const char * get_cl_function_name(kernel_type_t k) {
         "mmul",
         // Vector opts 
         "vector_axpy",
+        "vector_axpy_bang",
         "vector_asum",
         "vector_mul"
     };

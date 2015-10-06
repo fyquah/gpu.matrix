@@ -2,9 +2,28 @@
 #define TYPE_H
 #include <stdbool.h>
 #include <stdint.h>
+#include "libs/cl.h"
 
 // TODO : How to support 64 bit machines?
 typedef uint32_t index_t;
 typedef unsigned long long ull;
+
+typedef struct {
+    double * data;
+    index_t length;
+    index_t stride;
+} vector;
+
+typedef struct {
+    cl_mem * buffer;
+    index_t length;
+    index_t stride;
+    size_t datasize;
+} vector_buffer;
+
+// is this useful?
+typedef struct {
+    cl_mem * data;
+} scalar_buffer;
 
 #endif
