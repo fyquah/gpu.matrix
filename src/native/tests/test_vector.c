@@ -41,8 +41,8 @@ void test_vector_blas() {
     b.data = data_b;
 
     for (int i = 0 ; i < LENGTH ; i++) {
-        a.data[i] = i * 1.2;
-        b.data[i] = i * 1.3;
+        a.data[i] = i * 1.2 + 1;
+        b.data[i] = i * 1.3 + 1;
     }
     // end of initialization
 

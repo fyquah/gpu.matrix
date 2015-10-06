@@ -1,17 +1,16 @@
 #include "vector.h"
 
-void gpu_matrix_vector_buffer_axpy_BANG(vector_buffer * v_x, double d, vector_buffer * v_y) {
+void gpu_matrix_vector_buffer_axpy_BANG(
+    vector_buffer * v_x,
+    double d,
+    vector_buffer * v_y,
+    cl_command_queue cmd_queue
+) {
     
     size_t global_work_size[1] = { v_x->length };
     size_t datasize = v_x->datasize;
     cl_int status;
     cl_event read_buffer_events[1], enqueue_events[1];
-    cl_command_queue cmd_queue = clCreateCommandQueue(
-        context_get(),
-        device_get(),
-        CL_QUEUE_PROFILING_ENABLE,
-        &status
-    );
 
 #ifdef ENABLE_PROFILING
     cl_ulong write_buffer_x_start, write_buffer_x_end,
@@ -53,25 +52,9 @@ void gpu_matrix_vector_buffer_axpy_BANG(vector_buffer * v_x, double d, vector_bu
 
 #ifdef ENABLE_PROFILING
     cl_ulong start, end;
-    clGetEventProfilingInfo(
-        read_buffer_events[0],
-        CL_PROFILING_COMMAND_START,
-        sizeof(cl_ulong),
-        &start,
-        NULL
-    );
-    clGetEventProfilingInfo(
-        read_buffer_events[0],
-        CL_PROFILING_COMMAND_END,
-        sizeof(cl_ulong),
-        &end,
-        NULL
-    );
 
     total_time = 0.0;
     total_time += get_event_time(enqueue_events[0], "clEnqueueNDRangeKernel: ");
-    total_time += get_event_time(read_buffer_events[0], "clEnqueueReadBuffer (buffer_output)");
-    printf("HW Time milliseconds: %.3f\n", (total_time) * 0.000001);
 
 #endif
 
@@ -82,5 +65,4 @@ void gpu_matrix_vector_buffer_axpy_BANG(vector_buffer * v_x, double d, vector_bu
         ((float) clock() - wall_clock_time )/CLOCKS_PER_SEC*1000 );
 #endif
 
-    
 }

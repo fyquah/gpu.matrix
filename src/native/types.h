@@ -15,7 +15,7 @@ typedef struct {
 } vector;
 
 typedef struct {
-    cl_mem * buffer;
+    cl_mem buffer;
     index_t length;
     index_t stride;
     size_t datasize;

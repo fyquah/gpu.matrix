@@ -7,6 +7,6 @@
 
 // BANG functions modify the first argument!
 
-void gpu_matrix_vector_buffer_axpy_BANG(vector_buffer *, double, vector_buffer *);
+void gpu_matrix_vector_buffer_axpy_BANG(vector_buffer *, double, vector_buffer *, cl_command_queue);
 
 #endif

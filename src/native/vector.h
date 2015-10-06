@@ -22,6 +22,7 @@
 // Release memory
 // Does not naively release memory, need to do some GC resolution
 void gpu_matrix_release(vector *);
+vector_buffer gpu_matrix_vector_to_vector_buffer(vector *, cl_mem buffer);
 
 // BLAS 1 headers
 vector * gpu_matrix_vector_axpy(vector * x, double a, vector * y);
