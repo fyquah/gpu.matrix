@@ -35,6 +35,17 @@ __kernel void vector_mul_bang (
         data_y[global_id * stride_y];
 }
 
+__kernel void vector_square_bang (
+    // The acutla parameters to the kernel
+    __global double * data_x,
+    const index_t length_x,
+    const index_t stride_x
+) {
+    index_t global_id = get_global_id (0);
+    double v = data_x[global_id * stride_x];
+    data_x[global_id * stride_x] = v * v;
+}
+
 __kernel void vector_asum (
     __global double * data,
     const index_t len,

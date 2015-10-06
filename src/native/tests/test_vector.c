@@ -29,6 +29,7 @@ void test_vector_blas() {
     vector * axpy_output, expected_axpy_output; 
     double dot_product_output, expected_dot_product_output;
     double asum_output, expected_asum_output;
+    double nrm2_output, expected_nrm2_output;
 
     // Initialize and prepare test data
     data_a = malloc(sizeof(double) * LENGTH);
@@ -89,6 +90,21 @@ void test_vector_blas() {
     } else {
         puts("WRONG!\n");
     }
+
+    puts("VECTOR_NRM2 TEST:");
+    flag = true;
+    nrm2_output = gpu_matrix_vector_nrm2(&a);
+    expected_nrm2_output = 0;
+    for (index_t i = 0 ; i < LENGTH ; i++) {
+        expected_nrm2_output += a.data[i] * a.data[i];
+    }
+
+    if(is_simliar(nrm2_output, expected_nrm2_output)) {
+        puts("CORRECT!\n");
+    } else {
+        puts("WRONG!\n");
+    }
+
 
 }
 

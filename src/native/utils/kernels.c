@@ -73,22 +73,7 @@ static char * get_file_contents(const char * filename) {
 }
 
 const char * get_cl_function_name(kernel_type_t k) {
-    static const char * module_names[] = {
-        // NDArray ops
-        "add", "add_scalar",
-        "sub", "sub_scalar",
-        "mul", "mul_scalar",
-        "div", "div_scalar",
-        "mmul",
-        // Vector opts 
-        "vector_axpy",
-        "vector_axpy_bang",
-        "vector_asum",
-        "vector_mul",
-        "vector_mul_bang"
-    };
-
-    return module_names[k];
+    return gpu_matrix_kernel_names[k];
 }
 
 char * get_compilation_options() {
