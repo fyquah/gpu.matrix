@@ -84,7 +84,8 @@ const char * get_cl_function_name(kernel_type_t k) {
         "vector_axpy",
         "vector_axpy_bang",
         "vector_asum",
-        "vector_mul"
+        "vector_mul",
+        "vector_mul_bang"
     };
 
     return module_names[k];
