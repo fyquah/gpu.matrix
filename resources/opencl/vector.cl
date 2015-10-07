@@ -114,5 +114,41 @@ __kernel void vector_axpy (
         data_y[global_id * stride_y];
 }
 
+__kernel void vector_abs_bang (
+    // The actual parameters to the kernel
+    __global double * data_x,
+    const index_t length_x,
+    const index_t stride_x
+) {
+    index_t global_id = get_global_id (0);
+    data_x[global_id * stride_x] = 
+        fabs (data_x[global_id * stride_x]);
+}
+
+__kernel void vector_max_bang (
+    // The actual parameters to the kernel
+    __global double * data,
+    const index_t len,
+    const index_t stride
+) {
+    index_t global_id = get_global_id (0);
+    index_t first_id = global_id * stride;
+    index_t second_id = (global_id + ((len+1) / 2) ) * stride;
+
+    data[first_id] = fmax(data[first_id], data[second_id]);
+}
+
+__kernel void vector_min_bang (
+    // The actual parameters to the kernel
+    __global double * data,
+    const index_t len,
+    const index_t stride
+) {
+    index_t global_id = get_global_id (0);
+    index_t first_id = global_id * stride;
+    index_t second_id = (global_id + ((len+1) / 2) ) * stride;
+
+    data[first_id] = fmin(data[first_id], data[second_id]);
+}
 #endif
 

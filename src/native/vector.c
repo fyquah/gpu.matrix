@@ -380,3 +380,4 @@ double gpu_matrix_vector_nrm2(vector * v_x) {
 
     return output;
 }
+
