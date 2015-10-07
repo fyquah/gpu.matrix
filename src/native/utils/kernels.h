@@ -27,7 +27,10 @@ typedef const unsigned kernel_type_t;
 #define KERNEL_VECTOR_MUL_BANG 13
 #define KERNEL_VECTOR_SQUARE_BANG 14
 #define KERNEL_VECTOR_ROT_BANG 15
-#define KERNELS_COUNT 16
+#define KERNEL_VECTOR_ABS_BANG 16
+#define KERNEL_VECTOR_MIN_BANG 17
+#define KERNEL_VECTOR_MAX_BANG 18
+#define KERNELS_COUNT 19
 
 static const char * gpu_matrix_kernel_names[] = {
     // NDArray ops
@@ -43,7 +46,10 @@ static const char * gpu_matrix_kernel_names[] = {
     "vector_mul",
     "vector_mul_bang",
     "vector_square_bang",
-    "vector_rot_bang"
+    "vector_rot_bang",
+    "vector_abs_bang",
+    "vector_min_bang",
+    "vector_abs_bang"
 };
 // Compiles the program and cahce it in a global buffer
 static cl_program compile_program(cl_context, cl_device_id);

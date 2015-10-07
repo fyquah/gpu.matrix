@@ -1,3 +1,5 @@
+// How to DRY this source code up, there is too many repetition
+
 #include "vector.h"
 
 const index_t ONE = 1;
@@ -378,4 +380,3 @@ double gpu_matrix_vector_nrm2(vector * v_x) {
 
     return output;
 }
-

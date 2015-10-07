@@ -199,3 +199,5 @@ void gpu_matrix_vector_buffer_rot_BANG(
     clWaitForEvents(1, enqueue_events);
     clReleaseEvent(enqueue_events[0]);
 }
+
+

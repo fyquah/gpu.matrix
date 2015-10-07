@@ -89,7 +89,7 @@ void test_vector_blas() {
     asum_output = gpu_matrix_vector_asum(&a);
     expected_asum_output = 0;
     for (index_t i = 0 ; i < LENGTH ; i++) {
-        expected_asum_output += a.data[i];
+        expected_asum_output += fabs(a.data[i]);
     }
 
     if(is_simliar(asum_output, expected_asum_output)) {
@@ -130,3 +130,4 @@ void test_vector_blas() {
 void test_vector() {
     test_vector_blas();
 }
+
