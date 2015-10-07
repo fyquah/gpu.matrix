@@ -33,5 +33,7 @@ void gpu_matrix_vector_rot(vector * x, vector * y, double, double);
 double gpu_matrix_vector_dot(vector * x, vector * y);
 double gpu_matrix_vector_nrm2(vector * x);
 double gpu_matrix_vector_asum(vector * x);
+double gpu_matrix_vector_amax(vector*);
+double gpu_matrix_vector_amin(vector*);
 
 #endif

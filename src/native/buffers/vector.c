@@ -200,6 +200,40 @@ void gpu_matrix_vector_buffer_rot_BANG(
     clReleaseEvent(enqueue_events[0]);
 }
 
+void gpu_matrix_vector_buffer_abs_BANG(
+    vector_buffer * v_x,
+    cl_command_queue cmd_queue
+) {
+    size_t global_work_size[1];
+    cl_event enqueue_events[1];
+    cl_kernel kernel;
+    cl_int status;
+
+    global_work_size[0] = v_x->length;
+    kernel = kernels_get(
+        context_get(),
+        device_get(),
+        KERNEL_VECTOR_ABS_BANG
+    );
+    status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &v_x->buffer);
+    status = clSetKernelArg(kernel, 1, sizeof(index_t), &v_x->length);
+    status |= clSetKernelArg(kernel, 2, sizeof(index_t), &v_x->stride);
+
+    status = clEnqueueNDRangeKernel(
+        cmd_queue,
+        kernel,
+        1,
+        NULL,
+        global_work_size,
+        NULL,
+        0,
+        NULL,
+        enqueue_events 
+    );
+    clWaitForEvents(1, enqueue_events);
+    clReleaseEvent(enqueue_events[0]);
+}
+
 void gpu_matrix_vector_buffer_max_BANG(
     vector_buffer* v_x,
     cl_command_queue cmd_queue

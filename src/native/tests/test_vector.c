@@ -6,6 +6,14 @@
 // because 2^22 is kinda cool :
 #define LENGTH 4194304
 
+static double inline min(double a, double b) {
+    return (a < b ? a : b);
+}
+
+static double inline max(double a, double b) {
+    return (a > b ? a : b);
+}
+
 bool is_simliar(double a, double b) {
     if (a < b) {
         double tmp_a = a;
@@ -32,6 +40,8 @@ void test_vector_blas() {
     double dot_product_output, expected_dot_product_output;
     double asum_output, expected_asum_output;
     double nrm2_output, expected_nrm2_output;
+    double amax_output, expected_amax_output;
+    double amin_output, expected_amin_output;
 
     // Initialize and prepare test data
     data_a = malloc(sizeof(double) * LENGTH);
@@ -46,8 +56,8 @@ void test_vector_blas() {
     s = 49.440;
 
     for (int i = 0 ; i < LENGTH ; i++) {
-        a.data[i] = i * 1.2 + 1;
-        b.data[i] = i * 1.3 + 1;
+        a.data[i] = (i - LENGTH / 2) * 1.2 + 1;
+        b.data[i] = (i - LENGTH / 2) * 1.3 + 1;
     }
 
     copy_a = gpu_matrix_vector_copy(&a);
@@ -125,6 +135,41 @@ void test_vector_blas() {
 
     puts(flag ? "CORRECT!\n" : "WRONG!\n");
 
+    puts("VECTOR_AMIN TEST:");
+    amin_output = gpu_matrix_vector_amin(&a);
+    if (LENGTH == 0) {
+        flag = true;
+    } else {
+        expected_amin_output = fabs(a.data[0]);
+        for (index_t i = 1 ; i < LENGTH ; i++) {
+            double v = fabs(a.data[i]);
+            expected_amin_output = min(
+                expected_amin_output,
+                v
+            );
+        }
+
+        flag = is_simliar(amin_output, expected_amin_output);
+    }
+    puts(flag ? "CORRECT!\n" : "WRONG!\n");
+
+    puts("VECTOR_AMAX TEST:");
+    amax_output = gpu_matrix_vector_amax(&a);
+    if (LENGTH == 0) {
+        flag = true;
+    } else {
+        expected_amax_output = fabs(a.data[0]);
+        for (index_t i = 1 ; i < LENGTH ; i++) {
+            double v = fabs(a.data[i]);
+            expected_amin_output = max(
+                expected_amax_output,
+                v
+            );
+        }
+
+        flag = is_simliar(amax_output, expected_amax_output);
+    }
+    puts(flag ? "CORRECT!\n" : "WRONG!\n");
 }
 
 void test_vector() {
