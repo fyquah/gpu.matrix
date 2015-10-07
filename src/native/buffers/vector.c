@@ -42,7 +42,10 @@ void gpu_matrix_vector_buffer_axpy_BANG(
     clReleaseEvent(enqueue_events[0]);
 }
 
-void gpu_matrix_vector_buffer_asum_BANG(vector_buffer * v_x, cl_command_queue cmd_queue) {
+void gpu_matrix_vector_buffer_asum_BANG(
+    vector_buffer * v_x,
+    cl_command_queue cmd_queue
+){
     cl_event enqueue_events[1];
     cl_kernel kernel;
     cl_int status;
@@ -79,7 +82,11 @@ void gpu_matrix_vector_buffer_asum_BANG(vector_buffer * v_x, cl_command_queue cm
     }
 }
 
-void gpu_matrix_vector_buffer_mul_BANG(vector_buffer * v_x, vector_buffer * v_y, cl_command_queue cmd_queue) {
+void gpu_matrix_vector_buffer_mul_BANG(
+    vector_buffer * v_x,
+    vector_buffer * v_y,
+    cl_command_queue cmd_queue
+) {
     size_t global_work_size[1];
     cl_event enqueue_events[1];
     cl_kernel kernel;
@@ -117,7 +124,10 @@ void gpu_matrix_vector_buffer_mul_BANG(vector_buffer * v_x, vector_buffer * v_y,
     clReleaseEvent(enqueue_events[0]);
 }
 
-void gpu_matrix_vector_buffer_square_BANG(vector_buffer * v_x, cl_command_queue cmd_queue) {
+void gpu_matrix_vector_buffer_square_BANG(
+    vector_buffer * v_x,
+    cl_command_queue cmd_queue
+) {
     size_t global_work_size[1];
     cl_event enqueue_events[1];
     cl_kernel kernel;
@@ -148,3 +158,44 @@ void gpu_matrix_vector_buffer_square_BANG(vector_buffer * v_x, cl_command_queue 
     clReleaseEvent(enqueue_events[0]);
 }
 
+void gpu_matrix_vector_buffer_rot_BANG(
+    vector_buffer* v_x,
+    vector_buffer* v_y,
+    double c,
+    double s,
+    cl_command_queue cmd_queue
+){
+    size_t global_work_size[1];
+    cl_event enqueue_events[1];
+    cl_kernel kernel;
+    cl_int status;
+
+    global_work_size[0] = v_x->length;
+    kernel = kernels_get(
+        context_get(),
+        device_get(),
+        KERNEL_VECTOR_ROT_BANG
+    );
+    status  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &v_x->buffer);
+    status |= clSetKernelArg(kernel, 1, sizeof(index_t), &v_x->length);
+    status |= clSetKernelArg(kernel, 2, sizeof(index_t), &v_x->stride);
+    status |= clSetKernelArg(kernel, 3, sizeof(cl_mem), &v_y->buffer);
+    status |= clSetKernelArg(kernel, 4, sizeof(index_t), &v_y->length);
+    status |= clSetKernelArg(kernel, 5, sizeof(index_t), &v_y->stride);
+    status |= clSetKernelArg(kernel, 6, sizeof(double), &c);
+    status |= clSetKernelArg(kernel, 7, sizeof(double), &s);
+    status = clEnqueueNDRangeKernel(
+        cmd_queue,
+        kernel,
+        1,
+        NULL,
+        global_work_size,
+        NULL,
+        0,
+        NULL,
+        enqueue_events
+    );
+
+    clWaitForEvents(1, enqueue_events);
+    clReleaseEvent(enqueue_events[0]);
+}

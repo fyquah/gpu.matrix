@@ -29,6 +29,7 @@ vector * gpu_matrix_vector_axpy(vector * x, double a, vector * y);
 vector * gpu_matrix_vector_scal(vector * x, double a);
 vector * gpu_matrix_vector_copy(vector * x);
 void gpu_matrix_vector_swap(vector * x, vector * y);
+void gpu_matrix_vector_rot(vector * x, vector * y, double, double);
 double gpu_matrix_vector_dot(vector * x, vector * y);
 double gpu_matrix_vector_nrm2(vector * x);
 double gpu_matrix_vector_asum(vector * x);

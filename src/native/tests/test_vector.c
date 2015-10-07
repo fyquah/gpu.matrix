@@ -23,8 +23,10 @@ bool is_simliar(double a, double b) {
 
 void test_vector_blas() {
     vector a, b;
+    vector * copy_a, * copy_b;
     int d = 123;
     double *data_a, *data_b;
+    double c, s;
     bool flag;
     vector * axpy_output, expected_axpy_output; 
     double dot_product_output, expected_dot_product_output;
@@ -40,11 +42,16 @@ void test_vector_blas() {
     b.stride = 1;
     a.data = data_a;
     b.data = data_b;
+    c = 23.0;
+    s = 49.440;
 
     for (int i = 0 ; i < LENGTH ; i++) {
         a.data[i] = i * 1.2 + 1;
         b.data[i] = i * 1.3 + 1;
     }
+
+    copy_a = gpu_matrix_vector_copy(&a);
+    copy_b = gpu_matrix_vector_copy(&b);
     // end of initialization
 
     // ----------------------------------
@@ -105,6 +112,18 @@ void test_vector_blas() {
         puts("WRONG!\n");
     }
 
+    puts("VECTOR_ROT TEST:");
+    flag = true;
+    gpu_matrix_vector_rot(copy_a, copy_b, c, s);
+    for (index_t i = 0 ; i < LENGTH ; i++) {
+        if (!is_simliar(copy_a->data[i], c * a.data[i] + s * b.data[i]) &&
+            !is_simliar(copy_b->data[i], c * a.data[i] - s * b.data[i])) {
+            flag = false;
+            break;
+        }
+    }
+
+    puts(flag ? "CORRECT!\n" : "WRONG!\n");
 
 }
 

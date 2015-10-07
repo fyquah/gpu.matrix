@@ -23,6 +23,19 @@ size_t gpu_matrix_vector_datasize(vector * x) {
     return x->length * sizeof(double);
 }
 
+vector * gpu_matrix_vector_copy(vector * v_x) {
+    vector * copy = malloc(sizeof(vector));
+    copy->data = malloc(v_x->length * sizeof(double));
+    copy->length = v_x->length;
+    copy->stride = 1;
+
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        copy->data[i] = v_x->data[i * v_x->stride];
+    }
+
+    return copy;
+}
+
 vector * gpu_matrix_vector_axpy(vector * v_x, double alpha, vector * v_y) {
     size_t global_work_size[1] = { v_x->length };
     vector * output;
@@ -101,6 +114,83 @@ void gpu_matrix_vector_swap(vector * v_x, vector * v_y) {
     vector tmp_x = *v_x;
     *v_x = *v_y;
     *v_y = tmp_x;
+}
+
+void gpu_matrix_vector_rot(
+    vector * v_x,
+    vector * v_y,
+    double c,
+    double s
+){
+    cl_kernel kernel;
+    cl_command_queue cmd_queue;
+    cl_int status;
+    cl_event read_buffer_events[2], write_buffer_events[2];
+    size_t datasize = gpu_matrix_vector_datasize(v_x);
+    cl_mem buffer_data_x, buffer_data_y;
+    vector_buffer buffer_v_x, buffer_v_y;
+
+    cmd_queue = clCreateCommandQueue(
+        context_get(),
+        device_get(),
+        CL_QUEUE_PROFILING_ENABLE,
+        &status
+    );
+    buffer_data_x = buffers_create(
+        CL_MEM_READ_WRITE,
+        datasize,
+        NULL,
+        &status
+    );
+    buffer_data_y = buffers_create(
+        CL_MEM_READ_WRITE,
+        datasize,
+        NULL,
+        &status
+    );
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_data_x,
+        CL_FALSE, 0, datasize,
+        v_x->data, 0, NULL,
+        write_buffer_events
+    );
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_data_y,
+        CL_FALSE, 0, datasize,
+        v_y->data, 0, NULL,
+        write_buffer_events+1
+    );
+    clWaitForEvents(2, write_buffer_events);
+    
+    buffer_v_x = gpu_matrix_vector_to_vector_buffer(v_x, buffer_data_x);
+    buffer_v_y = gpu_matrix_vector_to_vector_buffer(v_x, buffer_data_y);
+
+    gpu_matrix_vector_buffer_rot_BANG(&buffer_v_x, &buffer_v_y, c, s, cmd_queue);
+
+    status = clEnqueueReadBuffer(
+        cmd_queue,
+        buffer_v_x.buffer,
+        CL_TRUE,
+        0,
+        datasize,
+        v_x->data,
+        0,
+        NULL,
+        read_buffer_events
+    );
+    status = clEnqueueReadBuffer(
+        cmd_queue,
+        buffer_v_y.buffer,
+        CL_TRUE,
+        0,
+        datasize,
+        v_y->data,
+        0,
+        NULL,
+        read_buffer_events+1
+    );
+
+    clWaitForEvents(2, read_buffer_events);
 }
 
 double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {

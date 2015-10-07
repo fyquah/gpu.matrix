@@ -3,6 +3,26 @@
 
 #include <types.h>
 
+__kernel void vector_rot_bang (
+    __global double * data_x,
+    const index_t length_x,
+    const index_t stride_x,
+    __global double * data_y,
+    const index_t length_y,
+    const index_t stride_y,
+    const double c,
+    const double s
+) {
+    index_t global_id = get_global_id (0);
+    index_t idx_x = global_id * stride_x;
+    index_t idx_y = global_id * stride_y;
+    double x = data_x[idx_x];
+    double y = data_y[idx_y];
+
+    data_x[idx_x] = c * x + s * y;
+    data_y[idx_y] = c * y - s * y;
+}
+
 __kernel void vector_mul (
     // The acutla parameters to the kernel
     __global const double * data_x,
