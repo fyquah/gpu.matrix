@@ -138,6 +138,72 @@ __kernel void vector_max_bang (
     data[first_id] = fmax(data[first_id], data[second_id]);
 }
 
+__kernel void vector_range (
+    index_t length,
+    __global index_t * data
+) {
+    index_t global_id = get_global_id (0);
+    if (global_id >= 0 && global_id < length) {
+        data[global_id] = global_id;
+    }
+}
+
+__kernel void vector_imax_bang (
+    __global double * data,
+    const index_t len,
+    const index_t stride,
+    // Stores 
+    __global index_t * indices
+) {
+    index_t global_id = get_global_id (0);
+    index_t first_id = global_id * stride;
+    index_t second_id = (global_id + ((len+1) / 2) ) * stride;
+    double first_value = data[first_id];
+    double second_value = data[second_id];
+    index_t first_index = indices[first_id];
+    index_t second_index = indices[second_id];
+
+    if (first_value > second_value ||
+            (first_value == second_value && indices[first_id] <= indices[second_id])) {
+        // in case of equality, prefer the smaller idx
+        // This block is suppose to execute the below, but it is actually redundant
+        // Comments included for clarity sake
+        // data[first_id] = first_value;
+        // indices[first_id] = first_index;
+    } else {
+        data[first_id] = second_value;
+        indices[first_id] = second_index;
+    }
+}
+
+__kernel void vector_imin_bang (
+    __global double * data,
+    const index_t len,
+    const index_t stride,
+    // Stores 
+    __global index_t * indices
+) {
+    index_t global_id = get_global_id (0);
+    index_t first_id = global_id * stride;
+    index_t second_id = (global_id + ((len+1) / 2) ) * stride;
+    double first_value = data[first_id];
+    double second_value = data[second_id];
+    index_t first_index = indices[first_id];
+    index_t second_index = indices[second_id];
+
+    if (first_value < second_value ||
+            (first_value == second_value && indices[first_id] <= indices[second_id])) {
+        // in case of equality, prefer the smaller idx
+        // This block is suppose to execute the below, but it is actually redundant
+        // Comments included for clarity sake
+        // data[first_id] = first_value;
+        // indices[first_id] = first_index;
+    } else {
+        data[first_id] = second_value;
+        indices[first_id] = second_index;
+    }
+}
+
 __kernel void vector_min_bang (
     // The actual parameters to the kernel
     __global double * data,

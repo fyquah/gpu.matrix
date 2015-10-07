@@ -15,5 +15,7 @@ void gpu_matrix_vector_buffer_rot_BANG(vector_buffer *, vector_buffer*, double, 
 void gpu_matrix_vector_buffer_abs_BANG(vector_buffer *, cl_command_queue);
 void gpu_matrix_vector_buffer_min_BANG(vector_buffer *, cl_command_queue);
 void gpu_matrix_vector_buffer_max_BANG(vector_buffer *, cl_command_queue);
+cl_mem gpu_matrix_vector_buffer_imin(vector_buffer *, cl_command_queue);
+cl_mem gpu_matrix_vector_buffer_imax(vector_buffer *, cl_command_queue);
 
 #endif

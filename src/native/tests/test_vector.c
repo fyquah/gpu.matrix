@@ -14,6 +14,44 @@ static double inline max(double a, double b) {
     return (a > b ? a : b);
 }
 
+static inline index_t vector_imax(vector * v) {
+    if (v->length == 0) {
+        return 0;
+    } else {
+        index_t max_index = 0;
+        double max_value = v->data[0];
+        for (index_t i = 1 ; i < v->length ; i++) {
+            if (v->data[i * v->stride] > max_value) {
+                max_index = i;
+                max_value = v->data[i * v->stride];
+            }
+        }
+        return max_index;
+    }
+
+    // to make clang happy
+    return 0;
+}
+
+static inline index_t vector_imin(vector * v) {
+    if (v->length == 0) {
+        return 0;
+    } else {
+        index_t min_index = 0;
+        double min_value = v->data[0];
+        for (index_t i = 1 ; i < v->length ; i++) {
+            if (v->data[i * v->stride] < min_value) {
+                min_index = i;
+                min_value = v->data[i * v->stride];
+            }
+        }
+        return min_index;
+    }
+
+    // to make clang happy
+    return 0;
+}
+
 bool is_simliar(double a, double b) {
     if (a < b) {
         double tmp_a = a;
@@ -30,6 +68,8 @@ bool is_simliar(double a, double b) {
 }
 
 void test_vector_blas() {
+    srand(time(NULL));
+
     vector a, b;
     vector * copy_a, * copy_b;
     int d = 123;
@@ -42,6 +82,8 @@ void test_vector_blas() {
     double nrm2_output, expected_nrm2_output;
     double amax_output, expected_amax_output;
     double amin_output, expected_amin_output;
+    index_t imin_output, expected_imin_output;
+    index_t imax_output, expected_imax_output;
 
     // Initialize and prepare test data
     data_a = malloc(sizeof(double) * LENGTH);
@@ -56,8 +98,8 @@ void test_vector_blas() {
     s = 49.440;
 
     for (int i = 0 ; i < LENGTH ; i++) {
-        a.data[i] = (i - LENGTH / 2) * 1.2 + 1;
-        b.data[i] = (i - LENGTH / 2) * 1.3 + 1;
+        a.data[i] = ((double) (rand() % 234) + 1.0) * 6.3495720 * (2 * (i % 2) - 1);
+        b.data[i] = ((double) (rand() % 234) + 1.0) * 5.49237895 * (2 * (i % 2) - 1);
     }
 
     copy_a = gpu_matrix_vector_copy(&a);
@@ -68,6 +110,15 @@ void test_vector_blas() {
     // BLAS Level 1 tests
     // ----------------------------------
     
+    puts("VECTOR_IMIN TEST:");
+    imin_output = gpu_matrix_vector_imin(&a);
+    expected_imin_output = vector_imin(&a);
+    if (imin_output == expected_imin_output) {
+        puts("CORRECT!\n");
+    } else {
+        puts("INCORRECT!\n");
+    }
+
     puts("AXPY TEST:");
     axpy_output = gpu_matrix_vector_axpy(&a, 12.0, &b);
     flag = true;
@@ -161,7 +212,7 @@ void test_vector_blas() {
         expected_amax_output = fabs(a.data[0]);
         for (index_t i = 1 ; i < LENGTH ; i++) {
             double v = fabs(a.data[i]);
-            expected_amin_output = max(
+            expected_amax_output = max(
                 expected_amax_output,
                 v
             );
@@ -170,6 +221,16 @@ void test_vector_blas() {
         flag = is_simliar(amax_output, expected_amax_output);
     }
     puts(flag ? "CORRECT!\n" : "WRONG!\n");
+
+    puts("VECTOR_IMAX TEST:");
+    imax_output = gpu_matrix_vector_imax(&a);
+    expected_imax_output = vector_imax(&a);
+    if (imax_output == expected_imax_output) {
+        puts("CORRECT!\n");
+    } else {
+        puts("INCORRECT!\n");
+    }
+    
 }
 
 void test_vector() {
