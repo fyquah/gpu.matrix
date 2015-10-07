@@ -37,5 +37,7 @@ double gpu_matrix_vector_amax(vector*);
 double gpu_matrix_vector_amin(vector*);
 index_t gpu_matrix_vector_imin(vector * x);
 index_t gpu_matrix_vector_imax(vector * x);
+index_t gpu_matrix_vector_iamin(vector * x);
+index_t gpu_matrix_vector_iamax(vector * x);
 
 #endif

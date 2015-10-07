@@ -84,6 +84,8 @@ void test_vector_blas() {
     double amin_output, expected_amin_output;
     index_t imin_output, expected_imin_output;
     index_t imax_output, expected_imax_output;
+    index_t iamin_output, expected_iamin_output;
+    index_t iamax_output, expected_iamax_output;
 
     // Initialize and prepare test data
     data_a = malloc(sizeof(double) * LENGTH);
@@ -230,7 +232,30 @@ void test_vector_blas() {
     } else {
         puts("INCORRECT!\n");
     }
-    
+
+    puts("VECTOR_IAMIN TEST:");
+    for (index_t i = 0 ; i < copy_a->length ; i++) {
+        copy_a->data[i] = fabs(a.data[i]);
+    }
+    iamin_output = gpu_matrix_vector_iamin(&a);
+    expected_iamin_output = vector_imin(copy_a);
+    if (iamin_output == expected_iamin_output) {
+        puts("CORRECT!\n");
+    } else {
+        puts("INCORRECT!\n");
+    }
+
+    puts("VECTOR_IAMAX TEST:");
+    for (index_t i = 0 ; i < copy_a->length ; i++) {
+        copy_a->data[i] = fabs(a.data[i]);
+    }
+    iamax_output = gpu_matrix_vector_iamax(&a);
+    expected_iamax_output = vector_imax(copy_a);
+    if (iamax_output == expected_iamax_output) {
+        puts("CORRECT!\n");
+    } else {
+        puts("INCORRECT\n");
+    }
 }
 
 void test_vector() {

@@ -401,22 +401,22 @@ cl_mem gpu_matrix_vector_buffer_imax(
     index_t remaining_length;
     cl_mem buffer_indices;
     size_t range_global_work_size[1];
-   
+
+    range_global_work_size[0] = v_x->length;
     buffer_indices = buffers_create(
         CL_MEM_READ_WRITE,
         sizeof(index_t) * v_x->length,
         NULL,
         &status
     );
+
     kernel = kernels_get(
         context_get(),
         device_get(),
         KERNEL_VECTOR_RANGE
     );
-
-    status = clSetKernelArg(kernel, 0, sizeof(index_t), &v_x->length);
+    status  = clSetKernelArg(kernel, 0, sizeof(index_t), &v_x->length);
     status |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &buffer_indices);
-
     status = clEnqueueNDRangeKernel(
         cmd_queue,
         kernel,
@@ -428,6 +428,7 @@ cl_mem gpu_matrix_vector_buffer_imax(
         NULL,
         enqueue_events
     );
+
     clWaitForEvents(1, enqueue_events);
 
     // Create a range and index kernel firstkA
