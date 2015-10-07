@@ -1,0 +1,12 @@
+#!/usr/bin/perl
+
+while(<>) {
+    chomp;
+    s/\s+$//g;
+    s/^\s+//g;
+    s/\s*\,\s*/\,\n    /g;
+    s/\(\s*/\(\n    /g;
+    s/\)\s*\{/\n\)\{/g;
+    print $_;
+}
+print "\n";
