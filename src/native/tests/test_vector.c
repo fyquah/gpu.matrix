@@ -60,7 +60,7 @@ static bool is_similiar(double a, double b) {
     return false;
 }
 
-DEFTEST(copy) {
+DEFTEST(vector_copy) {
     TEST_INIT;
     vector * copy_x = gpu_matrix_vector_copy(v_x);
     ASSERT(copy_x->length == v_x->length);
@@ -72,7 +72,7 @@ DEFTEST(copy) {
     TEST_FREE;
 }
 
-DEFTEST(dot_product) {
+DEFTEST(vector_dot_product) {
     TEST_INIT;
     double dot_product, expected_dot_product;
     dot_product = gpu_matrix_vector_dot(v_x, v_y);
@@ -85,7 +85,7 @@ DEFTEST(dot_product) {
     TEST_FREE;
 }
 
-DEFTEST(axpy) {
+DEFTEST(vector_axpy) {
     TEST_INIT_WITH_COPY;
     gpu_matrix_vector_axpy(copy_v_x, 12.0, copy_v_y);
     ASSERT(copy_v_x->length == v_x->length);
@@ -100,7 +100,7 @@ DEFTEST(axpy) {
     TEST_FREE_WITH_COPY;
 }
 
-DEFTEST(scal) {
+DEFTEST(vector_scal) {
     TEST_INIT_WITH_COPY;
     const double factor = 2.7817;
     gpu_matrix_vector_scal(copy_v_x, factor);
@@ -116,7 +116,7 @@ DEFTEST(scal) {
     TEST_FREE_WITH_COPY;
 }
 
-DEFTEST(swap) {
+DEFTEST(vector_swap) {
     TEST_INIT_WITH_COPY;
     gpu_matrix_vector_swap(copy_v_x, copy_v_y);
     ASSERT(copy_v_x->length == v_y->length);
@@ -132,7 +132,7 @@ DEFTEST(swap) {
     TEST_FREE_WITH_COPY;
 }
 
-DEFTEST(rot) {
+DEFTEST(vector_rot) {
     TEST_INIT_WITH_COPY;
     double c = 23.0, s = 249.0;
     gpu_matrix_vector_rot(copy_v_x, copy_v_y, c, s);
@@ -145,7 +145,7 @@ DEFTEST(rot) {
     TEST_FREE_WITH_COPY;
 }
 
-DEFTEST(nrm2) {
+DEFTEST(vector_nrm2) {
     TEST_INIT;
     double output = gpu_matrix_vector_nrm2(v_x);
     double expected = 0.0;
@@ -155,7 +155,7 @@ DEFTEST(nrm2) {
     ASSERT(is_similiar(expected, output));
 }
 
-DEFTEST(asum) {
+DEFTEST(vector_asum) {
     TEST_INIT;
     double output = gpu_matrix_vector_asum(v_x);
     double expected = 0.0;
@@ -165,7 +165,7 @@ DEFTEST(asum) {
     ASSERT(is_similiar(expected, output));
 }
 
-DEFTEST(amax) {
+DEFTEST(vector_amax) {
     TEST_INIT;
     double output = gpu_matrix_vector_amax(v_x);
     if (v_x->length == 0) return;
@@ -176,7 +176,7 @@ DEFTEST(amax) {
     ASSERT(is_similiar(expected, output));
 }
 
-DEFTEST(amin) {
+DEFTEST(vector_amin) {
     TEST_INIT;
     double output = gpu_matrix_vector_amin(v_x);
     if (v_x->length == 0) return;
@@ -187,7 +187,7 @@ DEFTEST(amin) {
     ASSERT(is_similiar(expected, output));
 }
 
-DEFTEST(imin) {
+DEFTEST(vector_imin) {
     TEST_INIT;
     double output = gpu_matrix_vector_imin(v_x);
     if (v_x->length == 0) return;
@@ -203,7 +203,7 @@ DEFTEST(imin) {
     ASSERT(is_similiar(output, best_index));
 }
 
-DEFTEST(imax) {
+DEFTEST(vector_imax) {
     TEST_INIT;
     double output = gpu_matrix_vector_imax(v_x);
     if (v_x->length == 0) return;
@@ -219,7 +219,7 @@ DEFTEST(imax) {
     ASSERT(is_similiar(output, best_index));
 }
 
-DEFTEST(iamin) {
+DEFTEST(vector_iamin) {
     TEST_INIT;
     double output = gpu_matrix_vector_iamin(v_x);
     if (v_x->length == 0) return;
@@ -235,7 +235,7 @@ DEFTEST(iamin) {
     ASSERT(is_similiar(output, best_index));
 }
 
-DEFTEST(iamax) {
+DEFTEST(vector_iamax) {
     TEST_INIT;
     double output = gpu_matrix_vector_iamax(v_x);
     if (v_x->length == 0) return;
@@ -252,19 +252,19 @@ DEFTEST(iamax) {
 }
 
 void test_vector() {
-    RUNTEST(copy);
-    RUNTEST(axpy);
-    RUNTEST(scal);
-    RUNTEST(swap);
-    RUNTEST(rot);
-    RUNTEST(dot_product);
-    RUNTEST(nrm2);
-    RUNTEST(asum);
-    RUNTEST(amax);
-    RUNTEST(amin);
-    RUNTEST(imin);
-    RUNTEST(imax);
-    RUNTEST(iamin);
-    RUNTEST(iamax);
+    RUNTEST(vector_copy);
+    RUNTEST(vector_axpy);
+    RUNTEST(vector_scal);
+    RUNTEST(vector_swap);
+    RUNTEST(vector_rot);
+    RUNTEST(vector_dot_product);
+    RUNTEST(vector_nrm2);
+    RUNTEST(vector_asum);
+    RUNTEST(vector_amax);
+    RUNTEST(vector_amin);
+    RUNTEST(vector_imin);
+    RUNTEST(vector_imax);
+    RUNTEST(vector_iamin);
+    RUNTEST(vector_iamax);
 }
 
