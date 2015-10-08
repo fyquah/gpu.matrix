@@ -7,6 +7,7 @@
 // TODO : How to support 64 bit machines?
 typedef uint32_t index_t;
 typedef unsigned long long ull;
+typedef const unsigned kernel_type_t;
 
 typedef struct {
     double * data;

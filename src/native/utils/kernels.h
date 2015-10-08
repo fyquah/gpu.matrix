@@ -6,10 +6,9 @@
 #include <stdio.h>
 
 #include <jni.h>
+#include "../types.h"
 #include "../libs/cl.h" 
 #include "files.h"
-
-typedef const unsigned kernel_type_t;
 
 #define KERNEL_ADD 0
 #define KERNEL_ADD_SCALAR 1
