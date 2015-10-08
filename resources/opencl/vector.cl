@@ -224,9 +224,9 @@ __kernel void vector_##name##_scalar_bang ( \
 }
 
 VECTOR_ARIMETHIC_FACTORY(mul, *);
-VECTOR_ARIMETHIC_FACTORY(add, *);
-VECTOR_ARIMETHIC_FACTORY(sub, *);
-VECTOR_ARIMETHIC_FACTORY(div, *);
+VECTOR_ARIMETHIC_FACTORY(add, +);
+VECTOR_ARIMETHIC_FACTORY(sub, -);
+VECTOR_ARIMETHIC_FACTORY(div, /);
 
 #endif
 

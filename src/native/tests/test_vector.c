@@ -1,7 +1,7 @@
 #include "test_vector.h"
 
-// because 2^22 is kinda cool :
-#define LENGTH 4194304
+// because 2^10 is kinda cool :
+#define LENGTH 1025 
 #define TEST  
 #define INIT_TEST_VECTOR(v) \
     vector * v = malloc(sizeof(vector)); \
@@ -251,6 +251,46 @@ DEFTEST(vector_iamax) {
     ASSERT(is_similiar(output, best_index));
 }
 
+DEFTEST(vector_add) {
+    TEST_INIT_WITH_COPY;
+    vector * arr_v[3];
+    vector * output;
+
+    arr_v[0] = v_x;
+    arr_v[1] = v_y;
+    arr_v[2] = v_x;
+
+    output = gpu_matrix_vector_add_arbitary(3, arr_v);
+    ASSERT(v_x->length == output->length);
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        ASSERT(is_similiar(
+                    at(v_x, i) + at(v_x, i) + at(v_y, i), at(output, i)
+        ));
+    }
+    free(output->data);
+    free(output);
+
+    output = gpu_matrix_vector_add_2(v_x, v_y);
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        ASSERT(is_similiar(
+                    at(v_x, i) + at(v_y, i), at(output, i)
+        ));
+    }
+    free(output->data);
+    free(output);
+
+    output = gpu_matrix_vector_add_scalar(v_x, 23.0);
+    for(index_t i = 0 ; i < v_x->length ; i++) {
+        ASSERT(is_similiar(
+                    at(v_x, i) + 23.0, at(output, i)
+        ));
+    }
+    free(output->data);
+    free(output);
+
+    TEST_FREE_WITH_COPY;
+}
+
 void test_vector() {
     RUNTEST(vector_copy);
     RUNTEST(vector_axpy);
@@ -266,5 +306,6 @@ void test_vector() {
     RUNTEST(vector_imax);
     RUNTEST(vector_iamin);
     RUNTEST(vector_iamax);
+    RUNTEST(vector_add);
 }
 

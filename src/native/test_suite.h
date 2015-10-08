@@ -22,10 +22,10 @@
         unsigned line; \
         unsigned assertions_count = 0; \
         const char test_name[] = #NAME; \
-        _test_##NAME(&flag, &assertions_count, &line); \
-\
         puts("======================="); \
         puts("Test " #NAME); \
+        _test_##NAME(&flag, &assertions_count, &line); \
+\
         printf("%u assertion(s) ", assertions_count); \
         if(flag) { \
             printf("\n"); \

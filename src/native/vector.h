@@ -25,7 +25,8 @@ void gpu_matrix_release(vector *);
 vector_buffer gpu_matrix_vector_to_vector_buffer(vector *, cl_mem buffer);
 vector * gpu_matrix_vector_copy(vector * x);
 
-// (Partial) BLAS 1 headers. Note: BLAS headers mutate the argument vectors!
+// (Partial) BLAS 1 headers. Note: BLAS headers mutate the argument vectors, they will
+// never return an argument!
 void gpu_matrix_vector_axpy(vector * x, double a, vector * y);
 void gpu_matrix_vector_scal(vector * x, double a);
 void gpu_matrix_vector_swap(vector * x, vector * y);
@@ -39,5 +40,13 @@ index_t gpu_matrix_vector_imin(vector * x);
 index_t gpu_matrix_vector_imax(vector * x);
 index_t gpu_matrix_vector_iamin(vector * x);
 index_t gpu_matrix_vector_iamax(vector * x);
+
+// Arimethic functions
+#define VECTOR_ARIMETHIC_HEADER_FACTORY(name) \
+vector * gpu_matrix_vector_##name##_scalar(vector *, double); \
+vector * gpu_matrix_vector_##name##_2(vector *, vector *); \
+vector * gpu_matrix_vector_##name##_arbitary(unsigned, vector *[]);
+
+VECTOR_ARIMETHIC_HEADER_FACTORY(add);
 
 #endif
