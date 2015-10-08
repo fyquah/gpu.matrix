@@ -34,7 +34,7 @@ __kernel void vector_square_bang (
     data_x[global_id * stride_x] = v * v;
 }
 
-__kernel void vector_asum (
+__kernel void vector_asum_bang (
     __global double * data,
     const index_t len,
     const index_t stride

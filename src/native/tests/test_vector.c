@@ -1,10 +1,41 @@
-#include "../utils.h"
-#include "../vector.h"
-#include "../types.h"
 #include "test_vector.h"
 
 // because 2^22 is kinda cool :
 #define LENGTH 4194304
+#define TEST  
+#define INIT_TEST_VECTOR(v) \
+    vector * v = malloc(sizeof(vector)); \
+    v->data = malloc(sizeof(double) * LENGTH); \
+    v->length = LENGTH; \
+    v->stride = 1; \
+    for (unsigned i = 0 ; i < LENGTH ; i++) { \
+        v->data[i] = ((double) ((rand() % LENGTH) - LENGTH / 2)) * 2.47840239; \
+    }
+
+#define FREE_TEST_VECTOR(v) \
+    free(v->data); \
+    free(v);
+
+#define TEST_INIT \
+    INIT_TEST_VECTOR(v_x); \
+    INIT_TEST_VECTOR(v_y);
+
+#define TEST_INIT_WITH_COPY \
+    TEST_INIT; \
+    vector *copy_v_x = gpu_matrix_vector_copy(v_x); \
+    vector *copy_v_y = gpu_matrix_vector_copy(v_y);
+
+#define TEST_FREE \
+    FREE_TEST_VECTOR(v_x); \
+    FREE_TEST_VECTOR(v_y);
+
+#define TEST_FREE_WITH_COPY \
+    FREE_TEST_VECTOR(copy_v_x); \
+    FREE_TEST_VECTOR(copy_v_y);
+
+static inline double at(vector * v, index_t idx) {
+    return v->data[idx * v->stride];
+}
 
 static double inline min(double a, double b) {
     return (a < b ? a : b);
@@ -14,45 +45,7 @@ static double inline max(double a, double b) {
     return (a > b ? a : b);
 }
 
-static inline index_t vector_imax(vector * v) {
-    if (v->length == 0) {
-        return 0;
-    } else {
-        index_t max_index = 0;
-        double max_value = v->data[0];
-        for (index_t i = 1 ; i < v->length ; i++) {
-            if (v->data[i * v->stride] > max_value) {
-                max_index = i;
-                max_value = v->data[i * v->stride];
-            }
-        }
-        return max_index;
-    }
-
-    // to make clang happy
-    return 0;
-}
-
-static inline index_t vector_imin(vector * v) {
-    if (v->length == 0) {
-        return 0;
-    } else {
-        index_t min_index = 0;
-        double min_value = v->data[0];
-        for (index_t i = 1 ; i < v->length ; i++) {
-            if (v->data[i * v->stride] < min_value) {
-                min_index = i;
-                min_value = v->data[i * v->stride];
-            }
-        }
-        return min_index;
-    }
-
-    // to make clang happy
-    return 0;
-}
-
-bool is_simliar(double a, double b) {
+static bool is_similiar(double a, double b) {
     if (a < b) {
         double tmp_a = a;
         a = b;
@@ -67,198 +60,211 @@ bool is_simliar(double a, double b) {
     return false;
 }
 
-void test_vector_blas() {
-    srand(time(NULL));
-
-    vector a, b;
-    vector * copy_a, * copy_b;
-    int d = 123;
-    double *data_a, *data_b;
-    double c, s;
-    bool flag;
-    vector * axpy_output, expected_axpy_output; 
-    double dot_product_output, expected_dot_product_output;
-    double asum_output, expected_asum_output;
-    double nrm2_output, expected_nrm2_output;
-    double amax_output, expected_amax_output;
-    double amin_output, expected_amin_output;
-    index_t imin_output, expected_imin_output;
-    index_t imax_output, expected_imax_output;
-    index_t iamin_output, expected_iamin_output;
-    index_t iamax_output, expected_iamax_output;
-
-    // Initialize and prepare test data
-    data_a = malloc(sizeof(double) * LENGTH);
-    data_b = malloc(sizeof(double) * LENGTH);
-    a.length = LENGTH;
-    b.length = LENGTH;
-    a.stride = 1;
-    b.stride = 1;
-    a.data = data_a;
-    b.data = data_b;
-    c = 23.0;
-    s = 49.440;
-
-    for (int i = 0 ; i < LENGTH ; i++) {
-        a.data[i] = ((double) (rand() % 234) + 1.0) * 6.3495720 * (2 * (i % 2) - 1);
-        b.data[i] = ((double) (rand() % 234) + 1.0) * 5.49237895 * (2 * (i % 2) - 1);
+DEFTEST(copy) {
+    TEST_INIT;
+    vector * copy_x = gpu_matrix_vector_copy(v_x);
+    ASSERT(copy_x->length == v_x->length);
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        ASSERT(copy_x->data[i * copy_x->stride] == v_x->data[i * v_x->stride]);
     }
+    free(copy_x->data);
+    free(copy_x);
+    TEST_FREE;
+}
 
-    copy_a = gpu_matrix_vector_copy(&a);
-    copy_b = gpu_matrix_vector_copy(&b);
-    // end of initialization
-
-    // ----------------------------------
-    // BLAS Level 1 tests
-    // ----------------------------------
-    
-    puts("VECTOR_IMIN TEST:");
-    imin_output = gpu_matrix_vector_imin(&a);
-    expected_imin_output = vector_imin(&a);
-    if (imin_output == expected_imin_output) {
-        puts("CORRECT!\n");
-    } else {
-        puts("INCORRECT!\n");
+DEFTEST(dot_product) {
+    TEST_INIT;
+    double dot_product, expected_dot_product;
+    dot_product = gpu_matrix_vector_dot(v_x, v_y);
+    expected_dot_product = 0;
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        expected_dot_product += v_x->data[i] * v_y->data[i]; 
     }
+    ASSERT(dot_product == expected_dot_product);
 
-    puts("AXPY TEST:");
-    gpu_matrix_vector_axpy(&a, 12.0, &b);
-    flag = true;
-    for (index_t i = 0 ; i < LENGTH ; i++) {
-        if (fabs(a.data[i] * 12 + b.data[i] - axpy_output->data[i]) > 0.001) {
-            flag = false;
-            break;
+    TEST_FREE;
+}
+
+DEFTEST(axpy) {
+    TEST_INIT_WITH_COPY;
+    gpu_matrix_vector_axpy(copy_v_x, 12.0, copy_v_y);
+    ASSERT(copy_v_x->length == v_x->length);
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        ASSERT(
+            is_similiar(
+                v_x->data[i * v_x->stride] * 12 + v_y->data[i * v_y->stride],
+                copy_v_x->data[i * copy_v_x->stride]
+            )
+        );
+    }
+    TEST_FREE_WITH_COPY;
+}
+
+DEFTEST(scal) {
+    TEST_INIT_WITH_COPY;
+    const double factor = 2.7817;
+    gpu_matrix_vector_scal(copy_v_x, factor);
+    ASSERT(copy_v_x->length == v_x->length);
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        ASSERT(
+            is_similiar(
+                v_x->data[i * v_x->stride] * factor,
+                copy_v_x->data[i * copy_v_x->stride]
+            )
+        );
+    }
+    TEST_FREE_WITH_COPY;
+}
+
+DEFTEST(swap) {
+    TEST_INIT_WITH_COPY;
+    gpu_matrix_vector_swap(copy_v_x, copy_v_y);
+    ASSERT(copy_v_x->length == v_y->length);
+    ASSERT(copy_v_y->length == v_x->length);
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        ASSERT(
+            is_similiar(at(v_x, i), at(copy_v_y, i))
+        );
+        ASSERT(
+            is_similiar(at(v_y, i), at(copy_v_x, i))
+        );
+    }
+    TEST_FREE_WITH_COPY;
+}
+
+DEFTEST(rot) {
+    TEST_INIT_WITH_COPY;
+    double c = 23.0, s = 249.0;
+    gpu_matrix_vector_rot(copy_v_x, copy_v_y, c, s);
+    ASSERT(v_x->length == copy_v_x->length);
+    for(index_t i = 0 ; i < v_x->length ; i++) {
+        ASSERT(
+            is_similiar(at(copy_v_x, i), at(v_x, i) * c + s * at(v_y, i))
+        );
+    }
+    TEST_FREE_WITH_COPY;
+}
+
+DEFTEST(nrm2) {
+    TEST_INIT;
+    double output = gpu_matrix_vector_nrm2(v_x);
+    double expected = 0.0;
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        expected += at(v_x, i) * at(v_x, i);
+    }
+    ASSERT(is_similiar(expected, output));
+}
+
+DEFTEST(asum) {
+    TEST_INIT;
+    double output = gpu_matrix_vector_asum(v_x);
+    double expected = 0.0;
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        expected += fabs(at(v_x, i));
+    }
+    ASSERT(is_similiar(expected, output));
+}
+
+DEFTEST(amax) {
+    TEST_INIT;
+    double output = gpu_matrix_vector_amax(v_x);
+    if (v_x->length == 0) return;
+    double expected = fabs(at(v_x, 0));
+    for (index_t i = 1 ; i < v_x->length ; i++) {
+        expected = max(fabs(at(v_x, i)), expected);
+    }
+    ASSERT(is_similiar(expected, output));
+}
+
+DEFTEST(amin) {
+    TEST_INIT;
+    double output = gpu_matrix_vector_amin(v_x);
+    if (v_x->length == 0) return;
+    double expected = fabs(at(v_x, 0));
+    for (index_t i = 1 ; i < v_x->length ; i++) {
+        expected = min(fabs(at(v_x, i)), expected);
+    }
+    ASSERT(is_similiar(expected, output));
+}
+
+DEFTEST(imin) {
+    TEST_INIT;
+    double output = gpu_matrix_vector_imin(v_x);
+    if (v_x->length == 0) return;
+
+    index_t best_index = 0;
+    double best_value = at(v_x, 0);
+    for (index_t i = 1 ; i < v_x->length ; i++) {
+        if (at(v_x, i) < best_value) {
+            best_index = i;
+            best_value = at(v_x, i);
         }
     }
-    puts(flag ? "CORRECT!\n" : "WRONG!\n");
+    ASSERT(is_similiar(output, best_index));
+}
 
-    puts("VECTOR_DOT TEST:");
-    flag = true;
-    dot_product_output = gpu_matrix_vector_dot(&a, &b);
-    expected_dot_product_output = 0.0;
-    for (index_t i = 0;  i < LENGTH ; i++) {
-        expected_dot_product_output += a.data[i] * b.data[i];
-    }
+DEFTEST(imax) {
+    TEST_INIT;
+    double output = gpu_matrix_vector_imax(v_x);
+    if (v_x->length == 0) return;
 
-    if (fabs(expected_dot_product_output - dot_product_output) / 
-            expected_dot_product_output <= 0.001) {
-        puts("CORRECT!\n");
-    } else {
-        puts("WRONG!\n");
-    }
-
-    puts("VECTOR_ASUM TEST:");
-    flag = true;
-    asum_output = gpu_matrix_vector_asum(&a);
-    expected_asum_output = 0;
-    for (index_t i = 0 ; i < LENGTH ; i++) {
-        expected_asum_output += fabs(a.data[i]);
-    }
-
-    if(is_simliar(asum_output, expected_asum_output)) {
-        puts("CORRECT!\n");
-    } else {
-        puts("WRONG!\n");
-    }
-
-    puts("VECTOR_NRM2 TEST:");
-    flag = true;
-    nrm2_output = gpu_matrix_vector_nrm2(&a);
-    expected_nrm2_output = 0;
-    for (index_t i = 0 ; i < LENGTH ; i++) {
-        expected_nrm2_output += a.data[i] * a.data[i];
-    }
-
-    if(is_simliar(nrm2_output, expected_nrm2_output)) {
-        puts("CORRECT!\n");
-    } else {
-        puts("WRONG!\n");
-    }
-
-    puts("VECTOR_ROT TEST:");
-    flag = true;
-    gpu_matrix_vector_rot(copy_a, copy_b, c, s);
-    for (index_t i = 0 ; i < LENGTH ; i++) {
-        if (!is_simliar(copy_a->data[i], c * a.data[i] + s * b.data[i]) &&
-            !is_simliar(copy_b->data[i], c * a.data[i] - s * b.data[i])) {
-            flag = false;
-            break;
+    index_t best_index = 0;
+    double best_value = at(v_x, 0);
+    for (index_t i = 1 ; i < v_x->length ; i++) {
+        if (at(v_x, i) > best_value) {
+            best_index = i;
+            best_value = at(v_x, i);
         }
     }
+    ASSERT(is_similiar(output, best_index));
+}
 
-    puts(flag ? "CORRECT!\n" : "WRONG!\n");
+DEFTEST(iamin) {
+    TEST_INIT;
+    double output = gpu_matrix_vector_iamin(v_x);
+    if (v_x->length == 0) return;
 
-    puts("VECTOR_AMIN TEST:");
-    amin_output = gpu_matrix_vector_amin(&a);
-    if (LENGTH == 0) {
-        flag = true;
-    } else {
-        expected_amin_output = fabs(a.data[0]);
-        for (index_t i = 1 ; i < LENGTH ; i++) {
-            double v = fabs(a.data[i]);
-            expected_amin_output = min(
-                expected_amin_output,
-                v
-            );
+    index_t best_index = 0;
+    double best_value = fabs(at(v_x, 0));
+    for (index_t i = 1 ; i < v_x->length ; i++) {
+        if (fabs(at(v_x, i)) < best_value) {
+            best_index = i;
+            best_value = fabs(at(v_x, i));
         }
-
-        flag = is_simliar(amin_output, expected_amin_output);
     }
-    puts(flag ? "CORRECT!\n" : "WRONG!\n");
+    ASSERT(is_similiar(output, best_index));
+}
 
-    puts("VECTOR_AMAX TEST:");
-    amax_output = gpu_matrix_vector_amax(&a);
-    if (LENGTH == 0) {
-        flag = true;
-    } else {
-        expected_amax_output = fabs(a.data[0]);
-        for (index_t i = 1 ; i < LENGTH ; i++) {
-            double v = fabs(a.data[i]);
-            expected_amax_output = max(
-                expected_amax_output,
-                v
-            );
+DEFTEST(iamax) {
+    TEST_INIT;
+    double output = gpu_matrix_vector_iamax(v_x);
+    if (v_x->length == 0) return;
+
+    index_t best_index = 0;
+    double best_value = fabs(at(v_x, 0));
+    for (index_t i = 1 ; i < v_x->length ; i++) {
+        if (fabs(at(v_x, i)) > best_value) {
+            best_index = i;
+            best_value = fabs(at(v_x, i));
         }
-
-        flag = is_simliar(amax_output, expected_amax_output);
     }
-    puts(flag ? "CORRECT!\n" : "WRONG!\n");
-
-    puts("VECTOR_IMAX TEST:");
-    imax_output = gpu_matrix_vector_imax(&a);
-    expected_imax_output = vector_imax(&a);
-    if (imax_output == expected_imax_output) {
-        puts("CORRECT!\n");
-    } else {
-        puts("INCORRECT!\n");
-    }
-
-    puts("VECTOR_IAMIN TEST:");
-    for (index_t i = 0 ; i < copy_a->length ; i++) {
-        copy_a->data[i] = fabs(a.data[i]);
-    }
-    iamin_output = gpu_matrix_vector_iamin(&a);
-    expected_iamin_output = vector_imin(copy_a);
-    if (iamin_output == expected_iamin_output) {
-        puts("CORRECT!\n");
-    } else {
-        puts("INCORRECT!\n");
-    }
-
-    puts("VECTOR_IAMAX TEST:");
-    for (index_t i = 0 ; i < copy_a->length ; i++) {
-        copy_a->data[i] = fabs(a.data[i]);
-    }
-    iamax_output = gpu_matrix_vector_iamax(&a);
-    expected_iamax_output = vector_imax(copy_a);
-    if (iamax_output == expected_iamax_output) {
-        puts("CORRECT!\n");
-    } else {
-        puts("INCORRECT\n");
-    }
+    ASSERT(is_similiar(output, best_index));
 }
 
 void test_vector() {
-    test_vector_blas();
+    RUNTEST(copy);
+    RUNTEST(axpy);
+    RUNTEST(scal);
+    RUNTEST(swap);
+    RUNTEST(rot);
+    RUNTEST(dot_product);
+    RUNTEST(nrm2);
+    RUNTEST(asum);
+    RUNTEST(amax);
+    RUNTEST(amin);
+    RUNTEST(imin);
+    RUNTEST(imax);
+    RUNTEST(iamin);
+    RUNTEST(iamax);
 }
 
