@@ -14,7 +14,8 @@ my @names = qw{
     KERNEL_MMUL                     mmul
     KERNEL_VECTOR_AXPY              vector_axpy
     KERNEL_VECTOR_AXPY_BANG         vector_axpy_bang
-    KERNEL_VECTOR_ASUM              vector_asum
+    KERNEL_VECTOR_SCAL_BANG         vector_scal_bang
+    KERNEL_VECTOR_ASUM_BANG         vector_asum_bang
     KERNEL_VECTOR_SQUARE_BANG       vector_square_bang
     KERNEL_VECTOR_ROT_BANG          vector_rot_bang
     KERNEL_VECTOR_ABS_BANG          vector_abs_bang

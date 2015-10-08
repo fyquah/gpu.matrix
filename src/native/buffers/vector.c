@@ -223,7 +223,7 @@ extern void gpu_matrix_vector_buffer_asum_BANG(
     gpu_matrix_vector_buffer_reduce_BANG_helper(
         v_x,
         cmd_queue,
-        KERNEL_VECTOR_ASUM,
+        KERNEL_VECTOR_ASUM_BANG,
         CL_TRUE,
         NULL
     );
@@ -238,6 +238,21 @@ extern void gpu_matrix_vector_buffer_square_BANG(
         0, NULL,
         cmd_queue,
         KERNEL_VECTOR_SQUARE_BANG,
+        CL_TRUE,
+        NULL
+    );
+}
+
+extern void gpu_matrix_vector_buffer_scal_BANG(
+    vector_buffer * v_x,
+    double alpha,
+    cl_command_queue cmd_queue
+) {
+    gpu_matrix_vector_buffer_map_BANG_helper(
+        1, &v_x,
+        1, &alpha,
+        cmd_queue,
+        KERNEL_VECTOR_SCAL_BANG,
         CL_TRUE,
         NULL
     );

@@ -46,6 +46,18 @@ __kernel void vector_asum (
     data[first_id] = fabs (data[first_id]) + fabs(data[second_id]);
 }
 
+__kernel void vector_scal_bang (
+    // The actual parameters to the kernel
+    __global double * data_x,
+    const index_t length_x,
+    const index_t stride_x,
+    const double alpha
+) {
+    index_t global_id = get_global_id (0);
+
+    data_x[global_id * stride_x] *= alpha;
+}
+
 __kernel void vector_axpy_bang (
     // The actual parameters to the kernel
     __global double * data_x,

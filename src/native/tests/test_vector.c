@@ -122,7 +122,7 @@ void test_vector_blas() {
     }
 
     puts("AXPY TEST:");
-    axpy_output = gpu_matrix_vector_axpy(&a, 12.0, &b);
+    gpu_matrix_vector_axpy(&a, 12.0, &b);
     flag = true;
     for (index_t i = 0 ; i < LENGTH ; i++) {
         if (fabs(a.data[i] * 12 + b.data[i] - axpy_output->data[i]) > 0.001) {

@@ -40,7 +40,7 @@ vector * gpu_matrix_vector_copy(vector * v_x) {
     return copy;
 }
 
-vector * gpu_matrix_vector_axpy(vector * v_x, double alpha, vector * v_y) {
+void gpu_matrix_vector_axpy(vector * v_x, double alpha, vector * v_y) {
     size_t global_work_size[1] = { v_x->length };
     vector * output;
     size_t datasize = gpu_matrix_vector_datasize(v_x);
@@ -54,13 +54,6 @@ vector * gpu_matrix_vector_axpy(vector * v_x, double alpha, vector * v_y) {
     cl_event write_buffer_events[2], read_buffer_events[1], enqueue_events[1];
     cl_mem buffer_x, buffer_y, buffer_output, buffer_local_cache;
     vector_buffer buffer_v_x, buffer_v_y;
-
-    // Allocate memory for output vector object
-
-    output = malloc(sizeof(vector));
-    output->data = malloc(sizeof(double) * v_x->length);
-    output->length = v_x->length;
-    output->stride = 1;
 
     buffer_x = buffers_create(
         CL_MEM_READ_ONLY,
@@ -101,7 +94,7 @@ vector * gpu_matrix_vector_axpy(vector * v_x, double alpha, vector * v_y) {
         CL_TRUE,
         0,
         datasize,
-        output->data,
+        v_x->data,
         0,
         NULL,
         read_buffer_events
@@ -110,8 +103,58 @@ vector * gpu_matrix_vector_axpy(vector * v_x, double alpha, vector * v_y) {
     clReleaseEvent(write_buffer_events[0]);
     clReleaseEvent(write_buffer_events[1]);
     clReleaseEvent(read_buffer_events[0]);
+}
 
-    return output;
+void gpu_matrix_vector_scal(vector * v_x, double alpha) {
+    size_t global_work_size[1] = { v_x->length };
+    vector * output;
+    size_t datasize = gpu_matrix_vector_datasize(v_x);
+    cl_int status;
+    cl_command_queue cmd_queue = clCreateCommandQueue(
+        context_get(),
+        device_get(),
+        CL_QUEUE_PROFILING_ENABLE,
+        &status
+    );
+    cl_event write_buffer_events[2], read_buffer_events[1], enqueue_events[1];
+    cl_mem buffer_x, buffer_y, buffer_output, buffer_local_cache;
+    vector_buffer buffer_v_x, buffer_v_y;
+
+    buffer_x = buffers_create(
+        CL_MEM_READ_ONLY,
+        datasize,
+        NULL,
+        &status
+    );
+    buffer_v_x = gpu_matrix_vector_to_vector_buffer(v_x, buffer_x);
+    
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_x,
+        CL_FALSE, 0, datasize,
+        v_x->data, 0, NULL, write_buffer_events
+    );
+
+    clWaitForEvents(1, write_buffer_events);
+    gpu_matrix_vector_buffer_scal_BANG(
+        &buffer_v_x,
+        alpha,
+        cmd_queue
+    );
+
+    clEnqueueReadBuffer(
+        cmd_queue,
+        buffer_x,
+        CL_TRUE,
+        0,
+        datasize,
+        v_x->data,
+        0,
+        NULL,
+        read_buffer_events
+    );
+
+    clReleaseEvent(write_buffer_events[0]);
+    clReleaseEvent(read_buffer_events[0]);
 }
 
 void gpu_matrix_vector_swap(vector * v_x, vector * v_y) {

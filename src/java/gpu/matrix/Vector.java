@@ -1,6 +1,7 @@
 package gpu.matrix;
 
-public interface Vector {
+public class Vector {
+    // BLAS procedures
     public native Vector axpy(double a, Vector y);
     public native Vector scal(double a);
     public native Vector clone();

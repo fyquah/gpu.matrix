@@ -23,11 +23,11 @@
 // Does not naively release memory, need to do some GC resolution
 void gpu_matrix_release(vector *);
 vector_buffer gpu_matrix_vector_to_vector_buffer(vector *, cl_mem buffer);
-
-// BLAS 1 headers
-vector * gpu_matrix_vector_axpy(vector * x, double a, vector * y);
-vector * gpu_matrix_vector_scal(vector * x, double a);
 vector * gpu_matrix_vector_copy(vector * x);
+
+// (Partial) BLAS 1 headers. Note: BLAS headers mutate the argument vectors!
+void gpu_matrix_vector_axpy(vector * x, double a, vector * y);
+void gpu_matrix_vector_scal(vector * x, double a);
 void gpu_matrix_vector_swap(vector * x, vector * y);
 void gpu_matrix_vector_rot(vector * x, vector * y, double, double);
 double gpu_matrix_vector_dot(vector * x, vector * y);

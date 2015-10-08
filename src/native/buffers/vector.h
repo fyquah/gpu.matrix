@@ -11,6 +11,7 @@
 
 // map functions
 extern void gpu_matrix_vector_buffer_axpy_BANG(vector_buffer *,vector_buffer *, double, cl_command_queue);
+extern void gpu_matrix_vector_buffer_scal_BANG(vector_buffer *, double alpha, cl_command_queue);
 extern void gpu_matrix_vector_buffer_rot_BANG(vector_buffer *, vector_buffer*, double, double, cl_command_queue);
 extern void gpu_matrix_vector_buffer_abs_BANG(vector_buffer *, cl_command_queue);
 extern void gpu_matrix_vector_buffer_square_BANG(vector_buffer *, cl_command_queue);
