@@ -1,12 +1,25 @@
 #include "vector.h"
 
+#define BLOCK_AND_SET_EVENT_PTR(is_blocking, event_ptr, enqueue_events) \
+if (is_blocking) { \
+    clWaitForEvents(1, enqueue_events); \
+} \
+ \
+if (event_ptr == NULL) { \
+    clReleaseEvent(enqueue_events[0]); \
+} else { \
+    *event_ptr = enqueue_events[0]; \
+}
+
 static inline void gpu_matrix_vector_buffer_map_BANG_helper(
     unsigned vector_arg_count,
     vector_buffer * arr_vector_buffer[],
     unsigned scalar_arg_count,
     double arr_scalar[], 
     cl_command_queue cmd_queue,
-    kernel_type_t kernel_id
+    kernel_type_t kernel_id,
+    cl_bool is_blocking,
+    cl_event * event_ptr 
 ){
 
     size_t global_work_size[1];
@@ -40,7 +53,7 @@ static inline void gpu_matrix_vector_buffer_map_BANG_helper(
         );
     }
 
-    status |= clEnqueueNDRangeKernel(
+    status = clEnqueueNDRangeKernel(
         cmd_queue,
         kernel,
         1,
@@ -52,16 +65,17 @@ static inline void gpu_matrix_vector_buffer_map_BANG_helper(
         enqueue_events
     );
 
-    clWaitForEvents(1, enqueue_events);
-    clReleaseEvent(enqueue_events[0]);
+    BLOCK_AND_SET_EVENT_PTR(is_blocking, event_ptr, enqueue_events);
 }
 
 static inline void gpu_matrix_vector_buffer_reduce_BANG_helper(
     vector_buffer * v_x,
     cl_command_queue cmd_queue,
-    kernel_type_t kernel_id
+    kernel_type_t kernel_id,
+    cl_bool is_blocking,
+    cl_event * event_ptr
 ){
-    cl_event enqueue_events[1];
+    cl_event enqueue_events[1], user_event[1];
     cl_kernel kernel;
     cl_int status;
     index_t remaining_length;
@@ -95,14 +109,20 @@ static inline void gpu_matrix_vector_buffer_reduce_BANG_helper(
         clWaitForEvents(1, enqueue_events);
         clReleaseEvent(enqueue_events[0]);
     }
+
+    user_event[0] = clCreateUserEvent(context_get(), &status);
+    clSetUserEventStatus(*user_event, CL_COMPLETE);
+    BLOCK_AND_SET_EVENT_PTR(is_blocking, event_ptr, user_event);
 }
 
 static inline cl_mem gpu_matrix_vector_buffer_reduce_index_BANG_helper(
     vector_buffer * v_x,
     cl_command_queue cmd_queue,
-    kernel_type_t kernel_id
+    kernel_type_t kernel_id,
+    cl_bool is_blocking,
+    cl_event * event_ptr
 ){
-    cl_event enqueue_events[1];
+    cl_event enqueue_events[1], user_event[1];
     cl_kernel kernel;
     cl_int status;
     index_t remaining_length;
@@ -172,6 +192,10 @@ static inline cl_mem gpu_matrix_vector_buffer_reduce_index_BANG_helper(
         clReleaseEvent(enqueue_events[0]);
     }
 
+    user_event[0] = clCreateUserEvent(context_get(), &status);
+    clSetUserEventStatus(*user_event, CL_COMPLETE);
+    BLOCK_AND_SET_EVENT_PTR(is_blocking, event_ptr, user_event);
+
     return buffer_indices;
 }
 
@@ -186,7 +210,9 @@ extern void gpu_matrix_vector_buffer_axpy_BANG(
         2, arr_vector_buffer,
         1, &alpha,
         cmd_queue,
-        KERNEL_VECTOR_AXPY_BANG
+        KERNEL_VECTOR_AXPY_BANG,
+        CL_TRUE,
+        NULL
     );
 }
 
@@ -197,7 +223,9 @@ extern void gpu_matrix_vector_buffer_asum_BANG(
     gpu_matrix_vector_buffer_reduce_BANG_helper(
         v_x,
         cmd_queue,
-        KERNEL_VECTOR_ASUM
+        KERNEL_VECTOR_ASUM,
+        CL_TRUE,
+        NULL
     );
 }
 
@@ -212,7 +240,9 @@ extern void gpu_matrix_vector_buffer_mul_BANG(
         2, arr_vector_buffer,
         0, NULL,
         cmd_queue,
-        KERNEL_VECTOR_MUL_BANG
+        KERNEL_VECTOR_MUL_BANG,
+        CL_TRUE,
+        NULL
     );
 }
 
@@ -224,7 +254,9 @@ extern void gpu_matrix_vector_buffer_square_BANG(
         1, &v_x,
         0, NULL,
         cmd_queue,
-        KERNEL_VECTOR_SQUARE_BANG 
+        KERNEL_VECTOR_SQUARE_BANG,
+        CL_TRUE,
+        NULL
     );
 }
 
@@ -241,7 +273,9 @@ void gpu_matrix_vector_buffer_rot_BANG(
         2, vector_buffer_arr,
         2, scalar_arr,
         cmd_queue,
-        KERNEL_VECTOR_ROT_BANG 
+        KERNEL_VECTOR_ROT_BANG,
+        CL_TRUE,
+        NULL
     );
 }
 
@@ -253,7 +287,9 @@ extern void gpu_matrix_vector_buffer_abs_BANG(
         1, &v_x,
         0, NULL,
         cmd_queue,
-        KERNEL_VECTOR_ABS_BANG
+        KERNEL_VECTOR_ABS_BANG,
+        CL_TRUE,
+        NULL
     );
 }
 
@@ -264,7 +300,9 @@ extern void gpu_matrix_vector_buffer_max_BANG(
     gpu_matrix_vector_buffer_reduce_BANG_helper(
         v_x,
         cmd_queue,
-        KERNEL_VECTOR_MAX_BANG 
+        KERNEL_VECTOR_MAX_BANG,
+        CL_TRUE,
+        NULL
     );
 }
 
@@ -275,7 +313,9 @@ extern void gpu_matrix_vector_buffer_min_BANG(
     gpu_matrix_vector_buffer_reduce_BANG_helper(
         v_x,
         cmd_queue,
-        KERNEL_VECTOR_MIN_BANG 
+        KERNEL_VECTOR_MIN_BANG,
+        CL_TRUE,
+        NULL
     );
 }
 
@@ -286,7 +326,9 @@ extern cl_mem gpu_matrix_vector_buffer_imax(
     return gpu_matrix_vector_buffer_reduce_index_BANG_helper(
         v_x,
         cmd_queue,
-        KERNEL_VECTOR_IMAX_BANG
+        KERNEL_VECTOR_IMAX_BANG,
+        CL_TRUE,
+        NULL
     );
 }
 
@@ -297,7 +339,9 @@ extern cl_mem gpu_matrix_vector_buffer_imin(
     return gpu_matrix_vector_buffer_reduce_index_BANG_helper(
         v_x,
         cmd_queue,
-        KERNEL_VECTOR_IMIN_BANG
+        KERNEL_VECTOR_IMIN_BANG,
+        CL_TRUE,
+        NULL
     );
 }
 
