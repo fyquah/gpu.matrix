@@ -11,6 +11,7 @@ statement;\
 if (status_var != CL_SUCCESS) { \
     fprintf(stderr, "An error occured in running gpu.matrix at line %u of %s\n" , \
             __LINE__, __FILE__);  \
+    fprintf(stderr, "Error code: %d\n", status_var); \
     exit(1); \
 }
 

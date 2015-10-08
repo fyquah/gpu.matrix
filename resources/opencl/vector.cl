@@ -23,38 +23,6 @@ __kernel void vector_rot_bang (
     data_y[idx_y] = c * y - s * y;
 }
 
-__kernel void vector_mul (
-    // The acutla parameters to the kernel
-    __global const double * data_x,
-    const index_t length_x,
-    const index_t stride_x,
-    __global const double * data_y,
-    const index_t length_y,
-    const index_t stride_y,
-    // Output memory locations
-    __global double * data_output
-) {
-    index_t global_id = get_global_id (0);
-    data_output[global_id] = 
-        data_x[global_id * stride_x] *
-        data_y[global_id * stride_y];
-}
-
-__kernel void vector_mul_bang (
-    // The acutla parameters to the kernel
-    __global double * data_x,
-    const index_t length_x,
-    const index_t stride_x,
-    __global const double * data_y,
-    const index_t length_y,
-    const index_t stride_y
-) {
-    index_t global_id = get_global_id (0);
-    data_x[global_id * stride_x] = 
-        data_x[global_id * stride_x] *
-        data_y[global_id * stride_y];
-}
-
 __kernel void vector_square_bang (
     // The acutla parameters to the kernel
     __global double * data_x,
@@ -216,5 +184,38 @@ __kernel void vector_min_bang (
 
     data[first_id] = fmin(data[first_id], data[second_id]);
 }
+
+#define VECTOR_ARIMETHIC_FACTORY(name, op) \
+__kernel void vector_##name##_bang ( \
+    __global double * data_x, \
+    const index_t length_x, \
+    const index_t stride_x, \
+    __global const double * data_y, \
+    const index_t length_y, \
+    const index_t stride_y \
+) { \
+    index_t global_id = get_global_id (0); \
+    data_x[global_id * stride_x] =  \
+        data_x[global_id * stride_x] op \
+        data_y[global_id * stride_y]; \
+} \
+\
+__kernel void vector_##name##_scalar_bang ( \
+    __global double * data_x, \
+    const index_t length_x, \
+    const index_t stride_x, \
+    const double y  \
+) { \
+    index_t global_id = get_global_id (0); \
+    data_x[global_id * stride_x] =  \
+        data_x[global_id * stride_x] op y; \
+}
+
+VECTOR_ARIMETHIC_FACTORY(mul, *);
+VECTOR_ARIMETHIC_FACTORY(add, *);
+VECTOR_ARIMETHIC_FACTORY(sub, *);
+VECTOR_ARIMETHIC_FACTORY(div, *);
+
 #endif
+
 

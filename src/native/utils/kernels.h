@@ -10,6 +10,7 @@
 #include "../libs/cl.h" 
 #include "files.h"
 
+#define KERNELS_COUNT 28
 #define KERNEL_ADD 0
 #define KERNEL_ADD_SCALAR 1
 #define KERNEL_SUB 2
@@ -22,20 +23,24 @@
 #define KERNEL_VECTOR_AXPY 9
 #define KERNEL_VECTOR_AXPY_BANG 10
 #define KERNEL_VECTOR_ASUM 11
-#define KERNEL_VECTOR_MUL 12
-#define KERNEL_VECTOR_MUL_BANG 13
-#define KERNEL_VECTOR_SQUARE_BANG 14
-#define KERNEL_VECTOR_ROT_BANG 15
-#define KERNEL_VECTOR_ABS_BANG 16
-#define KERNEL_VECTOR_MIN_BANG 17
-#define KERNEL_VECTOR_MAX_BANG 18
-#define KERNEL_VECTOR_IMIN_BANG 19
-#define KERNEL_VECTOR_IMAX_BANG 20
-#define KERNEL_VECTOR_RANGE 21
-#define KERNELS_COUNT 22
+#define KERNEL_VECTOR_SQUARE_BANG 12
+#define KERNEL_VECTOR_ROT_BANG 13
+#define KERNEL_VECTOR_ABS_BANG 14
+#define KERNEL_VECTOR_MIN_BANG 15
+#define KERNEL_VECTOR_MAX_BANG 16
+#define KERNEL_VECTOR_IMIN_BANG 17
+#define KERNEL_VECTOR_IMAX_BANG 18
+#define KERNEL_VECTOR_RANGE 19
+#define KERNEL_VECTOR_MUL_SCALAR_BANG 20
+#define KERNEL_VECTOR_MUL_BANG 21
+#define KERNEL_VECTOR_ADD_SCALAR_BANG 22
+#define KERNEL_VECTOR_ADD_BANG 23
+#define KERNEL_VECTOR_SUB_SCALAR_BANG 24
+#define KERNEL_VECTOR_SUB_BANG 25
+#define KERNEL_VECTOR_DIV_SCALAR_BANG 26
+#define KERNEL_VECTOR_DIV_BANG 27
 
 static const char * gpu_matrix_kernel_names[] = {
-    // NDArray kernels 
     "add",
     "add_scalar",
     "sub",
@@ -45,12 +50,9 @@ static const char * gpu_matrix_kernel_names[] = {
     "div",
     "div_scalar",
     "mmul",
-    // Vector kernels 
     "vector_axpy",
     "vector_axpy_bang",
     "vector_asum",
-    "vector_mul",
-    "vector_mul_bang",
     "vector_square_bang",
     "vector_rot_bang",
     "vector_abs_bang",
@@ -58,8 +60,17 @@ static const char * gpu_matrix_kernel_names[] = {
     "vector_max_bang",
     "vector_imin_bang",
     "vector_imax_bang",
-    "vector_range"
+    "vector_range",
+    "vector_mul_scalar_bang",
+    "vector_mul_bang",
+    "vector_add_scalar_bang",
+    "vector_add_bang",
+    "vector_sub_scalar_bang",
+    "vector_sub_bang",
+    "vector_div_scalar_bang",
+    "vector_div_bang"
 };
+
 // Compiles the program and cahce it in a global buffer
 static cl_program compile_program(cl_context, cl_device_id);
 

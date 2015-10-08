@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+my @names = qw{
+    KERNEL_ADD                      add
+    KERNEL_ADD_SCALAR               add_scalar
+    KERNEL_SUB                      sub
+    KERNEL_SUB_SCALAR               sub_scalar
+    KERNEL_MUL                      mul
+    KERNEL_MUL_SCALAR               mul_scalar
+    KERNEL_DIV                      div
+    KERNEL_DIV_SCALAR               div_scalar
+    KERNEL_MMUL                     mmul
+    KERNEL_VECTOR_AXPY              vector_axpy
+    KERNEL_VECTOR_AXPY_BANG         vector_axpy_bang
+    KERNEL_VECTOR_ASUM              vector_asum
+    KERNEL_VECTOR_SQUARE_BANG       vector_square_bang
+    KERNEL_VECTOR_ROT_BANG          vector_rot_bang
+    KERNEL_VECTOR_ABS_BANG          vector_abs_bang
+    KERNEL_VECTOR_MIN_BANG          vector_min_bang
+    KERNEL_VECTOR_MAX_BANG          vector_max_bang
+    KERNEL_VECTOR_IMIN_BANG         vector_imin_bang
+    KERNEL_VECTOR_IMAX_BANG         vector_imax_bang
+    KERNEL_VECTOR_RANGE             vector_range
+    KERNEL_VECTOR_MUL_SCALAR_BANG   vector_mul_scalar_bang
+    KERNEL_VECTOR_MUL_BANG          vector_mul_bang
+    KERNEL_VECTOR_ADD_SCALAR_BANG   vector_add_scalar_bang
+    KERNEL_VECTOR_ADD_BANG          vector_add_bang
+    KERNEL_VECTOR_SUB_SCALAR_BANG   vector_sub_scalar_bang
+    KERNEL_VECTOR_SUB_BANG          vector_sub_bang
+    KERNEL_VECTOR_DIV_SCALAR_BANG   vector_div_scalar_bang
+    KERNEL_VECTOR_DIV_BANG          vector_div_bang
+};
+
+print '#define KERNELS_COUNT ', (scalar(@names) / 2), "\n";
+
+for (my $i = 0 ; $i < scalar(@names) ; $i += 2) {
+    my $constant_name = $names[$i];
+    my $constant_id = $i / 2;
+    print "#define $constant_name $constant_id\n";
+}
+
+print "\n";
+print "static const char * gpu_matrix_kernel_names[] = {\n";
+for (my $i = 1 ; $i < scalar(@names) ; $i += 2) {
+    my $constant_name = $names[$i];
+    print "    \"$constant_name\"", ($i == scalar(@names) - 1 ? "" : ","), "\n";
+}
+print "};\n";

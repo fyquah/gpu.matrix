@@ -229,23 +229,6 @@ extern void gpu_matrix_vector_buffer_asum_BANG(
     );
 }
 
-extern void gpu_matrix_vector_buffer_mul_BANG(
-    vector_buffer * v_x,
-    vector_buffer * v_y,
-    cl_command_queue cmd_queue
-) {
-    vector_buffer * arr_vector_buffer[2] = { v_x, v_y };
-
-    gpu_matrix_vector_buffer_map_BANG_helper(
-        2, arr_vector_buffer,
-        0, NULL,
-        cmd_queue,
-        KERNEL_VECTOR_MUL_BANG,
-        CL_TRUE,
-        NULL
-    );
-}
-
 extern void gpu_matrix_vector_buffer_square_BANG(
     vector_buffer * v_x,
     cl_command_queue cmd_queue
@@ -344,4 +327,42 @@ extern cl_mem gpu_matrix_vector_buffer_imin(
         NULL
     );
 }
+
+#define GPU_MATRIX_VECTOR_ARIMETHIC_FACTORY(name, vector_kernel_id, scalar_kernel_id) \
+extern void gpu_matrix_vector_buffer_##name##_BANG( \
+    vector_buffer * v_x, \
+    vector_buffer * v_y, \
+    cl_command_queue cmd_queue \
+) { \
+    vector_buffer * arr_vector_buffer[2] = { v_x, v_y }; \
+\
+    gpu_matrix_vector_buffer_map_BANG_helper( \
+        2, arr_vector_buffer, \
+        0, NULL, \
+        cmd_queue, \
+        vector_kernel_id, \
+        CL_TRUE, \
+        NULL \
+    ); \
+} \
+\
+extern void gpu_matrix_vector_buffer_##name##_scalar_BANG( \
+    vector_buffer * v_x, \
+    double d, \
+    cl_command_queue cmd_queue \
+) { \
+    gpu_matrix_vector_buffer_map_BANG_helper( \
+        1, &v_x, \
+        1, &d, \
+        cmd_queue, \
+        scalar_kernel_id, \
+        CL_TRUE, \
+        NULL \
+    ); \
+} \
+
+GPU_MATRIX_VECTOR_ARIMETHIC_FACTORY(add, KERNEL_VECTOR_ADD_BANG, KERNEL_VECTOR_ADD_SCALAR_BANG);
+GPU_MATRIX_VECTOR_ARIMETHIC_FACTORY(sub, KERNEL_VECTOR_SUB_BANG, KERNEL_VECTOR_SUB_SCALAR_BANG);
+GPU_MATRIX_VECTOR_ARIMETHIC_FACTORY(mul, KERNEL_VECTOR_MUL_BANG, KERNEL_VECTOR_MUL_SCALAR_BANG);
+GPU_MATRIX_VECTOR_ARIMETHIC_FACTORY(div, KERNEL_VECTOR_DIV_BANG, KERNEL_VECTOR_DIV_SCALAR_BANG);
 

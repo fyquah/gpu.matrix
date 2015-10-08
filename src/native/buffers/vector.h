@@ -12,7 +12,6 @@
 // map functions
 extern void gpu_matrix_vector_buffer_axpy_BANG(vector_buffer *,vector_buffer *, double, cl_command_queue);
 extern void gpu_matrix_vector_buffer_rot_BANG(vector_buffer *, vector_buffer*, double, double, cl_command_queue);
-extern void gpu_matrix_vector_buffer_mul_BANG(vector_buffer *, vector_buffer *, cl_command_queue);
 extern void gpu_matrix_vector_buffer_abs_BANG(vector_buffer *, cl_command_queue);
 extern void gpu_matrix_vector_buffer_square_BANG(vector_buffer *, cl_command_queue);
 
@@ -25,5 +24,10 @@ extern cl_mem gpu_matrix_vector_buffer_imax(vector_buffer *, cl_command_queue);
 
 // ========== END OF BLAS LEVEL 1 =============
 
+// common arimethic ops
+extern void gpu_matrix_vector_buffer_add_BANG(vector_buffer *, vector_buffer*, cl_command_queue);
+extern void gpu_matrix_vector_buffer_sub_BANG(vector_buffer *, vector_buffer*, cl_command_queue);
+extern void gpu_matrix_vector_buffer_mul_BANG(vector_buffer *, vector_buffer*, cl_command_queue);
+extern void gpu_matrix_vector_buffer_div_BANG(vector_buffer *, vector_buffer*, cl_command_queue);
 
 #endif
