@@ -1,6 +1,6 @@
 #include "vector.h"
 
-void gpu_matrix_vector_map_BANG_helper(
+static inline void gpu_matrix_vector_buffer_map_BANG_helper(
     unsigned vector_arg_count,
     vector_buffer * arr_vector_buffer[],
     unsigned scalar_arg_count,
@@ -56,7 +56,7 @@ void gpu_matrix_vector_map_BANG_helper(
     clReleaseEvent(enqueue_events[0]);
 }
 
-void gpu_matrix_vector_buffer_reduce_BANG_helper(
+static inline void gpu_matrix_vector_buffer_reduce_BANG_helper(
     vector_buffer * v_x,
     cl_command_queue cmd_queue,
     kernel_type_t kernel_id
@@ -97,7 +97,7 @@ void gpu_matrix_vector_buffer_reduce_BANG_helper(
     }
 }
 
-cl_mem gpu_matrix_vector_buffer_reduce_index_BANG_helper(
+static inline cl_mem gpu_matrix_vector_buffer_reduce_index_BANG_helper(
     vector_buffer * v_x,
     cl_command_queue cmd_queue,
     kernel_type_t kernel_id
@@ -177,47 +177,20 @@ cl_mem gpu_matrix_vector_buffer_reduce_index_BANG_helper(
 
 extern void gpu_matrix_vector_buffer_axpy_BANG(
     vector_buffer * v_x,
-    double d,
     vector_buffer * v_y,
+    double alpha,
     cl_command_queue cmd_queue
 ) {
-    
-    size_t global_work_size[1] = { v_x->length };
-    size_t datasize = v_x->datasize;
-    cl_int status;
-    cl_event read_buffer_events[1], enqueue_events[1];
-
-    // Allocate memory for output vector object
-    cl_kernel kernel = kernels_get(
-        context_get(),
-        device_get(),
+    vector_buffer * arr_vector_buffer[2] = { v_x, v_y };
+    gpu_matrix_vector_buffer_map_BANG_helper(
+        2, arr_vector_buffer,
+        1, &alpha,
+        cmd_queue,
         KERNEL_VECTOR_AXPY_BANG
     );
-
-    status  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &v_x->buffer);
-    status |= clSetKernelArg(kernel, 1, sizeof(index_t), &v_x->length);
-    status |= clSetKernelArg(kernel, 2, sizeof(index_t), &v_x->stride);
-    status |= clSetKernelArg(kernel, 3, sizeof(double), &d);
-    status |= clSetKernelArg(kernel, 4, sizeof(cl_mem), &v_y->buffer);
-    status |= clSetKernelArg(kernel, 5, sizeof(index_t), &v_y->length);
-    status |= clSetKernelArg(kernel, 6, sizeof(index_t), &v_y->stride);
-    status |= clEnqueueNDRangeKernel(
-        cmd_queue,
-        kernel,
-        1,
-        NULL,
-        global_work_size,
-        NULL,
-        0,
-        NULL,
-        enqueue_events
-    );
-
-    clWaitForEvents(1, enqueue_events);
-    clReleaseEvent(enqueue_events[0]);
 }
 
-extern inline void gpu_matrix_vector_buffer_asum_BANG(
+extern void gpu_matrix_vector_buffer_asum_BANG(
     vector_buffer * v_x,
     cl_command_queue cmd_queue
 ) {
@@ -228,14 +201,14 @@ extern inline void gpu_matrix_vector_buffer_asum_BANG(
     );
 }
 
-extern inline void gpu_matrix_vector_buffer_mul_BANG(
+extern void gpu_matrix_vector_buffer_mul_BANG(
     vector_buffer * v_x,
     vector_buffer * v_y,
     cl_command_queue cmd_queue
 ) {
     vector_buffer * arr_vector_buffer[2] = { v_x, v_y };
 
-    gpu_matrix_vector_map_BANG_helper(
+    gpu_matrix_vector_buffer_map_BANG_helper(
         2, arr_vector_buffer,
         0, NULL,
         cmd_queue,
@@ -243,11 +216,11 @@ extern inline void gpu_matrix_vector_buffer_mul_BANG(
     );
 }
 
-extern inline void gpu_matrix_vector_buffer_square_BANG(
+extern void gpu_matrix_vector_buffer_square_BANG(
     vector_buffer * v_x,
     cl_command_queue cmd_queue
 ) {
-    gpu_matrix_vector_map_BANG_helper(
+    gpu_matrix_vector_buffer_map_BANG_helper(
         1, &v_x,
         0, NULL,
         cmd_queue,
@@ -261,47 +234,22 @@ void gpu_matrix_vector_buffer_rot_BANG(
     double c,
     double s,
     cl_command_queue cmd_queue
-){
-    size_t global_work_size[1];
-    cl_event enqueue_events[1];
-    cl_kernel kernel;
-    cl_int status;
-
-    global_work_size[0] = v_x->length;
-    kernel = kernels_get(
-        context_get(),
-        device_get(),
-        KERNEL_VECTOR_ROT_BANG
-    );
-    status  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &v_x->buffer);
-    status |= clSetKernelArg(kernel, 1, sizeof(index_t), &v_x->length);
-    status |= clSetKernelArg(kernel, 2, sizeof(index_t), &v_x->stride);
-    status |= clSetKernelArg(kernel, 3, sizeof(cl_mem), &v_y->buffer);
-    status |= clSetKernelArg(kernel, 4, sizeof(index_t), &v_y->length);
-    status |= clSetKernelArg(kernel, 5, sizeof(index_t), &v_y->stride);
-    status |= clSetKernelArg(kernel, 6, sizeof(double), &c);
-    status |= clSetKernelArg(kernel, 7, sizeof(double), &s);
-    status = clEnqueueNDRangeKernel(
+) {
+    vector_buffer * vector_buffer_arr[2] = { v_x, v_y };
+    double scalar_arr[2] = { c, s };
+    gpu_matrix_vector_buffer_map_BANG_helper(
+        2, vector_buffer_arr,
+        2, scalar_arr,
         cmd_queue,
-        kernel,
-        1,
-        NULL,
-        global_work_size,
-        NULL,
-        0,
-        NULL,
-        enqueue_events
+        KERNEL_VECTOR_ROT_BANG 
     );
-
-    clWaitForEvents(1, enqueue_events);
-    clReleaseEvent(enqueue_events[0]);
 }
 
-extern inline void gpu_matrix_vector_buffer_abs_BANG(
+extern void gpu_matrix_vector_buffer_abs_BANG(
     vector_buffer * v_x,
     cl_command_queue cmd_queue
 )  {
-    gpu_matrix_vector_map_BANG_helper(
+    gpu_matrix_vector_buffer_map_BANG_helper(
         1, &v_x,
         0, NULL,
         cmd_queue,
@@ -309,7 +257,7 @@ extern inline void gpu_matrix_vector_buffer_abs_BANG(
     );
 }
 
-extern inline void gpu_matrix_vector_buffer_max_BANG(
+extern void gpu_matrix_vector_buffer_max_BANG(
     vector_buffer* v_x,
     cl_command_queue cmd_queue
 ) {
@@ -320,7 +268,7 @@ extern inline void gpu_matrix_vector_buffer_max_BANG(
     );
 }
 
-extern inline void gpu_matrix_vector_buffer_min_BANG(
+extern void gpu_matrix_vector_buffer_min_BANG(
     vector_buffer * v_x,
     cl_command_queue cmd_queue
 ) {
@@ -331,7 +279,7 @@ extern inline void gpu_matrix_vector_buffer_min_BANG(
     );
 }
 
-extern inline cl_mem gpu_matrix_vector_buffer_imax(
+extern cl_mem gpu_matrix_vector_buffer_imax(
     vector_buffer * v_x,
     cl_command_queue cmd_queue
 ) {
@@ -342,7 +290,7 @@ extern inline cl_mem gpu_matrix_vector_buffer_imax(
     );
 }
 
-extern inline cl_mem gpu_matrix_vector_buffer_imin(
+extern cl_mem gpu_matrix_vector_buffer_imin(
     vector_buffer * v_x,
     cl_command_queue cmd_queue
 ) {

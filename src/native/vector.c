@@ -2,6 +2,8 @@
 
 #include "vector.h"
 
+#define BUFFERS_CREATE_AND_WRITE
+
 const index_t ONE = 1;
 
 void describe_event(const char * description, cl_ulong time) {
@@ -60,11 +62,6 @@ vector * gpu_matrix_vector_axpy(vector * v_x, double alpha, vector * v_y) {
     output->length = v_x->length;
     output->stride = 1;
 
-    cl_kernel kernel = kernels_get(
-        context_get(),
-        device_get(),
-        KERNEL_VECTOR_AXPY
-    );
     buffer_x = buffers_create(
         CL_MEM_READ_ONLY,
         datasize,
@@ -83,7 +80,7 @@ vector * gpu_matrix_vector_axpy(vector * v_x, double alpha, vector * v_y) {
     status = clEnqueueWriteBuffer(
         cmd_queue, buffer_x,
         CL_FALSE, 0, datasize,
-        v_x->data, 0, NULL, write_buffer_events 
+        v_x->data, 0, NULL, write_buffer_events
     );
     status = clEnqueueWriteBuffer(
         cmd_queue, buffer_y,
@@ -91,7 +88,12 @@ vector * gpu_matrix_vector_axpy(vector * v_x, double alpha, vector * v_y) {
         v_y->data, 0, NULL, write_buffer_events+1 
     );
     clWaitForEvents(2, write_buffer_events);
-    gpu_matrix_vector_buffer_axpy_BANG(&buffer_v_x, alpha, &buffer_v_y, cmd_queue);
+    gpu_matrix_vector_buffer_axpy_BANG(
+        &buffer_v_x,
+        &buffer_v_y,
+        alpha,
+        cmd_queue
+    );
 
     clEnqueueReadBuffer(
         cmd_queue,
@@ -197,28 +199,22 @@ void gpu_matrix_vector_rot(
 
 double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {
     size_t datasize = gpu_matrix_vector_datasize(v_x);
-    size_t global_work_size[1] = { v_x->length };
+    size_t global_work_size[1];
     cl_int status;
     double output;
     cl_mem buffer_data_output, buffer_data_x, buffer_data_y;
     vector_buffer buffer_v_x, buffer_v_y;
     cl_command_queue cmd_queue;
-    cl_kernel kernel;
-    index_t remaining_length = v_x->length;
-    cl_event enqueue_events[1],
-             write_buffer_events[2],
+    cl_event write_buffer_events[2],
              read_buffer_events[1];
-    
+  
+    datasize = gpu_matrix_vector_datasize(v_x);
+    global_work_size[0] = v_x->length;
     cmd_queue = clCreateCommandQueue(
         context_get(),
         device_get(),
         CL_QUEUE_PROFILING_ENABLE,
         &status
-    );
-    kernel = kernels_get(
-        context_get(),
-        device_get(),
-        KERNEL_VECTOR_MUL
     );
     buffer_data_x = buffers_create(
         CL_MEM_READ_WRITE,
@@ -226,14 +222,7 @@ double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {
         NULL,
         &status
     );
-    buffer_data_y = buffers_create(
-        CL_MEM_READ_ONLY,
-        datasize,
-        NULL,
-        &status
-    );
     buffer_v_x = gpu_matrix_vector_to_vector_buffer(v_x, buffer_data_x);
-    buffer_v_y = gpu_matrix_vector_to_vector_buffer(v_y, buffer_data_y);
 
     status = clEnqueueWriteBuffer(
         cmd_queue, buffer_data_x,
@@ -241,12 +230,19 @@ double gpu_matrix_vector_dot(vector * v_x, vector * v_y) {
         v_x->data, 0, NULL,
         write_buffer_events
     );
+    buffer_data_y = buffers_create(
+        CL_MEM_READ_ONLY,
+        datasize,
+        NULL,
+        &status
+    );
     status = clEnqueueWriteBuffer(
         cmd_queue, buffer_data_y,
         CL_FALSE, 0, datasize,
         v_y->data, 0, NULL,
         write_buffer_events+1
     );
+    buffer_v_y = gpu_matrix_vector_to_vector_buffer(v_y, buffer_data_y);
     clWaitForEvents(2, write_buffer_events);
 
     gpu_matrix_vector_buffer_mul_BANG(&buffer_v_x, &buffer_v_y, cmd_queue); 
@@ -308,6 +304,7 @@ double gpu_matrix_vector_asum(vector * v_x) {
     // Print write buffer profilling information
     buffer_v_x = gpu_matrix_vector_to_vector_buffer(v_x, buffer_data);
     gpu_matrix_vector_buffer_asum_BANG(&buffer_v_x, cmd_queue);
+
     clEnqueueReadBuffer(
         cmd_queue,
         buffer_data,
@@ -678,6 +675,7 @@ index_t gpu_matrix_vector_iamin(vector * v_x) {
         CL_TRUE, 0, datasize,
         v_x->data, 0, NULL, write_buffer_events
     );
+
     buffer_v_x = gpu_matrix_vector_to_vector_buffer(v_x, buffer_data);
     gpu_matrix_vector_buffer_abs_BANG(&buffer_v_x, cmd_queue);
     buffer_indices = gpu_matrix_vector_buffer_imin(&buffer_v_x, cmd_queue);

@@ -83,10 +83,10 @@ __kernel void vector_axpy_bang (
     __global double * data_x,
     const index_t length_x,
     const index_t stride_x,
-    const double alpha,
     __global const double * data_y,
     const index_t length_y,
-    const index_t stride_y
+    const index_t stride_y,
+    const double alpha
 ) {
     index_t global_id = get_global_id (0);
 
