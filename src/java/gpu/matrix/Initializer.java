@@ -1,9 +1,10 @@
 package gpu.matrix;
-import gpu.matrix.LoaderUtils;
+// import gpu.matrix.LoaderUtils;
 
 public class Initializer {
     static {
-        LoaderUtils.loadLibrary("gpu-matrix");
+        // LoaderUtils.loadLibrary("gpu-matrix");
+        System.loadLibrary("gpu-matrix");
         init();
     }
 

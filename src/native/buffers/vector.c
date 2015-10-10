@@ -21,7 +21,6 @@ static inline void gpu_matrix_vector_buffer_map_BANG_helper(
     cl_bool is_blocking,
     cl_event * event_ptr 
 ){
-
     size_t global_work_size[1];
     size_t datasize = arr_vector_buffer[0]->datasize;
     cl_int status;
