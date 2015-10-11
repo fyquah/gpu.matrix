@@ -408,3 +408,33 @@ extern void gpu_matrix_vector_buffer_pow_BANG(
     );
 }
 
+extern bool gpu_matrix_vector_value_equality(vector * v_x, vector * v_y) {
+    if (v_x->length != v_x->length) {
+        return false;
+    }
+
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        // include a slight epsilon?
+        if (v_x->data[i * v_x->stride] != v_y->data[i * v_y->stride]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+extern bool gpu_matrix_vector_value_equality_ndarray(vector * v_x, ndarray * arr_y) {
+    if (arr_y->ndims != 1 || v_x->length != arr_y->shape[0]) {
+        return false;
+    }
+
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        // include a slight epsilon?
+        if (v_x->data[i * v_x->stride] != arr_y->data[i * arr_y->strides[i]]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+

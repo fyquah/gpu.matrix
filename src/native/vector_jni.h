@@ -169,6 +169,30 @@ JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_sum
 
 /*
  * Class:     gpu_matrix_Vector
+ * Method:    valueEquality
+ * Signature: ([D)Z
+ */
+JNIEXPORT jboolean JNICALL Java_gpu_matrix_Vector_valueEquality___3D
+  (JNIEnv *, jobject, jdoubleArray);
+
+/*
+ * Class:     gpu_matrix_Vector
+ * Method:    valueEquality
+ * Signature: (Lgpu/matrix/Vector;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_gpu_matrix_Vector_valueEquality__Lgpu_matrix_Vector_2
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     gpu_matrix_Vector
+ * Method:    valueEquality
+ * Signature: (Lgpu/matrix/NDArray;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_gpu_matrix_Vector_valueEquality__Lgpu_matrix_NDArray_2
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     gpu_matrix_Vector
  * Method:    length
  * Signature: ()J
  */

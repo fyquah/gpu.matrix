@@ -225,6 +225,46 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_newInstance__JD
     return package_vector(env, v);
 }
 
+JNIEXPORT jboolean JNICALL Java_gpu_matrix_Vector_valueEquality___3D
+  (JNIEnv * env, jobject this, jdoubleArray arr) {
+    vector * v = retrieve_vector(env, this);
+    index_t arr_len = (*env)->GetArrayLength(env, arr);
+    double * double_array;
+    bool flag = true;
+    jboolean is_copy;
+
+    if (arr_len != v->length) {
+        return false;
+    }
+
+    double_array = (*env)->GetDoubleArrayElements(env, arr, &is_copy);
+    for (index_t i = 0 ; i < v->length; i++) {
+        if (double_array[i] != v->data[i * v->stride]) {
+            flag = false;
+            break;
+        }
+    }
+    (*env)->ReleaseDoubleArrayElements(env, arr, double_array, JNI_ABORT);
+
+    return flag;
+}
+
+JNIEXPORT jboolean JNICALL Java_gpu_matrix_Vector_valueEquality__Lgpu_matrix_Vector_2
+  (JNIEnv * env, jobject this, jobject other) {
+    return gpu_matrix_vector_value_equality(
+        retrieve_vector(env, this),
+        retrieve_vector(env, other)
+    );
+}
+
+JNIEXPORT jboolean JNICALL Java_gpu_matrix_Vector_valueEquality__Lgpu_matrix_NDArray_2
+  (JNIEnv * env, jobject this, jobject other) {
+    return gpu_matrix_vector_value_equality_ndarray(
+        retrieve_vector(env, this),
+        retrieve_ndarray(env, other)
+    );
+}
+
 JNIEXPORT void JNICALL Java_gpu_matrix_Vector_finalize
   (JNIEnv * env, jobject this) {
     // TODO : Free memory

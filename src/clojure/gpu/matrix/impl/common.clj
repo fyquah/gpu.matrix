@@ -70,7 +70,13 @@
         (numerical? [m#] true))
       (extend-protocol mp/PTypeInfo
         ~klass
-        (element-type [m#] Double/TYPE))))
+        (element-type [m#] Double/TYPE))
+      (extend-protocol mp/PMutableMatrixConstruction
+        ~klass 
+        ~(let [param-sym (gensym)
+               m (vary-meta param-sym assoc :tag `~klass)]
+          `(mutable-matrix [~m]
+            (.clone ~m))))))
 
 (defmacro with-coerce-param [bindings & body]
   (assert (= (count bindings) 2))

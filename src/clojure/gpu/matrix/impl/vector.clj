@@ -112,14 +112,55 @@
 
 (extend-protocol mp/PNegation
   Vector
-  (negate [^Vector m] (.mul m -1)))
+  (negate [^Vector m] (.mul m -1.0)))
 
 (extend-protocol mp/PExponent
   Vector
-  (element-pow [^Vector m]
-    (.pow m )))
+  (element-pow [^Vector m a]
+    (.pow m (double a))))
 
 (extend-protocol mp/PSummable
   Vector
-  (element-pow [^Vector m]
+  (element-sum [^Vector m]
     (.sum m)))
+
+(extend-protocol mp/PMatrixDivide
+  Vector 
+  (element-divide [^Vector m a]
+    (with-coerce-param [a a] (.div m a))))
+
+(extend-protocol mp/PMatrixMultiply
+  Vector 
+  (element-multiply [^Vector m a]
+    (with-coerce-param [a a] (.mul m a))))
+
+(extend-protocol mp/PValueEquality
+  Vector
+  (value-equals [^Vector m a]
+    (or (= m a)
+        (condp isa? (class a)
+          gpu.matrix.NDArray
+          (.valueEquality m ^NDArray a)
+
+          gpu.matrix.Vector
+          (.valueEquality m ^Vector a)
+
+          (Class/forName "[D")
+          (.valueEquality m ^"[D" a) 
+
+          clojure.lang.PersistentVector
+          (let [a ^clojure.lang.PersistentVector a]
+            (and (= 1 (mp/dimensionality a))
+                 (= (count a) (.length m))
+                 (.valueEquality m ^"[D" (double-array a))))
+
+          ; else
+          (and (= 1 (mp/dimensionality a))
+               (= (mp/dimension-count a 0) (.length m))
+               (.valueEquality m ^"[D" (mp/to-double-array m)))))))
+
+(extend-protocol mp/PMatrixProducts
+  Vector
+  (inner-product [^Vector m a]
+    (with-coerce-param [a a]
+      )))

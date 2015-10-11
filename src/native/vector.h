@@ -27,19 +27,21 @@ vector * gpu_matrix_vector_copy(vector * x);
 
 // (Partial) BLAS 1 headers. Note: BLAS headers mutate the argument vectors, they will
 // never return an argument!
-void gpu_matrix_vector_axpy(vector * x, double a, vector * y);
-void gpu_matrix_vector_scal(vector * x, double a);
-void gpu_matrix_vector_swap(vector * x, vector * y);
-void gpu_matrix_vector_rot(vector * x, vector * y, double, double);
-double gpu_matrix_vector_dot(vector * x, vector * y);
-double gpu_matrix_vector_nrm2(vector * x);
-double gpu_matrix_vector_asum(vector * x);
-double gpu_matrix_vector_amax(vector*);
-double gpu_matrix_vector_amin(vector*);
-index_t gpu_matrix_vector_imin(vector * x);
-index_t gpu_matrix_vector_imax(vector * x);
-index_t gpu_matrix_vector_iamin(vector * x);
-index_t gpu_matrix_vector_iamax(vector * x);
+extern void gpu_matrix_vector_axpy(vector * x, double a, vector * y);
+extern void gpu_matrix_vector_scal(vector * x, double a);
+extern void gpu_matrix_vector_swap(vector * x, vector * y);
+extern void gpu_matrix_vector_rot(vector * x, vector * y, double, double);
+extern double gpu_matrix_vector_dot(vector * x, vector * y);
+extern double gpu_matrix_vector_nrm2(vector * x);
+extern double gpu_matrix_vector_asum(vector * x);
+extern double gpu_matrix_vector_amax(vector*);
+extern double gpu_matrix_vector_amin(vector*);
+extern index_t gpu_matrix_vector_imin(vector * x);
+extern index_t gpu_matrix_vector_imax(vector * x);
+extern index_t gpu_matrix_vector_iamin(vector * x);
+extern index_t gpu_matrix_vector_iamax(vector * x);
+extern bool gpu_matrix_vector_value_equality(vector * v_x, vector * v_y);
+extern bool gpu_matrix_vector_value_equality_ndarray(vector * v_x, ndarray * arr_y);
 
 // Arimethic functions
 #define VECTOR_ARIMETHIC_HEADER_FACTORY(name) \

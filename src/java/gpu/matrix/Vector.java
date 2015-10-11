@@ -38,7 +38,17 @@ public class Vector {
 
     // element map ops, returns new objects, does not mutate present object
     public native Vector pow(double alpha);
+
+    // reduce ops
     public native double sum();
+
+    // various equality ops
+    public native boolean valueEquality(double [] arr);
+    public native boolean valueEquality(Vector v);
+    public native boolean valueEquality(NDArray arr);
+    public boolean valueEquality(Object arr) {
+        return true;
+    }
 
     // information about Vector
     public native long length();

@@ -306,10 +306,6 @@
     (with-check-ndims 0 m
       (.set m 0 (double v)))))
 
-(extend-protocol mp/PMutableMatrixConstruction
-  NDArray
-  (mutable-matrix [^NDArray m]
-    (.clone m)))
 
 (extend-protocol mp/PMutableFill
   NDArray
