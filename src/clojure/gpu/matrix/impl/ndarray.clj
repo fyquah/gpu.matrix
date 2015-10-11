@@ -5,8 +5,9 @@
   (:require [clojure.core.matrix.protocols :as mp]
             [clojure.core.matrix :as m]
             [clojure.core.matrix.utils :refer [error]]
-            [clojure.string :as str])
-  (:import gpu.matrix.NDArray gpu.matrix.JVMLoader))
+            [clojure.string :as str]
+            [gpu.matrix.common :as common])
+  (:import gpu.matrix.NDArray gpu.matrix.Initializer))
 
 (set! *warn-on-reflection* true)
 
@@ -37,20 +38,7 @@
   (let [vm (mp/construct-matrix [] data)]
     (construct-matrix vm)))
 
-(extend-protocol mp/PImplementation
-  NDArray
-  (implementation-key [m] :gpu-matrix)
-  (meta-info [m] {})
-  (construct-matrix [m data]
-    (construct-matrix data))
-  (new-vector [m length]
-    (NDArray/createFromShape (long-array 1 length)))
-  (new-matrix [m rows columns]
-    (NDArray/createFromShape (long-array 2 [rows columns])))
-  (new-matrix-nd [m shape]
-    (NDArray/createFromShape (long-array shape)))
-  (supports-dimensionality? [m dimensions]
-    true))
+(common/extend-common-protocols gpu.matrix.NDArray)
 
 (extend-protocol mp/PDimensionInfo
   NDArray

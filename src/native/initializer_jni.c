@@ -6,6 +6,6 @@
 JNIEXPORT void JNICALL Java_gpu_matrix_Initializer_init
   (JNIEnv * env, jclass klass) {
     gpu_matrix_init();
-    // gpu_matrix_kernel_set_jvm(env);
+    gpu_matrix_kernel_set_jvm(env);
 }
 

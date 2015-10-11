@@ -29,7 +29,10 @@ extern cl_mem gpu_matrix_vector_buffer_imax(vector_buffer *, cl_command_queue);
 extern void gpu_matrix_vector_buffer_add_BANG(vector_buffer *, vector_buffer*, cl_command_queue);
 extern void gpu_matrix_vector_buffer_add_scalar_BANG(vector_buffer *, double, cl_command_queue);
 extern void gpu_matrix_vector_buffer_sub_BANG(vector_buffer *, vector_buffer*, cl_command_queue);
+extern void gpu_matrix_vector_buffer_sub_scalar_BANG(vector_buffer *, double, cl_command_queue);
 extern void gpu_matrix_vector_buffer_mul_BANG(vector_buffer *, vector_buffer*, cl_command_queue);
+extern void gpu_matrix_vector_buffer_mul_scalar_BANG(vector_buffer *, double, cl_command_queue);
 extern void gpu_matrix_vector_buffer_div_BANG(vector_buffer *, vector_buffer*, cl_command_queue);
+extern void gpu_matrix_vector_buffer_div_scalar_BANG(vector_buffer *, double, cl_command_queue);
 
 #endif

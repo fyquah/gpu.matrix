@@ -16,5 +16,5 @@ KLASS=$1;
 OUTFILE=$2;
 JAVA_SOURCE_FILE=`perl -e '$_=shift; s/\./\//g;print "$_.java";' $KLASS`
 
-javac $JAVA_SOURCE_FILE; 
+javac -cp ../../target/classes:. $JAVA_SOURCE_FILE; 
 javah -o "../native/$2" "$1"

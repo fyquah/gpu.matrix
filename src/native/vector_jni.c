@@ -98,7 +98,7 @@ JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_asum
     return gpu_matrix_vector_asum(v_x);
 }
 
-JNIEXPORT void JNICALL Java_gpu_matrix_Vector_print
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_print
   (JNIEnv * env, jobject this) {
     vector * v = retrieve_vector(env, this);
     printf("Length: %u, Strides: %u\n", v->length, v->stride);
@@ -112,9 +112,32 @@ JNIEXPORT void JNICALL Java_gpu_matrix_Vector_print
     printf("]\n");
     
     fflush(stdout);
+    return this;
 }
 
-JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_newInstance
+#define GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(name) \
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_##name##__D \
+  (JNIEnv * env, jobject this, jdouble alpha) { \
+    vector * v_x = retrieve_vector(env, this); \
+    vector * ret = gpu_matrix_vector_##name##_scalar(v_x, (double) alpha); \
+    return package_vector(env, ret); \
+} \
+\
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_##name##__Lgpu_matrix_Vector_2 \
+  (JNIEnv * env, jobject this, jobject other) { \
+    vector * v_x = retrieve_vector(env, this); \
+    vector * v_y = retrieve_vector(env, other); \
+    vector * ret = gpu_matrix_vector_##name##_2(v_x, v_y); \
+    return package_vector(env, ret); \
+}
+
+GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(add)
+GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(mul)
+GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(sub)
+GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(div)
+
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_newInstance___3D
   (JNIEnv * env, jclass klass, jdoubleArray arr) {
     vector * v;
     jboolean is_copy;
@@ -131,6 +154,33 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_newInstance
 
     if (is_copy) {
         (*env)->ReleaseDoubleArrayElements(env, arr, data, 0);
+    }
+    return package_vector(env, v);
+}
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_newInstance__J
+  (JNIEnv * env, jclass klass, jlong len) {
+    vector * v;
+    v = malloc(sizeof(vector));
+    v->length = (index_t) len;
+    v->stride = 1;
+    v->data = malloc(sizeof(double) * len);
+    for (index_t i = 0 ; i < len ; i++) {
+        v->data[i] = 0.0;
+    }
+    return package_vector(env, v);
+}
+
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_newInstance__JD
+  (JNIEnv * env, jclass klass, jlong len, jdouble initial_value) {
+    vector * v;
+    v = malloc(sizeof(vector));
+    v->length = (index_t) len;
+    v->stride = 1;
+    v->data = malloc(sizeof(double) * len);
+    for (index_t i = 0 ; i < len ; i++) {
+        v->data[i] = (double) initial_value;
     }
     return package_vector(env, v);
 }

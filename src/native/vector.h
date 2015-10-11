@@ -48,5 +48,8 @@ vector * gpu_matrix_vector_##name##_2(vector *, vector *); \
 vector * gpu_matrix_vector_##name##_arbitary(unsigned, vector *[]);
 
 VECTOR_ARIMETHIC_HEADER_FACTORY(add);
+VECTOR_ARIMETHIC_HEADER_FACTORY(mul);
+VECTOR_ARIMETHIC_HEADER_FACTORY(sub);
+VECTOR_ARIMETHIC_HEADER_FACTORY(div);
 
 #endif

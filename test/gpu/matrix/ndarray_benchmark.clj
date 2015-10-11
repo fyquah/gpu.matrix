@@ -18,4 +18,3 @@
            assoc :vectorz
            (c/bench (m/add m m)))))
 
-(benchmark)

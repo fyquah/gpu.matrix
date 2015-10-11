@@ -1,10 +1,11 @@
 package gpu.matrix;
 import java.nio.ByteBuffer;
 import gpu.matrix.Initializer;
+import gpu.matrix.LoaderUtils;
 
 public class Vector {
     static {
-        System.loadLibrary("gpu-matrix");
+        LoaderUtils.loadLibrary("gpu-matrix");
         Initializer.init();
     }
     // BLAS procedures, note that these are mutable (except for clone)
@@ -15,31 +16,26 @@ public class Vector {
     public native double nrm2();
     public native double asum();
 
-    // Arimethic ops
+    // Arimethic ops (returns new objects!), i.e: These methods are immutable
+    public native Vector add(Vector a);
+    public native Vector add(double a);
+    public native Vector sub(Vector a);
+    public native Vector sub(double a);
+    public native Vector mul(Vector a);
+    public native Vector mul(double a);
+    public native Vector div(Vector a);
+    public native Vector div(double a);
 
     // Debugging stuff
-    public native void print();
+    public native Vector print();
 
     // constructors 
     public static native Vector newInstance(double[] data);
+    public static native Vector newInstance(long length);
+    public static native Vector newInstance(long length, double data);
 
     // fields
     private ByteBuffer bb;
     @Override
     protected native void finalize();
-
-    // main
-    public static void main(String[] args) {
-        Vector v_x = newInstance(new double[]{ 1,2,3,4 });
-        Vector v_y = newInstance(new double[]{ 5,6,7,8 });
-        v_x.print();
-        System.out.println("v_x.scal(10)");
-        v_x.scal(10.0);
-        v_x.print();
-        v_x.axpy(11.2, v_y);
-        v_x.print();
-        System.out.println("v_x dot v_y = " +  String.valueOf(v_x.dot(v_y)));
-        System.out.println("Magnitude = " + String.valueOf(v_x.nrm2()));
-        System.out.println("asum = " + String.valueOf(v_x.asum()));
-    }
 }
