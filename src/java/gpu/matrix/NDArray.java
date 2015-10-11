@@ -3,6 +3,7 @@ import java.nio.ByteBuffer;
 import gpu.matrix.ArrayHelper;
 import gpu.matrix.Initializer;
 import gpu.matrix.LoaderUtils;
+import gpu.matrix.Vector;
 
 public class NDArray {
     // Static methods
@@ -67,12 +68,19 @@ public class NDArray {
 
     // arimethic ops
     public native NDArray add(NDArray y);
+    public native NDArray add(Vector y);
     public native NDArray add(double y);
+
     public native NDArray sub(NDArray y);
+    public native NDArray sub(Vector y);
     public native NDArray sub(double y);
+
     public native NDArray mul(NDArray y);
+    public native NDArray mul(Vector y);
     public native NDArray mul(double y);
+
     public native NDArray div(NDArray y);
+    public native NDArray div(Vector y);
     public native NDArray div(double y);
 
     // matrix specific computations

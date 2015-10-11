@@ -58,6 +58,14 @@ JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_asum
 /*
  * Class:     gpu_matrix_Vector
  * Method:    add
+ * Signature: (Lgpu/matrix/NDArray;)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_add__Lgpu_matrix_NDArray_2
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     gpu_matrix_Vector
+ * Method:    add
  * Signature: (Lgpu/matrix/Vector;)Lgpu/matrix/Vector;
  */
 JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_add__Lgpu_matrix_Vector_2
@@ -70,6 +78,14 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_add__Lgpu_matrix_Vector_2
  */
 JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_add__D
   (JNIEnv *, jobject, jdouble);
+
+/*
+ * Class:     gpu_matrix_Vector
+ * Method:    sub
+ * Signature: (Lgpu/matrix/NDArray;)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_sub__Lgpu_matrix_NDArray_2
+  (JNIEnv *, jobject, jobject);
 
 /*
  * Class:     gpu_matrix_Vector
@@ -90,6 +106,14 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_sub__D
 /*
  * Class:     gpu_matrix_Vector
  * Method:    mul
+ * Signature: (Lgpu/matrix/NDArray;)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_mul__Lgpu_matrix_NDArray_2
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     gpu_matrix_Vector
+ * Method:    mul
  * Signature: (Lgpu/matrix/Vector;)Lgpu/matrix/Vector;
  */
 JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_mul__Lgpu_matrix_Vector_2
@@ -106,6 +130,14 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_mul__D
 /*
  * Class:     gpu_matrix_Vector
  * Method:    div
+ * Signature: (Lgpu/matrix/NDArray;)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_div__Lgpu_matrix_NDArray_2
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     gpu_matrix_Vector
+ * Method:    div
  * Signature: (Lgpu/matrix/Vector;)Lgpu/matrix/Vector;
  */
 JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_div__Lgpu_matrix_Vector_2
@@ -118,6 +150,30 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_div__Lgpu_matrix_Vector_2
  */
 JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_div__D
   (JNIEnv *, jobject, jdouble);
+
+/*
+ * Class:     gpu_matrix_Vector
+ * Method:    length
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_gpu_matrix_Vector_length
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     gpu_matrix_Vector
+ * Method:    get
+ * Signature: (J)D
+ */
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_get
+  (JNIEnv *, jobject, jlong);
+
+/*
+ * Class:     gpu_matrix_Vector
+ * Method:    set
+ * Signature: (JD)V
+ */
+JNIEXPORT void JNICALL Java_gpu_matrix_Vector_set
+  (JNIEnv *, jobject, jlong, jdouble);
 
 /*
  * Class:     gpu_matrix_Vector

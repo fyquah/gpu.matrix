@@ -6,37 +6,10 @@
             [clojure.core.matrix :as m]
             [clojure.core.matrix.utils :refer [error]]
             [clojure.string :as str]
-            [gpu.matrix.common :as common])
+            [gpu.matrix.impl.common :as common :refer [with-coerce-param]])
   (:import gpu.matrix.NDArray gpu.matrix.Initializer))
 
 (set! *warn-on-reflection* true)
-
-(defmulti construct-matrix class)
-(defmethod construct-matrix NDArray
-  ^NDArray [^NDArray data]
-  (.clone data))
-(defmethod construct-matrix nil
-  [data]
-  nil)
-(defmethod construct-matrix Number
-  [data]
-  (double data))
-(defmethod construct-matrix clojure.lang.PersistentVector
-  [data]
-  (let [data (m/to-nested-vectors data)
-        ndims (m/dimensionality data)
-        shape (m/shape data)]
-      (NDArray/newInstance
-        (double-array (flatten data))
-        ndims
-        (long-array shape))))
-
-; assume it is an arbitary implementation
-; construct a persistent vector representation of the data
-(defmethod construct-matrix :default
-  [data]
-  (let [vm (mp/construct-matrix [] data)]
-    (construct-matrix vm)))
 
 (common/extend-common-protocols gpu.matrix.NDArray)
 
@@ -54,15 +27,6 @@
         (error (str "Invalid dimension! Expecting dimension to be between inclusive 0 and "
                     (dec ndims) ", but got " dimension-number "instead!"))
         (aget shape dimension-number)))))
-
-(extend-protocol mp/PCoercion
-  NDArray
-  (coerce-param [m param]
-    (cond (instance? NDArray param)
-          param
-          (number? param) (double param)
-          :else
-          (mp/construct-matrix m param))))
 
 (defn- all?
   "returns true if every element in coll (or the mapped version, if 
@@ -277,22 +241,7 @@
       (count indexes) [m m] indexes
       (.set m (long-array indexes) v))))
 
-(defmacro with-coerce-param [bindings & body]
-  (assert (= (count bindings) 2))
-  (assert (symbol? (first bindings)))
-  (let [param-sym (first bindings)
-        param-val (second bindings)]
-    `(cond (number? ~param-val)
-           (let [~param-sym (double ~param-val)]
-             ~@body)
-           (instance? NDArray ~param-val)
-           (let [~(vary-meta param-sym assoc :tag `NDArray) ~param-val]
-             ~@body)
-           ; unkown type, we need to coerce it to NDArray
-           :else
-           (let [~(vary-meta param-sym assoc :tag `NDArray)
-                 (mp/coerce-param (gpu.matrix.NDArray/sample) ~param-val)]
-             ~@body))))
+
 
 (extend-protocol mp/PMatrixAdd
   NDArray

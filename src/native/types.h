@@ -22,6 +22,13 @@ typedef struct {
     size_t datasize;
 } vector_buffer;
 
+typedef struct {
+    double * data;
+    index_t * shape;
+    index_t * strides;
+    index_t ndims;
+} ndarray;
+
 // is this useful?
 typedef struct {
     cl_mem * data;

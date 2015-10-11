@@ -1,13 +1,5 @@
 #include "types.h"
 
-typedef struct {
-    double * data;
-    index_t * shape;
-    index_t * strides;
-    index_t ndims;
-} ndarray;
-
-
 unsigned ndarray_datasize(const ndarray *);
 
 // helper functions
@@ -37,6 +29,7 @@ void ndarray_set_nd(ndarray*, const index_t * indexes, double v);
 
 // add
 ndarray * ndarray_add(const ndarray *, const ndarray *);
+ndarray * ndarray_add_vector(const ndarray *, const vector *);
 ndarray * ndarray_add_scalar(const ndarray *, const double);
 void ndarray_add_bang(ndarray *, const ndarray *);
 void ndarray_add_scalar_bang(ndarray *, const double);
@@ -44,18 +37,21 @@ void ndarray_add_scalar_bang(ndarray *, const double);
 // sub
 ndarray * ndarray_sub(const ndarray *, const ndarray *);
 ndarray * ndarray_sub_scalar(const ndarray *, const double);
+ndarray * ndarray_sub_vector(const ndarray *, const vector *);
 void ndarray_sub_bang(ndarray *, const ndarray *);
 void ndarray_sub_scalar_bang(ndarray *, const double);
 
 // mul
 ndarray * ndarray_mul(const ndarray *, const ndarray *);
 ndarray * ndarray_mul_scalar(const ndarray *, const double);
+ndarray * ndarray_mul_vector(const ndarray *, const vector *);
 void ndarray_mul_bang(ndarray *, const ndarray *);
 void ndarray_mul_scalar_bang(ndarray *, const double);
 
 // div
 ndarray * ndarray_div(const ndarray *, const ndarray *);
 ndarray * ndarray_div_scalar(const ndarray *, const double);
+ndarray * ndarray_div_vector(const ndarray *, const vector *);
 void ndarray_div_bang(ndarray *, const ndarray *);
 void ndarray_div_scalar_bang(ndarray *, const double);
 

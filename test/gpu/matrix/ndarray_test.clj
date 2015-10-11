@@ -5,9 +5,6 @@
             [clojure.test :refer :all])
   (:import gpu.matrix.NDArray))
 
-(deftest compliance-tests-1D
-  (compliance/instance-test (mp/construct-matrix (NDArray/sample) [1 2 3 4 5])))
-
 (deftest compliance-tests-2D
   (compliance/instance-test
     (mp/construct-matrix (NDArray/sample)

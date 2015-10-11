@@ -1,32 +1,10 @@
+#include "jni_helpers.h"
 #include "vector_jni.h"
+#include "jni_helpers.h"
+#include "ndarray.h"
 #include "vector.h"
 #include "types.h"
 /* Header for class gpu_matrix_Vector */
-
-vector * retrieve_vector(JNIEnv * env, jobject this) {
-    jclass cls = (*env)->GetObjectClass(env, this);
-    jfieldID fid = (*env)->GetFieldID(env, cls, "bb", "Ljava/nio/ByteBuffer;");
-    jobject bb = (*env)->GetObjectField(env, this, fid);
-    vector * v = (vector*) (*env)->GetDirectBufferAddress(env, bb);
-    return v;
-}
-
-jobject package_vector(JNIEnv * env, const vector * data) {
-
-    jclass klass = (*env)->FindClass(env, "gpu/matrix/Vector");
-    jmethodID constructor = (*env)->GetMethodID(env, klass, "<init>", "()V");
-
-    // instantiate the object
-    jobject obj = (*env)->NewObject(env, klass, constructor);   
-    jfieldID fid = (*env)->GetFieldID(env, klass, "bb", "Ljava/nio/ByteBuffer;");
-
-    // set the ndarray pointer to the bb field of the object
-    jobject bb = (*env)->NewDirectByteBuffer(env, (void*) data, sizeof(vector));
-    (*env)->SetObjectField(env, obj, fid, bb);
-    
-    return obj;
-}
-
 
 JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_axpy
   (JNIEnv * env, jobject this, jdouble alpha, jobject other) {
@@ -129,6 +107,13 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_##name##__Lgpu_matrix_Vector_2 
     vector * v_y = retrieve_vector(env, other); \
     vector * ret = gpu_matrix_vector_##name##_2(v_x, v_y); \
     return package_vector(env, ret); \
+} \
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_##name##__Lgpu_matrix_NDArray_2 \
+  (JNIEnv * env, jobject this, jobject other) { \
+    vector * v_x = retrieve_vector(env, this); \
+    ndarray * arr_y = retrieve_ndarray(env, other); \
+    ndarray * ret = ndarray_##name##_vector(arr_y, v_x); \
+    return package_ndarray(env, ret); \
 }
 
 GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(add)
@@ -136,6 +121,26 @@ GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(mul)
 GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(sub)
 GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(div)
 
+JNIEXPORT jlong JNICALL Java_gpu_matrix_Vector_length
+  (JNIEnv * env, jobject this) {
+    vector * v = retrieve_vector(env, this);
+    jlong ret = (jlong) v->length;
+    return ret;
+}
+
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_get
+  (JNIEnv * env, jobject this, jlong idx) {
+    vector * v = retrieve_vector(env, this);
+    return ((jdouble) (v->data[v->stride * ((index_t) idx)]));
+}
+
+JNIEXPORT void JNICALL Java_gpu_matrix_Vector_set
+  (JNIEnv * env, jobject this, jlong idx, jdouble val) {
+    vector * v = retrieve_vector(env, this);
+    double coerced_val = (double) val;
+    index_t coerced_idx = (index_t) idx;
+    v->data[v->stride * coerced_idx] = coerced_val;
+}
 
 JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_newInstance___3D
   (JNIEnv * env, jclass klass, jdoubleArray arr) {

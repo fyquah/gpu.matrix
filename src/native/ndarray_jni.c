@@ -1,35 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "jni_helpers.h"
 #include "ndarray_jni.h"
 #include "types.h"
 #include "ndarray.h"
 #include "utils.h"
-   
-// Utils
-ndarray * retrieve_ndarray(JNIEnv * env, jobject this) {
-
-    jclass cls = (*env)->GetObjectClass(env, this);
-    jfieldID fid = (*env)->GetFieldID(env, cls, "bb", "Ljava/nio/ByteBuffer;");
-    jobject bb = (*env)->GetObjectField(env, this, fid);
-    ndarray * data = (ndarray*) (*env)->GetDirectBufferAddress(env, bb);
-    return data;
-}
-
-jobject package_ndarray(JNIEnv * env, const ndarray * data) {
-    jclass klass = (*env)->FindClass(env, "gpu/matrix/NDArray");
-    jmethodID constructor = (*env)->GetMethodID(env, klass, "<init>", "()V");
-
-    // instantiate the object
-    jobject obj = (*env)->NewObject(env, klass, constructor);   
-    jfieldID fid = (*env)->GetFieldID(env, klass, "bb", "Ljava/nio/ByteBuffer;");
-
-    // set the ndarray pointer to the bb field of the object
-    jobject bb = (*env)->NewDirectByteBuffer(env, (void*) data, sizeof(ndarray));
-    (*env)->SetObjectField(env, obj, fid, bb);
-    
-    return obj;
-}
 
 // coerce jlong* to index_t*
 // creates a new instance in memory
@@ -144,6 +120,13 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_##op_name##__D \
     ndarray * arr = retrieve_ndarray(env, this);\
     return package_ndarray(env, ndarray_##op_name##_scalar(arr, (double) y));\
 }\
+\
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_##op_name##__Lgpu_matrix_Vector_2 \
+  (JNIEnv * env, jobject this, jobject other) {\
+    ndarray * arr_x = retrieve_ndarray(env, this); \
+    vector * v_y = retrieve_vector(env, other);\
+    return package_ndarray(env, ndarray_##op_name##_vector(arr_x, v_y));\
+} \
 
 NDARRAY_JNI_ARIMETHIC_FACTORY(add);
 NDARRAY_JNI_ARIMETHIC_FACTORY(sub);

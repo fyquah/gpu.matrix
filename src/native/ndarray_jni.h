@@ -49,14 +49,6 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_newInstance
 
 /*
  * Class:     gpu_matrix_NDArray
- * Method:    init
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_gpu_matrix_NDArray_init
-  (JNIEnv *, jclass);
-
-/*
- * Class:     gpu_matrix_NDArray
  * Method:    dimensionality
  * Signature: ()J
  */
@@ -202,6 +194,14 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_add__Lgpu_matrix_NDArray_2
 /*
  * Class:     gpu_matrix_NDArray
  * Method:    add
+ * Signature: (Lgpu/matrix/Vector;)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_add__Lgpu_matrix_Vector_2
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    add
  * Signature: (D)Lgpu/matrix/NDArray;
  */
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_add__D
@@ -213,6 +213,14 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_add__D
  * Signature: (Lgpu/matrix/NDArray;)Lgpu/matrix/NDArray;
  */
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_sub__Lgpu_matrix_NDArray_2
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    sub
+ * Signature: (Lgpu/matrix/Vector;)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_sub__Lgpu_matrix_Vector_2
   (JNIEnv *, jobject, jobject);
 
 /*
@@ -234,6 +242,14 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_mul__Lgpu_matrix_NDArray_2
 /*
  * Class:     gpu_matrix_NDArray
  * Method:    mul
+ * Signature: (Lgpu/matrix/Vector;)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_mul__Lgpu_matrix_Vector_2
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    mul
  * Signature: (D)Lgpu/matrix/NDArray;
  */
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_mul__D
@@ -245,6 +261,14 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_mul__D
  * Signature: (Lgpu/matrix/NDArray;)Lgpu/matrix/NDArray;
  */
 JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_div__Lgpu_matrix_NDArray_2
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     gpu_matrix_NDArray
+ * Method:    div
+ * Signature: (Lgpu/matrix/Vector;)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_div__Lgpu_matrix_Vector_2
   (JNIEnv *, jobject, jobject);
 
 /*

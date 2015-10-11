@@ -396,7 +396,7 @@ ndarray * map_helper(
         const ndarray * arr_x,
         const ndarray * arr_y
     ) {
-    
+
     if (arr_x->ndims == arr_y->ndims) {
         double * data = malloc(sizeof(double) * ndarray_elements_count(arr_x));
         ndarray * output;
@@ -808,6 +808,18 @@ ndarray * ndarray_add_scalar(const ndarray * arr_x, const double y) {
     return map_scalar_factory(arr_x, y, KERNEL_ADD_SCALAR);
 }
 
+ndarray * ndarray_add_vector(const ndarray * arr_x, const vector * v_y) {
+    // coerce into a ndarry object then add as usual
+    ndarray arr_y;
+    index_t shape[1] = { v_y->length };
+    index_t strides[1] = { v_y->stride };
+    arr_y.data = v_y->data;
+    arr_y.ndims = 1;
+    arr_y.shape = shape;
+    arr_y.strides = strides;
+    return ndarray_add(arr_x, &arr_y);
+}
+
 void ndarray_add_bang(ndarray * arr_x, const ndarray * arr_y) {
     map_bang_factory(arr_x, arr_y, KERNEL_ADD);
 }
@@ -822,6 +834,18 @@ ndarray * ndarray_sub(const ndarray * arr_x, const ndarray * arr_y) {
 
 ndarray * ndarray_sub_scalar(const ndarray * arr_x, const double y) {
     return map_scalar_factory(arr_x, y, KERNEL_SUB_SCALAR);
+}
+
+ndarray * ndarray_sub_vector(const ndarray * arr_x, const vector * v_y) {
+    // coerce into a ndarry object then add as usual
+    ndarray arr_y;
+    index_t shape[1] = { v_y->length };
+    index_t strides[1] = { v_y->stride };
+    arr_y.data = v_y->data;
+    arr_y.ndims = 1;
+    arr_y.shape = shape;
+    arr_y.strides = strides;
+    return ndarray_sub(arr_x, &arr_y);
 }
 
 void ndarray_sub_bang(ndarray * arr_x, const ndarray * arr_y) {
@@ -848,12 +872,36 @@ void ndarray_mul_scalar_bang(ndarray * arr_x, const double y) {
     map_scalar_bang_factory(arr_x, y, KERNEL_MUL_SCALAR);
 }
  
+ndarray * ndarray_mul_vector(const ndarray * arr_x, const vector * v_y) {
+    // coerce into a ndarry object then add as usual
+    ndarray arr_y;
+    index_t shape[1] = { v_y->length };
+    index_t strides[1] = { v_y->stride };
+    arr_y.data = v_y->data;
+    arr_y.ndims = 1;
+    arr_y.shape = shape;
+    arr_y.strides = strides;
+    return ndarray_mul(arr_x, &arr_y);
+}
+
 ndarray * ndarray_div(const ndarray * arr_x, const ndarray * arr_y) {
     return map_factory(arr_x, arr_y, KERNEL_DIV);
 }
 
 ndarray * ndarray_div_scalar(const ndarray * arr_x, const double y) {
     return map_scalar_factory(arr_x, y, KERNEL_DIV_SCALAR);
+}
+
+ndarray * ndarray_div_vector(const ndarray * arr_x, const vector * v_y) {
+    // coerce into a ndarry object then add as usual
+    ndarray arr_y;
+    index_t shape[1] = { v_y->length };
+    index_t strides[1] = { v_y->stride };
+    arr_y.data = v_y->data;
+    arr_y.ndims = 1;
+    arr_y.shape = shape;
+    arr_y.strides = strides;
+    return ndarray_div(arr_x, &arr_y);
 }
 
 void ndarray_div_bang(ndarray * arr_x, const ndarray * arr_y) {

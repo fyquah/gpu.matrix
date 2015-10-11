@@ -25,7 +25,7 @@ OBJECT_FILES=ndarray.o vector.o \
 	     utils/array.o utils/cl_helper.o utils/files.o utils/kernels.o utils/profiling.o \
 	     buffers/vector.o \
 	     tests/test_vector.o
-JNI_OBJECT_FILES=ndarray_jni.o initializer_jni.o vector_jni.o
+JNI_OBJECT_FILES=ndarray_jni.o initializer_jni.o vector_jni.o jni_helpers.o
 INSTALL_LIB=${INSTALL_DIR}${TARGET_LIB}
 
 # Rules:
