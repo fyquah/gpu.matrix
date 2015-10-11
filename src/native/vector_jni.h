@@ -36,7 +36,15 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_clone
  * Method:    dot
  * Signature: (Lgpu/matrix/Vector;)D
  */
-JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_dot
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_dot__Lgpu_matrix_Vector_2
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     gpu_matrix_Vector
+ * Method:    dot
+ * Signature: (Lgpu/matrix/NDArray;)D
+ */
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_dot__Lgpu_matrix_NDArray_2
   (JNIEnv *, jobject, jobject);
 
 /*

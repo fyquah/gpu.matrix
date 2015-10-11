@@ -14,6 +14,7 @@ public class Vector {
     public native Vector scal(double a);
     public native Vector clone();
     public native double dot(Vector y);
+    public native double dot(NDArray y);
     public native double nrm2();
     public native double asum();
 

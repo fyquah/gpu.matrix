@@ -163,4 +163,5 @@
   Vector
   (inner-product [^Vector m a]
     (with-coerce-param [a a]
-      )))
+      (.dot m a))))
+

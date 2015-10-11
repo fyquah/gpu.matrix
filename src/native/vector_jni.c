@@ -46,13 +46,30 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_clone
  * Method:    dot
  * Signature: (Lgpu/matrix/Vector;)D
  */
-JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_dot
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_dot__Lgpu_matrix_Vector_2
   (JNIEnv * env, jobject this, jobject other) {
     vector * v_x = retrieve_vector(env, this);
     vector * v_y = retrieve_vector(env, other);
     return gpu_matrix_vector_dot(v_x, v_y);
 }
 
+
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_dot__Lgpu_matrix_NDArray_2
+  (JNIEnv * env, jobject this, jobject other) {
+    vector * v_x = retrieve_vector(env, this);
+    ndarray * arr_y = retrieve_ndarray(env, other);
+    // coerce arr_y into a vector object
+    if (arr_y->ndims == 1) {
+        vector v_y[1]; // single-element array so it acts like a pointer
+        v_y->data = arr_y->data;
+        v_y->stride = arr_y->strides[0];
+        v_y->length = arr_y->shape[0];
+        return gpu_matrix_vector_dot(v_x, v_y);
+    } else {
+        // TODO: unimplemented!
+        return -1;
+    }
+}
 /*
  * Class:     gpu_matrix_Vector
  * Method:    nrm2
