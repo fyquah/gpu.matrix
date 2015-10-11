@@ -153,6 +153,14 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_assign__Lgpu_matrix_NDArray_2
 
 /*
  * Class:     gpu_matrix_NDArray
+ * Method:    assign
+ * Signature: (Lgpu/matrix/Vector;)Lgpu/matrix/NDArray;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_assign__Lgpu_matrix_Vector_2
+  (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     gpu_matrix_NDArray
  * Method:    equals
  * Signature: (Lgpu/matrix/NDArray;)Z
  */

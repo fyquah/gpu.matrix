@@ -241,8 +241,6 @@
       (count indexes) [m m] indexes
       (.set m (long-array indexes) v))))
 
-
-
 (extend-protocol mp/PMatrixAdd
   NDArray
   (matrix-add [^NDArray m a]
@@ -291,12 +289,6 @@
   (to-double-array [^NDArray m] (.flatten m))
   (as-double-array [^NDArray m] (.flatten m)))
 
-(extend-protocol mp/PZeroDimensionConstruction
-  NDArray
-  (new-scalar-array
-    ([^NDArray m] (NDArray/newScalar 0))
-    ([^NDArray m v] (NDArray/newScalar v))))
-
 (extend-protocol mp/PZeroDimensionAccess
   NDArray
   (get-0d [^NDArray m]
@@ -306,7 +298,6 @@
     (with-check-ndims 0 m
       (.set m 0 (double v)))))
 
-
 (extend-protocol mp/PMutableFill
   NDArray
   (fill! [^NDArray m v]
@@ -315,6 +306,24 @@
 (extend-protocol mp/PImmutableAssignment
   NDArray
   (assign [^NDArray m src]
-    (with-coerce-param [src src]
-      (.assign (.clone m) src))))
+    (cond (= 0 (mp/dimensionality src))
+          (.assign (.clone m) (double (mp/get-0d src)))  
+
+          (= (mp/dimensionality src) (.dimensionality m))
+          (if (mp/value-equals (mp/get-shape src) (.shape m))
+            (with-coerce-param [src src]
+              (.assign (.clone m) src))
+            (error "dimension mismatch"))
+
+          (< (mp/dimensionality src) (.dimensionality m))
+          (if (mp/value-equals (drop (- (.dimensionality m) (mp/dimensionality src))
+                                     (.shape m))
+                               (mp/get-shape src))
+            (with-coerce-param [src src]
+              (.assign (.clone m) src))
+            (error "dimension mismatch"))
+
+          (> (mp/dimensionality src) (.dimensionality m))
+          (error "Cannot assign a matrix of higher dimension to another matrix "
+                 "of lower dimension"))))
 

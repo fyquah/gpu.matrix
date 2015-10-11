@@ -220,14 +220,47 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_assign__Lgpu_matrix_NDArray_2
     free(arr->shape);
     free(arr->strides);
 
-    // free the src 
-    free(src);
-
     arr->data = src->data;
     arr->shape = src->shape;
     arr->strides = src->strides;
 
+    // free the src 
+    free(src);
      
+    return this;
+}
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_NDArray_assign__Lgpu_matrix_Vector_2
+  (JNIEnv * env, jobject this, jobject other) {
+    ndarray arr_src[1];
+    ndarray * arr = retrieve_ndarray(env, this);
+    ndarray * arr_broadcasted;
+    vector * v_src = retrieve_vector(env, other);
+
+    index_t shape[1] = { v_src->length };
+    index_t strides[1] = { v_src->stride };
+    arr_src->ndims = 1;
+    arr_src->shape = shape;
+    arr_src->strides = strides;
+    arr_src->data = v_src->data;
+
+    // coerce src into a ndarray object
+    // broadcast and return it
+    arr_broadcasted = ndarray_broadcast(
+        arr_src,
+        arr->ndims,
+        arr->shape
+    );
+    free(arr->data);
+    free(arr->shape);
+    free(arr->strides);
+
+    arr->data = arr_broadcasted->data;
+    arr->shape = arr_broadcasted->shape;
+    arr->strides = arr_broadcasted->strides;
+
+    free(arr_broadcasted);
+
     return this;
 }
 

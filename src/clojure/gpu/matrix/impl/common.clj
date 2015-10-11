@@ -76,25 +76,45 @@
         ~(let [param-sym (gensym)
                m (vary-meta param-sym assoc :tag `~klass)]
           `(mutable-matrix [~m]
-            (.clone ~m))))))
+            (.clone ~m))))
+      (extend-protocol mp/PZeroDimensionConstruction
+        ~klass
+        (new-scalar-array
+          ([m#] (double 0))
+          ([m# v#] (double v#))))
+      (extend-protocol mp/PNative
+        ~klass
+        (native [m#] m#)
+        (native? [m#] true))))
 
 (defmacro with-coerce-param [bindings & body]
   (assert (= (count bindings) 2))
   (assert (symbol? (first bindings)))
   (let [param-sym (first bindings)
-        param-val (second bindings)]
+        param-val (second bindings)
+        coerce-param-block `(mp/coerce-param (gpu.matrix.NDArray/sample) ~param-val)]
     `(cond (number? ~param-val)
            (let [~param-sym (double ~param-val)]
              ~@body)
+
            (instance? NDArray ~param-val)
            (let [~(vary-meta param-sym assoc :tag `NDArray) ~param-val]
              ~@body)
+
            (instance? Vector ~param-val)
            (let [~(vary-meta param-sym assoc :tag `Vector) ~param-val]
              ~@body)
-           ; unkown type, we need to coerce it to NDArray
+
+           ; unkown type, we need to coerce it to NDArray or Vector
            :else
-           (let [~(vary-meta param-sym assoc :tag `NDArray)
-                 (mp/coerce-param (gpu.matrix.NDArray/sample) ~param-val)]
-             ~@body))))
+           (let [m# ~param-val]
+             (condp = (mp/dimensionality m#)
+               1
+               (let [~(vary-meta param-sym assoc :tag `Vector)
+                     ~coerce-param-block]
+                 ~@body)
+
+               (let [~(vary-meta param-sym assoc :tag `NDArray)
+                     ~coerce-param-block]
+                 ~@body))))))
 

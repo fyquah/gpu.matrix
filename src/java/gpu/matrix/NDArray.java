@@ -57,6 +57,7 @@ public class NDArray {
     public native NDArray fill(double v);
     public native NDArray assign(double v);
     public native NDArray assign(NDArray src);
+    public native NDArray assign(Vector src);
 
     // value equality
     public native boolean equals(NDArray y);

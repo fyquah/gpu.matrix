@@ -79,20 +79,21 @@
 
 (extend-protocol mp/PIndexedSetting
   Vector
-  (set-1d! [m idx ^double v]
+  (set-1d [m idx ^double v]
     (let [^Vector m (.clone m)]
       (with-check-index m idx
         (.set m idx v))))
-  (set-2d! [m row col ^double v]
+  (set-2d [m row col ^double v]
     (dimension-error 2))
-  (set-nd! [^Vector m indexes ^double v]
+  (set-nd [^Vector m indexes ^double v]
     (if (= 1 (count indexes))
       (let [^Vector m (.clone m)
             ^long idx (first indexes)]
         (with-check-index m idx
           (.set m idx v)))
       (error "get-nd for gpu.matrix.Vector expects only 1 element in indices array / vector / list."
-             "Got " (count indexes) " instead."))))
+             "Got " (count indexes) " instead.")))
+  (is-mutable? [m] true))
 
 (extend-protocol mp/PMatrixCloning
   Vector
