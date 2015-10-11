@@ -154,10 +154,10 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_div__D
 /*
  * Class:     gpu_matrix_Vector
  * Method:    pow
- * Signature: ()Lgpu/matrix/Vector;
+ * Signature: (D)Lgpu/matrix/Vector;
  */
 JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_pow
-  (JNIEnv *, jobject);
+  (JNIEnv *, jobject, jdouble);
 
 /*
  * Class:     gpu_matrix_Vector

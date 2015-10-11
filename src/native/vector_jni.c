@@ -142,15 +142,18 @@ GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(div)
 
 
 JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_pow
-  (JNIEnv * env, jobject this) {
+  (JNIEnv * env, jobject this, jdouble exponent) {
     vector * v = retrieve_vector(env, this);
-    
+    return package_vector(
+        env,
+        gpu_matrix_vector_pow(v, (double) exponent)
+    );
 }
 
 JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_sum
   (JNIEnv * env, jobject this) {
     vector * v = retrieve_vector(env, this);
-
+    return ((double) gpu_matrix_vector_sum(v));
 }
 
 JNIEXPORT jlong JNICALL Java_gpu_matrix_Vector_length
