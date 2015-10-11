@@ -1705,3 +1705,119 @@ vector * gpu_matrix_vector_div_arbitary(unsigned count, vector * arr_v[]) {
     return output;
 }
 
+double gpu_matrix_vector_sum(vector * v_x) {
+    size_t datasize = gpu_matrix_vector_datasize(v_x);
+    cl_int status;
+    double output;
+    cl_mem buffer_data;
+    cl_command_queue cmd_queue;
+    cl_kernel kernel;
+    index_t remaining_length = v_x->length;
+    cl_event write_buffer_events[1],
+             enqueue_events[1],
+             read_buffer_events[1];
+    vector_buffer buffer_v_x;
+    
+    cmd_queue = clCreateCommandQueue(
+        context_get(),
+        device_get(),
+        CL_QUEUE_PROFILING_ENABLE,
+        &status
+    );
+    buffer_data = buffers_create(
+        CL_MEM_READ_WRITE,
+        datasize,
+        NULL,
+        &status
+    );
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_data,
+        CL_TRUE, 0, datasize,
+        v_x->data, 0, NULL, write_buffer_events
+    );
+
+    // Print write buffer profilling information
+    buffer_v_x = gpu_matrix_vector_to_vector_buffer(v_x, buffer_data);
+    gpu_matrix_vector_buffer_sum_BANG(&buffer_v_x, cmd_queue);
+
+    clEnqueueReadBuffer(
+        cmd_queue,
+        buffer_data,
+        CL_TRUE,
+        0,
+        sizeof(double),
+        &output,
+        0,
+        NULL,
+        read_buffer_events
+    );
+
+    clReleaseMemObject(buffer_data);
+    clReleaseEvent(read_buffer_events[0]);
+    clReleaseEvent(write_buffer_events[0]);
+
+    return output;
+}
+
+
+vector * gpu_matrix_vector_pow(vector * v_x, double alpha) {
+    size_t datasize;
+    cl_int status;
+    vector * output;
+    cl_mem buffer_data_x;
+    vector_buffer buffer_v_x;
+    cl_command_queue cmd_queue;
+    cl_kernel kernel;
+    cl_event write_buffer_events[1],
+             read_buffer_events[1];
+
+    output = malloc(sizeof(vector));
+    output->length = v_x->length;
+    output->stride = 1;
+    output->data = malloc(sizeof(double) * v_x->length);
+
+    datasize = gpu_matrix_vector_datasize(v_x);
+    cmd_queue = clCreateCommandQueue(
+        context_get(),
+        device_get(),
+        CL_QUEUE_PROFILING_ENABLE,
+        &status
+    );
+    buffer_data_x = buffers_create(
+        CL_MEM_READ_WRITE,
+        datasize,
+        NULL,
+        &status
+    );
+    buffer_v_x = gpu_matrix_vector_to_vector_buffer(
+        v_x, buffer_data_x
+    );
+
+    status = clEnqueueWriteBuffer(
+        cmd_queue, buffer_data_x,
+        CL_TRUE, 0, datasize,
+        v_x->data, 0, NULL, write_buffer_events
+    );
+    clWaitForEvents(1, write_buffer_events);
+
+    gpu_matrix_vector_buffer_pow_BANG(&buffer_v_x, alpha, cmd_queue);
+
+    // Print write buffer profilling information
+    status = clEnqueueReadBuffer(
+        cmd_queue,
+        buffer_data_x,
+        CL_TRUE,
+        0,
+        datasize,
+        output->data,
+        0,
+        NULL,
+        read_buffer_events
+    );
+    clReleaseMemObject(buffer_data_x);
+    clReleaseEvent(read_buffer_events[0]);
+    clReleaseEvent(write_buffer_events[0]);
+
+    return output;
+}
+

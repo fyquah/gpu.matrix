@@ -228,6 +228,29 @@ VECTOR_ARIMETHIC_FACTORY(add, +);
 VECTOR_ARIMETHIC_FACTORY(sub, -);
 VECTOR_ARIMETHIC_FACTORY(div, /);
 
-#endif
+__kernel void vector_sum_bang (
+    __global double * data,
+    const index_t len,
+    const index_t stride
+) {
+    index_t global_id = get_global_id (0);
+    index_t first_id = global_id * stride;
+    index_t second_id = (global_id + ((len+1) / 2) ) * stride;
 
+    data[first_id] = data[first_id] + data[second_id];
+}
+
+__kernel void vector_pow_bang (
+    __global double * data,
+    const index_t len,
+    const index_t stride,
+    const double exponent 
+) {
+    index_t global_id = get_global_id (0);
+    index_t idx = global_id * stride;
+
+    data[idx] = pow(data[idx], exponent);
+}
+
+#endif
 

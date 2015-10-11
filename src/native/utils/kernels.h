@@ -10,7 +10,7 @@
 #include "../libs/cl.h" 
 #include "files.h"
 
-#define KERNELS_COUNT 29
+#define KERNELS_COUNT 31
 #define KERNEL_ADD 0
 #define KERNEL_ADD_SCALAR 1
 #define KERNEL_SUB 2
@@ -40,6 +40,8 @@
 #define KERNEL_VECTOR_SUB_BANG 26
 #define KERNEL_VECTOR_DIV_SCALAR_BANG 27
 #define KERNEL_VECTOR_DIV_BANG 28
+#define KERNEL_VECTOR_SUM_BANG 29
+#define KERNEL_VECTOR_POW_BANG 30
 
 static const char * gpu_matrix_kernel_names[] = {
     "add",
@@ -70,7 +72,9 @@ static const char * gpu_matrix_kernel_names[] = {
     "vector_sub_scalar_bang",
     "vector_sub_bang",
     "vector_div_scalar_bang",
-    "vector_div_bang"
+    "vector_div_bang",
+    "vector_sum_bang",
+    "vector_pow_bang"
 };
 
 // Compiles the program and cahce it in a global buffer

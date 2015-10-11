@@ -105,3 +105,21 @@
   (matrix-sub [^Vector m a]
     (with-coerce-param [a a] (.sub m a))))
 
+(extend-protocol mp/PDoubleArrayOutput
+  Vector
+  (to-double-array [^Vector m] (.toArray m))
+  (to-double-array [^Vector m] (.toArray m)))
+
+(extend-protocol mp/PNegation
+  Vector
+  (negate [^Vector m] (.mul m -1)))
+
+(extend-protocol mp/PExponent
+  Vector
+  (element-pow [^Vector m]
+    (.pow m )))
+
+(extend-protocol mp/PSummable
+  Vector
+  (element-pow [^Vector m]
+    (.sum m)))

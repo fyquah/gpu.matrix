@@ -380,3 +380,31 @@ GPU_MATRIX_VECTOR_ARIMETHIC_FACTORY(sub, KERNEL_VECTOR_SUB_BANG, KERNEL_VECTOR_S
 GPU_MATRIX_VECTOR_ARIMETHIC_FACTORY(mul, KERNEL_VECTOR_MUL_BANG, KERNEL_VECTOR_MUL_SCALAR_BANG);
 GPU_MATRIX_VECTOR_ARIMETHIC_FACTORY(div, KERNEL_VECTOR_DIV_BANG, KERNEL_VECTOR_DIV_SCALAR_BANG);
 
+extern void gpu_matrix_vector_buffer_sum_BANG(
+    vector_buffer * v_x,
+    cl_command_queue cmd_queue
+) {
+    gpu_matrix_vector_buffer_reduce_BANG_helper(
+        v_x,
+        cmd_queue,
+        KERNEL_VECTOR_SUM_BANG,
+        CL_TRUE,
+        NULL
+    );
+}
+
+extern void gpu_matrix_vector_buffer_pow_BANG(
+    vector_buffer * v_x,
+    double alpha,
+    cl_command_queue cmd_queue
+) {
+    gpu_matrix_vector_buffer_map_BANG_helper(
+        1, &v_x,
+        1, &alpha,
+        cmd_queue,
+        KERNEL_VECTOR_POW_BANG,
+        CL_TRUE,
+        NULL
+    );
+}
+

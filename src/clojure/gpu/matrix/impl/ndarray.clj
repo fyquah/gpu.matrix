@@ -268,20 +268,6 @@
   (element-divide [^NDArray m a]
     (with-coerce-param [a a] (.div m a))))
 
-(extend-protocol mp/PNumerical
-  NDArray
-  (numerical? [m]
-    true))
-
-(extend-protocol mp/PTypeInfo
-  NDArray
-  (element-type [m] Double/TYPE))
-
-(extend-protocol mp/PNative
-  NDArray
-  (native [m] m)
-  (native? [m] true))
-
 (extend-protocol mp/PValueEquality
   NDArray
   (value-equals [^NDArray m a]

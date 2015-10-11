@@ -153,6 +153,22 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_div__D
 
 /*
  * Class:     gpu_matrix_Vector
+ * Method:    pow
+ * Signature: ()Lgpu/matrix/Vector;
+ */
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_pow
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     gpu_matrix_Vector
+ * Method:    sum
+ * Signature: ()D
+ */
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_sum
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     gpu_matrix_Vector
  * Method:    length
  * Signature: ()J
  */
@@ -174,6 +190,14 @@ JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_get
  */
 JNIEXPORT void JNICALL Java_gpu_matrix_Vector_set
   (JNIEnv *, jobject, jlong, jdouble);
+
+/*
+ * Class:     gpu_matrix_Vector
+ * Method:    toArray
+ * Signature: ()[D
+ */
+JNIEXPORT jdoubleArray JNICALL Java_gpu_matrix_Vector_toArray
+  (JNIEnv *, jobject);
 
 /*
  * Class:     gpu_matrix_Vector

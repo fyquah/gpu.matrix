@@ -35,4 +35,10 @@ extern void gpu_matrix_vector_buffer_mul_scalar_BANG(vector_buffer *, double, cl
 extern void gpu_matrix_vector_buffer_div_BANG(vector_buffer *, vector_buffer*, cl_command_queue);
 extern void gpu_matrix_vector_buffer_div_scalar_BANG(vector_buffer *, double, cl_command_queue);
 
+// mutable map functions 
+extern void gpu_matrix_vector_buffer_pow_BANG(vector_buffer*, double alpha, cl_command_queue);
+
+// mutable reduce functions
+extern void gpu_matrix_vector_buffer_sum_BANG(vector_buffer*, cl_command_queue);
+
 #endif

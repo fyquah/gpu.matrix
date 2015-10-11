@@ -93,6 +93,25 @@ JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_print
     return this;
 }
 
+JNIEXPORT jdoubleArray JNICALL Java_gpu_matrix_Vector_toArray
+  (JNIEnv * env, jobject this) {
+    vector * v = retrieve_vector(env, this);
+    jdoubleArray ret = (*env)->NewDoubleArray(env, v->length);
+    if(v->stride == 1) {
+        (*env)->SetDoubleArrayRegion(env, ret, 0, v->length, v->data);
+    } else {
+        // make a duplicate, exploiting cacche locality
+        double * tmp = calloc(v->length, sizeof(double));
+        for (index_t i = 0 ; i < v->length; i++) {
+            tmp[i] = v->data[i * v->stride];
+        }
+        (*env)->SetDoubleArrayRegion(env, ret, 0, v->length, v->data);
+        free(tmp);
+    }
+
+    return ret;
+}
+
 #define GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(name) \
 JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_##name##__D \
   (JNIEnv * env, jobject this, jdouble alpha) { \
@@ -120,6 +139,19 @@ GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(add)
 GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(mul)
 GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(sub)
 GPU_MATRIX_VECTOR_JNI_ARIMETHIC_FACTORY(div)
+
+
+JNIEXPORT jobject JNICALL Java_gpu_matrix_Vector_pow
+  (JNIEnv * env, jobject this) {
+    vector * v = retrieve_vector(env, this);
+    
+}
+
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_sum
+  (JNIEnv * env, jobject this) {
+    vector * v = retrieve_vector(env, this);
+
+}
 
 JNIEXPORT jlong JNICALL Java_gpu_matrix_Vector_length
   (JNIEnv * env, jobject this) {

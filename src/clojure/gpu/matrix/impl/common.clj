@@ -64,7 +64,13 @@
                param#
                (number? param#) (double param#)
                :else
-               (mp/construct-matrix m# param#))))))
+               (mp/construct-matrix m# param#))))
+      (extend-protocol mp/PNumerical
+        ~klass
+        (numerical? [m#] true))
+      (extend-protocol mp/PTypeInfo
+        ~klass
+        (element-type [m#] Double/TYPE))))
 
 (defmacro with-coerce-param [bindings & body]
   (assert (= (count bindings) 2))

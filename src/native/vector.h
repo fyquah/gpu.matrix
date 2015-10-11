@@ -52,4 +52,10 @@ VECTOR_ARIMETHIC_HEADER_FACTORY(mul);
 VECTOR_ARIMETHIC_HEADER_FACTORY(sub);
 VECTOR_ARIMETHIC_HEADER_FACTORY(div);
 
+// element map functions (more like utilities then actually useful)
+vector * gpu_matrix_vector_pow(vector *, double);
+
+// element reduce functions
+double gpu_matrix_vector_sum(vector *);
+
 #endif

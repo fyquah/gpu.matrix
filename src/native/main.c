@@ -9,6 +9,6 @@ int main() {
     gpu_matrix_init();
     ndarray * arr = malloc(sizeof(arr));
 
-    // test_vector();
+    test_vector();
     return 0;
 }

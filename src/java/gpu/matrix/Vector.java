@@ -36,10 +36,17 @@ public class Vector {
     public native Vector div(Vector a);
     public native Vector div(double a);
 
+    // element map ops, returns new objects, does not mutate present object
+    public native Vector pow();
+    public native double sum();
+
     // information about Vector
     public native long length();
     public native double get(long idx);
     public native void set(long idx, double value);
+
+    // Alternate representation
+    public native double[] toArray();
 
     // Debugging stuff
     public native Vector print();

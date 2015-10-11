@@ -32,6 +32,8 @@ my @names = qw{
     KERNEL_VECTOR_SUB_BANG          vector_sub_bang
     KERNEL_VECTOR_DIV_SCALAR_BANG   vector_div_scalar_bang
     KERNEL_VECTOR_DIV_BANG          vector_div_bang
+    KERNEL_VECTOR_SUM_BANG          vector_sum_bang
+    KERNEL_VECTOR_POW_BANG          vector_pow_bang
 };
 
 print '#define KERNELS_COUNT ', (scalar(@names) / 2), "\n";

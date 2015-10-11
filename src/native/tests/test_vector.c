@@ -291,6 +291,65 @@ DEFTEST(vector_add) {
     TEST_FREE_WITH_COPY;
 }
 
+DEFTEST(vector_sum) {
+    TEST_INIT;
+    double output = gpu_matrix_vector_sum(v_x);
+    double expected_output = 0.0;
+    for (index_t i = 0 ; i < v_x->length ; i++){
+        expected_output += at(v_x, i);
+    }
+    ASSERT(is_similiar(output, expected_output));    
+
+    TEST_FREE;
+}
+
+DEFTEST(vector_pow) {
+    TEST_INIT;
+    vector * output = gpu_matrix_vector_pow(v_x, 1.0);
+    ASSERT(is_similiar(output->length, v_x->length));
+    for (index_t i = 0 ; i < output->length ; i++) {
+        ASSERT(is_similiar(at(output, i), at(v_x, i))); 
+    }
+    free(output->data);
+    free(output);
+
+    // exponent with 5 random numbers
+    double exponents[5] = { 3, -4, 0, -1, 0 };
+    for (int i = 0 ; i < 5 ; i++) {
+        double exponent = exponents[i]; 
+        vector * output = gpu_matrix_vector_pow(v_x, exponent);
+        ASSERT(is_similiar(output->length, v_x->length));
+        for (index_t i = 0 ; i < output->length ; i++) {
+            ASSERT(is_similiar(at(output, i), pow(at(v_x, i), exponent))); 
+        }
+        free(output->data);
+        free(output);
+    }
+    TEST_FREE;
+
+    // exponent with only positive bases and decimal exponents
+    v_x = malloc(sizeof(vector));
+    v_x->length = 123;
+    v_x->stride = 1;
+    v_x->data = calloc(v_x->length, sizeof(double));
+    for (index_t i = 0 ; i < v_x->length ; i++) {
+        v_x->data[i] = i * 1.23;
+    }
+    double decimal_exponents[3] = { 3.142, 2.717, 6.234 };
+    for (int i = 0 ; i < 3 ; i++) {
+        double exponent = exponents[i]; 
+        vector * output = gpu_matrix_vector_pow(v_x, exponent);
+        ASSERT(is_similiar(output->length, v_x->length));
+        for (index_t i = 0 ; i < output->length ; i++) {
+            ASSERT(is_similiar(at(output, i), pow(at(v_x, i), exponent))); 
+        }
+        free(output->data);
+        free(output);
+    }
+    free(v_x->data);
+    free(v_x);
+}
+
 void test_vector() {
     RUNTEST(vector_copy);
     RUNTEST(vector_axpy);
@@ -307,5 +366,7 @@ void test_vector() {
     RUNTEST(vector_iamin);
     RUNTEST(vector_iamax);
     RUNTEST(vector_add);
+    RUNTEST(vector_sum);
+    RUNTEST(vector_pow);
 }
 
