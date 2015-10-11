@@ -70,6 +70,27 @@ JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_dot__Lgpu_matrix_NDArray_2
         return -1;
     }
 }
+
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_dot___3D
+  (JNIEnv * env, jobject this, jdoubleArray arr){
+    vector * v_x = retrieve_vector(env, this);
+    vector v_y[1];
+    jboolean is_copy;
+    double ret;
+    jdouble * data = (*env)->GetDoubleArrayElements(env, arr, &is_copy);
+
+    v_y->length = v_x->length;
+    v_y->stride = 1;
+    v_y->data = data;
+
+    ret = gpu_matrix_vector_dot(v_x, v_y);
+
+    if (is_copy) {
+        (*env)->ReleaseDoubleArrayElements(env, arr, data, JNI_ABORT);
+    }
+
+    return ((jdouble) ret);
+}
 /*
  * Class:     gpu_matrix_Vector
  * Method:    nrm2

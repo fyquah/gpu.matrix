@@ -162,6 +162,29 @@
 (extend-protocol mp/PMatrixProducts
   Vector
   (inner-product [^Vector m a]
-    (with-coerce-param [a a]
-      (.dot m a))))
+    (condp isa? (class a)
+      gpu.matrix.Vector
+      (let [a ^Vector a]
+        (if (= (.length m) (.length a))
+          (.dot m a)
+          (error "inner-product expects length of both argument vectors to be equal!")))
+
+      gpu.matrix.NDArray
+      (let [a ^NDArray a]
+        (and (or (= (.dimensionality a) 1)
+                 (error "Expecting a 1-dimensional NDArray as argument of inner product "
+                        "but got a/an " (.dimensionality a) "-dim gpu.matrix.NDArray instead!"))
+             (or (= (aget ^"[J" (.shape a) 0) (.length m))
+                 (error "inner-product expects length of both argument vectors to be equal!"))
+             (.dot m a)))
+
+      (and (or (= (mp/dimensionality a) 1)
+               (error "Expecting a 1-dimensional object as argument of inner product but got "
+                      (mp/dimensionality a) " instead!"))
+           (or (= (first (mp/get-shape a)) (.length m))
+               (error "inner-product expects length of both argument vectors to be equal!"))
+           (if-let [v (or (mp/as-double-array a)
+                          (mp/to-double-array a))]
+             (.dot m ^"[D" v)
+             nil)))))
 

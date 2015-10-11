@@ -49,6 +49,14 @@ JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_dot__Lgpu_matrix_NDArray_2
 
 /*
  * Class:     gpu_matrix_Vector
+ * Method:    dot
+ * Signature: ([D)D
+ */
+JNIEXPORT jdouble JNICALL Java_gpu_matrix_Vector_dot___3D
+  (JNIEnv *, jobject, jdoubleArray);
+
+/*
+ * Class:     gpu_matrix_Vector
  * Method:    nrm2
  * Signature: ()D
  */
